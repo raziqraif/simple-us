@@ -1,0 +1,4 @@
+ipywidgets==7.5.1
+ipymaterialui==0.1.4
+ipyvuetify==1.4.0
+ipyleaflet==0.13.0
