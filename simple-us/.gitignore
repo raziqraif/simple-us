@@ -1,1 +1,5 @@
 .*.ipynb
+*.png
+*.jpg
+*.tif
+*.csv
