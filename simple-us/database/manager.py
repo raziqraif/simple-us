@@ -23,8 +23,10 @@ from database.utils import SUBMIT_TIME
 class DBManager:
     """ Manages communication with the database file
 
-    Note: The term "job" and "experiment" are used interchangeably in this class. A job can be represented
-    as a list or Experiment class.
+    A table row is represented represented as a list or an Experiment object in this class. It should be
+    enough to only use the Experiment object, but the list format is kept for backward compatibility.
+
+    Note: The term "job" and "experiment" are used interchangeably in this class.
     """
 
     def __init__(self, directory_path: Path = dbutils.PRIVATE_JOBS_DIR):
@@ -44,7 +46,7 @@ class DBManager:
                 return
 
         # no jobname
-        sql = 'alter table SIMPLEJobs add column jobname TEXT'
+        sql = '''alter table SIMPLEJobs add column jobname TEXT'''
         cur = conn.execute(sql)
         conn.close()
 
@@ -185,7 +187,7 @@ class DBManager:
             description=job[DESCRIPTION],
             model=job[MODEL_TYPE],
             author=job[AUTHOR],
-            submission_id=job[SUBMIT_ID] if job[SUBMIT_ID] is not None else int(job[SUBMIT_ID]),
+            submission_id=job[SUBMIT_ID],
             submission_time=job[SUBMIT_TIME],
             published=job[PUBLISHED]
         )
