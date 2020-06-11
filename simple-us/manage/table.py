@@ -14,9 +14,10 @@ from ipymaterialui import TableHead
 from ipymaterialui import TableRow
 
 from data import Experiment
+from database import DBManager
 
 
-class ExperimentTableView(Box):
+class ExperimentTableViewVue(Box):
     def __init__(self, controller: ExperimentTable):
         super(Box, self).__init__()
 
@@ -61,7 +62,7 @@ class ExperimentTableView(Box):
         # </span>
         # <span class="MuiTouchRipple-root"></span>
         # </span>')
-        checkbox = mui.Checkbox()
+        checkbox = widgets.Checkbox()
         # checkbox.ripple = True
         # checkbox.dark = True
         checkbox.background_color = "rgb(0, 0, 0, 0)"
@@ -76,8 +77,7 @@ class ExperimentTableView(Box):
         return row
 
 
-
-class ExperimentTableViewMui(Box):
+class ExperimentTableView(Box):
     def __init__(self, controller: ExperimentTable):
         super(Box, self).__init__()
 
@@ -119,17 +119,18 @@ class ExperimentTableViewMui(Box):
             # </span>
             # <span class="MuiTouchRipple-root"></span>
         # </span>')
-        checkbox = mui.Checkbox()
+        checkbox = widgets.Checkbox()
         # checkbox.ripple = True
         # checkbox.dark = True
-        checkbox.background_color = "rgb(0, 0, 0, 0)"
+        # checkbox.background_color = "rgb(0, 0, 0, 0)"
         cells = [TableCell(children=checkbox)]
         cells += [TableCell(children=value) for value in experiment_data]
         delete_button = TableCell(children=mui.IconButton(children=mui.Icon(children="delete")))
         cells.append(delete_button)
         row = TableRow(children=cells, hover=True)
-        checkbox.on_event("click", self.controller.onclick_experiment_row)
-        delete_button.on_event("onClick", self.controller.onclick_delete)
+#         checkbox.on_event("click", self.controller.onclick_experiment_row)
+        job_id = experiment_data[0]
+        delete_button.on_event("onClick", lambda a, b, c: self.controller.onclick_delete(a, b, c, job_id))
 
         return row
 
@@ -140,11 +141,19 @@ class ExperimentTable:
         self.selected_experiments_count = 0
 
     def experiments_row_data(self) -> List[List[str]]:
-        return [
-            [str(1), "Apple", "Pending", "-"],
-            [str(2), "Orange", "Completed", "-"],
-            [str(3), "Pear", "Failed", "-"]
-        ]
+        db = DBManager()
+        experiments_row_data = db.get_job_list_for_table()
+
+        for i in range(len(experiments_row_data)):
+            for j in range(len(experiments_row_data[i])):
+                value = experiments_row_data[i][j]
+                if value is None:
+                    value = ""
+                else:
+                    value = str(value)
+                experiments_row_data[i][j] = value
+
+        return experiments_row_data
 
     def onclick_experiment_row(self, widget, event, data):
         print(widget, event, data)
@@ -156,9 +165,9 @@ class ExperimentTable:
         # print(checkbox)
         # checkbox.checked = True
 
-    def onclick_delete(self, widget, event, c):
-        print("delete", widget, event, c)
-
+    def onclick_delete(self, widget, event, c, job_id):
+        print("delete", widget, event, c, )
+        print("Job id =", job_id)
     # def onclick_row(a, b, c):
     #     print(a, b, c)
     #     print(type(c))
