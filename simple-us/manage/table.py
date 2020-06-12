@@ -16,12 +16,16 @@ from ipymaterialui import TableRow
 
 from data import Experiment
 from database import DBManager
+from utils import DEBUG_MODE
+from utils import CustomText
 
 
 class ExperimentTableView(Box):
     def __init__(self, controller: ExperimentTable):
         super(Box, self).__init__()
 
+        self.layout.width = "100%"
+        self.layout.height = "300px"
         self.controller = controller
         self.table = None
         self.build_table()
@@ -31,7 +35,7 @@ class ExperimentTableView(Box):
     def build_table(self):
         self.table = Table(children=[self.table_head(),
                                      self.table_body()],
-                           style_={"width": "1000px"})
+                           style_={"width": "100%"})
 
     def table_head(self):
         titles = ["Select", "ID", "Name", "Status", "Description", "Delete"]
@@ -55,10 +59,10 @@ class ExperimentTableView(Box):
 
         # TODO: Improve style if given time
         checkbox_cell = TableCell(children=checkbox)
-        id_cell = TableCell(children=experiment_data[0], style_={})
-        name_cell = TableCell(children=experiment_data[1], style={})
-        status_cell = TableCell(children=experiment_data[2], style={})
-        description_cell = TableCell(children=experiment_data[3], style={"min_width": "100%"})
+        id_cell = TableCell(children=CustomText(experiment_data[0]), style_={})
+        name_cell = TableCell(children=CustomText(experiment_data[1]), style={})
+        status_cell = TableCell(children=CustomText(experiment_data[2]), style={})
+        description_cell = TableCell(children=CustomText(experiment_data[3]), style={"min_width": "100%"})
         delete_cell = TableCell(children=delete_button, style={})
 
         cells = [
@@ -124,15 +128,18 @@ class ExperimentTable:
         row_widget.selected = not row_widget.selected
 
     def onclick_row(self, widget, event, data, checkbox, row):
-        print("clicked row", widget, event, data,)
+        if DEBUG_MODE:
+            print("clicked row", widget, event, data,)
         row.selected = not row.selected
         checkbox.checked = not checkbox.checked
 
     def onclick_delete(self, widget, event, data, job_id):
-        print("clicked delete", widget, event, data, job_id)
+        if DEBUG_MODE:
+            print("clicked delete", widget, event, data, job_id)
 
     def ondoubleclick_row(self, widget, event, data):
-        print("double clicked row", widget, event, data)
+        if DEBUG_MODE:
+            print("double clicked row", widget, event, data)
 
 
 
