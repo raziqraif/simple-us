@@ -9,7 +9,7 @@ class CustomText(Html):
     The default text size on Jupyter Lab and Jupyter Notebook is not consistent.
     """
 
-    def __init__(self, text, tag="span", font_size=20, style_: Dict = None, **kwargs):
+    def __init__(self, text, tag="span", font_size=16, style_: Dict = None, **kwargs):
         super(Html, self).__init__()
 
         if style_ is None:

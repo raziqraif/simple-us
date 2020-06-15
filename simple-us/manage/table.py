@@ -6,7 +6,7 @@ from typing import Union
 import ipymaterialui as mui
 import ipyvuetify as vue
 import ipywidgets as widgets
-from ipywidgets import Box
+from ipymaterialui import Container
 from ipymaterialui import Checkbox
 from ipymaterialui import Table
 from ipymaterialui import TableBody
@@ -20,12 +20,15 @@ from utils import DEBUG_MODE
 from utils import CustomText
 
 
-class ExperimentTableView(Box):
+class ExperimentTableView(Container):
     def __init__(self, controller: ExperimentTable):
-        super(Box, self).__init__()
+        super(Container, self).__init__()
 
-        self.layout.width = "100%"
-        self.layout.height = "300px"
+        self.style_ = {
+            "width": "100%",
+            "height": "300px",
+            "padding": "0px 0px",
+        }
         self.controller = controller
         self.table = None
         self.build_table()
@@ -35,7 +38,7 @@ class ExperimentTableView(Box):
     def build_table(self):
         self.table = Table(children=[self.table_head(),
                                      self.table_body()],
-                           style_={"width": "100%"})
+                           style_={"width": "100%", "padding": "0px 0px"})
 
     def table_head(self):
         titles = ["Select", "ID", "Name", "Status", "Description", "Delete"]
@@ -81,23 +84,29 @@ class ExperimentTableView(Box):
                           self.controller.onclick_row(widget, event, data, checkbox, row))
 
         # for cell in cell
+#         row.on_event("onClick",
+#                          lambda widget, event, data:
+#                          self.controller.onclick_row(widget, event, data, checkbox, row))
 
-        # id_cell.on_event("onClick",
-        #                  lambda widget, event, data:
-        #                  self.controller.onclick_row(widget, event, data, checkbox, row))
-        # name_cell.on_event("onClick",
-        #                    lambda widget, event, data:
-        #                    self.controller.onclick_row(widget, event, data, checkbox, row))
-        # status_cell.on_event("onClick",
-        #                      lambda widget, event, data:
-        #                      self.controller.onclick_row(widget, event, data, checkbox, row))
-        # description_cell.on_event("onClick",
-        #                           lambda widget, event, data:
-        #                           self.controller.onclick_row(widget, event, data, checkbox, row))
-        #
-        # id_cell.on_event("onDoubleClick",
-        #                  lambda widget, event, data:
-        #                  self.controller.ondoubleclick_row(widget, event, data))
+#         id_cell.on_event("onClick",
+#                          lambda widget, event, data:
+#                          self.controller.onclick_row(widget, event, data, checkbox, row))
+#         checkbox_cell.on_event("onClick",
+#                           lambda widget, event, data:
+#                           self.controller.onclick_row(widget, event, data, checkbox, row))
+#         name_cell.on_event("onClick",
+#                            lambda widget, event, data:
+#                            self.controller.onclick_row(widget, event, data, checkbox, row))
+#         status_cell.on_event("onClick",
+#                              lambda widget, event, data:
+#                              self.controller.onclick_row(widget, event, data, checkbox, row))
+#         description_cell.on_event("onClick",
+#                                   lambda widget, event, data:
+#                                   self.controller.onclick_row(widget, event, data, checkbox, row))
+        
+        id_cell.on_event("onDoubleClick",
+                         lambda widget, event, data:
+                         self.controller.ondoubleclick_row(widget, event, data))
 
         job_id = experiment_data[0]
         delete_button.on_event("onClick",

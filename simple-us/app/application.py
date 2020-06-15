@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ipymaterialui as mui
+from ipymaterialui import Container
 from ipymaterialui import Html
 from ipymaterialui import Tab
 from ipymaterialui import Tabs
@@ -16,19 +17,24 @@ from manage import ManageTab
 from manage import ManageTabView
 
 
-class AppView(widgets.VBox):
+class AppView(Container):
     """ View class for the main application """
 
     def __init__(self, controller: App, create_page, manage_page, view_page, about_page):
-        super(Box, self).__init__()
+        super(Container, self).__init__()
 
-        self.layout.width = "100%"
-        self.layout.height = "900px"
-        self.layout.display = "flex"
-        self.layout.flex_direction = "row"
-        self.layout.flex_wrap = "wrap"
-        self.layout.justify_content = "flex-start"
-        self.layout.align_items = "center"
+        self.style_ = {
+            "width": "100%",
+            "height": "900px",
+            "padding": "0px 0px"
+        }
+        # self.layout.width = "100%"
+        # self.layout.height = "900px"
+        # self.layout.display = "flex"
+        # self.layout.flex_direction = "row"
+        # self.layout.flex_wrap = "wrap"
+        # self.layout.justify_content = "flex-start"
+        # self.layout.align_items = "center"
 
         self.controller = controller
         self.create = create_page
