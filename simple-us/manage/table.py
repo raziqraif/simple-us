@@ -33,34 +33,49 @@ class ExperimentTableView(Container):
             # "size": "small"
         }
         self.controller = controller
-        self.table = None
+        # Table is split into two because stickyHeader property doesn't seem to work.
+        # TODO: Fix this if given time.
+        self.table_for_header = None
+        self.table_for_body_w_container = None
         self._build_table()
 
-        self.children = [self.table]
+        self.children = [self.table_for_header,
+                         self.table_for_body_w_container]
 
     def rows(self):
         rows = []
         # body = self.table.children[0]:
 
     def _build_table(self):
-        self.table = Table(children=[self._table_head(),
-                                     self._table_body()],
-
-                           size="small",
-                           style_={
-                               "width": "100%",
-                               "padding": "0px 0px",
-                           })
+        head = self._table_head()
+        body = self._table_body()
+        self.table_for_header = Table(children=[head],
+                                      size="small",
+                                      style_={
+                                          "width": "100%",
+                                          "padding": "0px 0px",
+                                      })
+        table_for_body = Table(children=[body],
+                               size="small",
+                               style_={
+                                   "width": "100%",
+                                   "padding": "0px 0px",
+                               })
+        self.table_for_body_w_container = Container(children=[table_for_body],
+                                                    style_={
+                                                      "width": "100%",
+                                                      "maxHeight": "650px",
+                                                      "overflow": "auto",
+                                                      "padding": "0px 0px 0px 0px",
+                                                  })
 
     def _table_head(self):
-        titles = ["", "ID", "Name", "Status", "Description", "Delete"]
-
-        select_cell = self._header_cell("Select", "80px")
-        id_cell = self._header_cell("ID", "100px")
-        name_cell = self._header_cell("Name", "120px")
-        status_cell = self._header_cell("Status", "100px")
+        select_cell = self._header_cell("", "60px")
+        id_cell = self._header_cell("ID", "150px")
+        name_cell = self._header_cell("Name", "150px")
+        status_cell = self._header_cell("Status", "150px")
         description_cell = self._header_cell("Description", "")
-        details_cell = self._header_cell("Details", "80px")
+        details_cell = self._header_cell("", "77px")
 
         header_cells = [select_cell,
                         id_cell,
@@ -74,7 +89,9 @@ class ExperimentTableView(Container):
                                   "padding": "0px 10px 0px 30px",
                               })
         table_head = TableHead(children=[header_row],
+                               sticky_header=True,
                                style_={
+                                   "width": "100%",
                                    "background": "#454851",
                                })
         return table_head
@@ -84,12 +101,13 @@ class ExperimentTableView(Container):
         for row_data in self.controller.rows_data():
             row = self._body_row(row_data)
             experiment_rows.append(row)
-        while len(experiment_rows) < 10:
+        while len(experiment_rows) < 20:
             row = self._empty_body_row()
             experiment_rows.append(row)
 
         table_body = TableBody(children=experiment_rows,
                                style_={
+                                   "width": "100%",
                                    "padding": "0px 0px 0px 0px",
                                })
 
