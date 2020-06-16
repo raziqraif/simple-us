@@ -15,6 +15,7 @@ from IPython.display import display
 
 from manage import ManageTab
 from manage import ManageTabView
+from utils import CustomText
 
 
 class AppView(Container):
@@ -42,12 +43,18 @@ class AppView(Container):
         self.view = view_page
         self.about = about_page
 
-        self.tabs = Tabs(children=[
-            Tab(label="Create", value=self.create),
-            Tab(label="Manage", value=self.manage),
-            Tab(label="View", value=self.view),
-            Tab(label="About", value=self.about),
-        ], centered=True, value=self.create)
+        self.tabs = Tabs(
+            children=[
+                Tab(label=CustomText("Create", style_={"color": "#ffffff"}), value=self.create),
+                Tab(label=CustomText("Manage", style_={"color": "#ffffff"}), value=self.manage),
+                Tab(label=CustomText("View", style_={"color": "#ffffff"}), value=self.view),
+                Tab(label=CustomText("About", style_={"color": "#ffffff"}), value=self.about),
+            ],
+            style_={
+                "background": "#454851"
+            },
+            centered=True, value=self.create
+        )
 
         self.tab_div = Html(tag="div")
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))

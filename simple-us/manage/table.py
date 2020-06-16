@@ -8,6 +8,8 @@ import ipyvuetify as vue
 import ipywidgets as widgets
 from ipymaterialui import Container
 from ipymaterialui import Checkbox
+from ipymaterialui import Icon
+from ipymaterialui import IconButton
 from ipymaterialui import Table
 from ipymaterialui import TableBody
 from ipymaterialui import TableCell
@@ -28,6 +30,7 @@ class ExperimentTableView(Container):
             "width": "100%",
             "height": "300px",
             "padding": "0px 0px",
+            # "size": "small"
         }
         self.controller = controller
         self.table = None
@@ -38,13 +41,26 @@ class ExperimentTableView(Container):
     def build_table(self):
         self.table = Table(children=[self.table_head(),
                                      self.table_body()],
-                           style_={"width": "100%", "padding": "0px 0px"})
+                           size="small",
+                           style_={
+                               "width": "100%",
+                               "padding": "0px 0px",
+                           })
 
     def table_head(self):
         titles = ["Select", "ID", "Name", "Status", "Description", "Delete"]
-        header_cells = [TableCell(children=[title]) for title in titles]
+
+        header_cells = [TableCell(children=CustomText(title),
+                                  size="small",
+                                  align="center",
+                                  style_={
+                                    "color": "#ffffff"
+                                  }) for title in titles]
         header_row = TableRow(children=header_cells)
-        table_head = TableHead(children=[header_row])
+        table_head = TableHead(children=[header_row],
+                               style_={
+                                   "background": "#454851"
+                               })
         return table_head
 
     def table_body(self):
@@ -57,16 +73,39 @@ class ExperimentTableView(Container):
         return table_body
 
     def experiment_row(self, experiment_data: List[str]):
-        checkbox = mui.Checkbox(checked=False)
-        delete_button = mui.IconButton(children=mui.Icon(children="delete"))
+        checkbox = mui.Checkbox(checked=False,
+                                style_={
+                                    "width": "40px",
+                                    "height": "40px"
+                                })
+        delete_icon = Icon(children="delete",
+                           style_={
+                                "font-size": "25px"
+                           })
+        delete_button = IconButton(children=delete_icon)
 
         # TODO: Improve style if given time
-        checkbox_cell = TableCell(children=checkbox)
-        id_cell = TableCell(children=CustomText(experiment_data[0]), style_={})
-        name_cell = TableCell(children=CustomText(experiment_data[1]), style={})
-        status_cell = TableCell(children=CustomText(experiment_data[2]), style={})
-        description_cell = TableCell(children=CustomText(experiment_data[3]), style={"min_width": "100%"})
-        delete_cell = TableCell(children=delete_button, style={})
+        checkbox_cell = TableCell(children=checkbox, size="small")
+        id_cell = TableCell(children=CustomText(experiment_data[0]),
+                            align="center",
+                            size="small",
+                            style_={
+                                "align": "center"
+                            })
+        name_cell = TableCell(children=CustomText(experiment_data[1]),
+                              size="small",
+                              style={
+                                  "align": "center"
+                              })
+        status_cell = TableCell(children=CustomText(experiment_data[2]),
+                                size="small",
+                                style={})
+        description_cell = TableCell(children=CustomText(experiment_data[3]),
+                                     size="small",
+                                     style={"min_width": "100%"})
+        delete_cell = TableCell(children=delete_button,
+                                size="small",
+                                style={})
 
         cells = [
             checkbox_cell,
