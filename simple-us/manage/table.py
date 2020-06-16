@@ -222,20 +222,19 @@ class ExperimentTable:
         # if data is None:
         #     return
         if not widget.checked:
-            if self.selected_rows_count >= 1:
+            if self.selected_rows_count >= 2:
                 print("You can only select the maximum of 2 experiments at a time.")
                 # widget.checked = False
-                widget.fire_event("onClick", None)
+                # widget.fire_event("onClick", None)
                 return
             else:
                 self.selected_rows_count += 1
         if widget.checked:
             self.selected_rows_count -= 1
 
-        # widget.
         print("count:", self.selected_rows_count)
-        # widget.checked = not widget.checked
-        # row_widget.selected = not row_widget.selected
+        widget.checked = not widget.checked
+        row_widget.selected = not row_widget.selected
 
     def onclick_details(self, widget, event, data, job_id):
         if DEBUG_MODE:
