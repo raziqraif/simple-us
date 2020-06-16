@@ -8,6 +8,7 @@ import ipyvuetify as vue
 import ipywidgets as widgets
 from ipymaterialui import Container
 from ipymaterialui import Checkbox
+from ipymaterialui import Html
 from ipymaterialui import Icon
 from ipymaterialui import IconButton
 from ipymaterialui import Table
@@ -34,13 +35,16 @@ class ExperimentTableView(Container):
         }
         self.controller = controller
         # Table is split into two because stickyHeader property doesn't seem to work.
-        # TODO: Fix this if given time.
+        # TODO: Fix the above error if given time.
+        self.table_container = None
         self.table_for_header = None
         self.table_for_body_w_container = None
         self._build_table()
 
-        self.children = [self.table_for_header,
-                         self.table_for_body_w_container]
+        # TODO: Discuss with Jungha which approach is more favorable
+        # self.children = [self.table_for_header,
+        #                  self.table_for_body_w_container]
+        self.children = [self.table_container]
 
     def rows(self):
         rows = []
@@ -69,13 +73,23 @@ class ExperimentTableView(Container):
                                                       "padding": "0px 0px 0px 0px",
                                                   })
 
+        self.table = Table(children=[head, body])
+        self.table_container = Container(children=[self.table],
+                                         style_={
+                                             "width": "100%",
+                                             "maxHeight": "650px",
+                                             "overflow": "auto",
+                                             "padding": "0px 0px 0px 0px",
+                                         })
+
     def _table_head(self):
         select_cell = self._header_cell("", "60px")
         id_cell = self._header_cell("ID", "150px")
         name_cell = self._header_cell("Name", "150px")
         status_cell = self._header_cell("Status", "150px")
         description_cell = self._header_cell("Description", "")
-        details_cell = self._header_cell("", "77px")
+        details_cell = self._header_cell("", "60px")
+        # details_cell = self._header_cell("", "77px")
 
         header_cells = [select_cell,
                         id_cell,
@@ -91,6 +105,7 @@ class ExperimentTableView(Container):
         table_head = TableHead(children=[header_row],
                                sticky_header=True,
                                style_={
+                                   "position": "sticky",
                                    "width": "100%",
                                    "background": "#454851",
                                })
@@ -123,6 +138,16 @@ class ExperimentTableView(Container):
                              "height": "45px",
                              "width": width,
                          })
+        cell = Html(children=CustomText(text),
+                    tag="th",
+                    style_={
+                        "color": "#ffffff",
+                        "padding": "0px 0px 0px 0px",
+                        "height": "45px",
+                        "width": width,
+                        "position": "sticky",
+                        "background": "#454851",
+                    })
         return cell
 
     def _body_row(self, experiment_data: List[str]):
@@ -177,7 +202,7 @@ class ExperimentTableView(Container):
 
         checkbox.on_event("onClick",
                           lambda widget, event, data:
-                          self.controller.onclick_checkbox(widget, event, data, row))
+                          self.controller.onclick_checkbox(widget, event, data, row, checkbox))
 
         job_id = experiment_data[0]
         details_button.on_event("onClick",
@@ -235,24 +260,29 @@ class ExperimentTable:
 
         return rows_data
 
-    def onclick_checkbox(self, widget: Checkbox, event, data, row_widget):
-        print("entered checkbox handler")
+    def empty_callback(self):
+        print("entered empty handler")
+        # pass
+
+    def onclick_checkbox(self, widget: Checkbox, event, data, row_widget, checkbox):
+        print("entered checkbox handler. Checked = ", checkbox.checked)
         # if data is None:
         #     return
-        if not widget.checked:
-            if self.selected_rows_count >= 2:
+        if not checkbox.checked:
+            if self.selected_rows_count >= 1:
                 print("You can only select the maximum of 2 experiments at a time.")
-                # widget.checked = False
-                # widget.fire_event("onClick", None)
+                checkbox.checked = False
+                checkbox.send_state("checked")
+                checkbox.get_state()
                 return
             else:
                 self.selected_rows_count += 1
-        if widget.checked:
+        if checkbox.checked:
             self.selected_rows_count -= 1
 
-        print("count:", self.selected_rows_count)
-        widget.checked = not widget.checked
+        checkbox.checked = not checkbox.checked
         row_widget.selected = not row_widget.selected
+        checkbox.send_state("checked")
 
     def onclick_details(self, widget, event, data, job_id):
         if DEBUG_MODE:
