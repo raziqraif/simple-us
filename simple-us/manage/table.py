@@ -34,78 +34,91 @@ class ExperimentTableView(Container):
         }
         self.controller = controller
         self.table = None
-        self.build_table()
+        self._build_table()
 
         self.children = [self.table]
 
-    def build_table(self):
-        self.table = Table(children=[self.table_head(),
-                                     self.table_body()],
+    def _build_table(self):
+        self.table = Table(children=[self._table_head(),
+                                     self._table_body()],
+
                            size="small",
                            style_={
                                "width": "100%",
                                "padding": "0px 0px",
                            })
 
-    def table_head(self):
-        titles = ["Select", "ID", "Name", "Status", "Description", "Delete"]
+    def _table_head(self):
+        titles = ["", "ID", "Name", "Status", "Description", "Delete"]
 
-        header_cells = [TableCell(children=CustomText(title),
-                                  size="small",
-                                  align="center",
-                                  style_={
-                                    "color": "#ffffff"
-                                  }) for title in titles]
+        select_cell = self._header_cell("", "50px")
+        id_cell = self._header_cell("ID", "100px")
+        name_cell = self._header_cell("Name", "120px")
+        status_cell = self._header_cell("Status", "100px")
+        description_cell = self._header_cell("Description", "")
+        delete_cell = self._header_cell("Delete", "100px")
+
+        header_cells = [select_cell,
+                        id_cell,
+                        name_cell,
+                        status_cell,
+                        description_cell,
+                        delete_cell]
+
         header_row = TableRow(children=header_cells)
         table_head = TableHead(children=[header_row],
                                style_={
-                                   "background": "#454851"
+                                   "background": "#454851",
                                })
         return table_head
 
-    def table_body(self):
+    def _table_body(self):
         experiment_rows = []
         for row_data in self.controller.rows_data():
-            row = self.experiment_row(row_data)
+            row = self._body_row(row_data)
             experiment_rows.append(row)
 
-        table_body = TableBody(children=experiment_rows)
+        table_body = TableBody(children=experiment_rows,
+                               style_={
+                                   "padding": "0px 0px 0px 0px",
+                               })
+
         return table_body
 
-    def experiment_row(self, experiment_data: List[str]):
+    def _header_cell(self, text, width) -> TableCell:
+        cell = TableCell(children=CustomText(text),
+                         size="small",
+                         align="center",
+                         style_={
+                             "color": "#ffffff",
+                             "padding": "0px 0px 0px 0px",
+                             "height": "45px",
+                             "width": width,
+                         })
+        return cell
+
+    def _body_row(self, experiment_data: List[str]):
         checkbox = mui.Checkbox(checked=False,
                                 style_={
-                                    "width": "40px",
-                                    "height": "40px"
+                                    "width": "35px",
+                                    "height": "35px",
                                 })
         delete_icon = Icon(children="delete",
                            style_={
-                                "font-size": "25px"
+                               "font-size": "25px",
+                               "padding": "0px 0px 0px 0px",
                            })
-        delete_button = IconButton(children=delete_icon)
+        delete_button = IconButton(children=delete_icon,
+                                   style_={
+                                       "padding": "0px 0px 0px 0px",
+                                   })
 
-        # TODO: Improve style if given time
-        checkbox_cell = TableCell(children=checkbox, size="small")
-        id_cell = TableCell(children=CustomText(experiment_data[0]),
-                            align="center",
-                            size="small",
-                            style_={
-                                "align": "center"
-                            })
-        name_cell = TableCell(children=CustomText(experiment_data[1]),
-                              size="small",
-                              style={
-                                  "align": "center"
-                              })
-        status_cell = TableCell(children=CustomText(experiment_data[2]),
-                                size="small",
-                                style={})
-        description_cell = TableCell(children=CustomText(experiment_data[3]),
-                                     size="small",
-                                     style={"min_width": "100%"})
-        delete_cell = TableCell(children=delete_button,
-                                size="small",
-                                style={})
+        checkbox_cell = self._body_cell(checkbox, "60px", "center")
+        id_cell = self._body_cell(CustomText(experiment_data[0]), "150px", "center")
+        name_cell = self._body_cell(CustomText(experiment_data[1]), "150px", "left")
+        status_cell = self._body_cell(CustomText(experiment_data[2]), "150px", "center")
+        description_cell = self._body_cell("", "", "left")
+        delete_cell = self._body_cell(delete_button, "60px", "center")
 
         cells = [
             checkbox_cell,
@@ -116,7 +129,11 @@ class ExperimentTableView(Container):
             delete_cell
         ]
 
-        row = TableRow(children=cells, hover=True, selected=False, ripple=True)
+        row = TableRow(children=cells,
+                       style_={
+                           "padding": "0px 0px 0px 0px",
+                       },
+                       hover=True, selected=False, ripple=True)
 
         checkbox.on_event("onClick",
                           lambda widget, event, data:
@@ -153,6 +170,16 @@ class ExperimentTableView(Container):
                                self.controller.onclick_delete(widget, event, data, job_id))
 
         return row
+
+    def _body_cell(self, children, width, align) -> TableCell:
+        cell = TableCell(children=children,
+                         align=align,
+                         style_={
+                             "padding": "0px 0px 0px 0px",
+                             "width": width,
+                             "height": "45px",
+                         })
+        return cell
 
 
 class ExperimentTable:
