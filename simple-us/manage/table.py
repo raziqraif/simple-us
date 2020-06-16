@@ -38,6 +38,10 @@ class ExperimentTableView(Container):
 
         self.children = [self.table]
 
+    def rows(self):
+        rows = []
+        # body = self.table.children[0]:
+
     def _build_table(self):
         self.table = Table(children=[self._table_head(),
                                      self._table_body()],
@@ -51,21 +55,24 @@ class ExperimentTableView(Container):
     def _table_head(self):
         titles = ["", "ID", "Name", "Status", "Description", "Delete"]
 
-        select_cell = self._header_cell("", "50px")
+        select_cell = self._header_cell("Select", "80px")
         id_cell = self._header_cell("ID", "100px")
         name_cell = self._header_cell("Name", "120px")
         status_cell = self._header_cell("Status", "100px")
         description_cell = self._header_cell("Description", "")
-        delete_cell = self._header_cell("Delete", "100px")
+        details_cell = self._header_cell("Details", "80px")
 
         header_cells = [select_cell,
                         id_cell,
                         name_cell,
                         status_cell,
                         description_cell,
-                        delete_cell]
+                        details_cell]
 
-        header_row = TableRow(children=header_cells)
+        header_row = TableRow(children=header_cells,
+                              style_={
+                                  "padding": "0px 10px 0px 30px",
+                              })
         table_head = TableHead(children=[header_row],
                                style_={
                                    "background": "#454851",
@@ -76,6 +83,9 @@ class ExperimentTableView(Container):
         experiment_rows = []
         for row_data in self.controller.rows_data():
             row = self._body_row(row_data)
+            experiment_rows.append(row)
+        while len(experiment_rows) < 10:
+            row = self._empty_body_row()
             experiment_rows.append(row)
 
         table_body = TableBody(children=experiment_rows,
@@ -100,9 +110,21 @@ class ExperimentTableView(Container):
     def _body_row(self, experiment_data: List[str]):
         checkbox = mui.Checkbox(checked=False,
                                 style_={
+                                    "padding": "8px 8px 8px 8px",
                                     "width": "35px",
                                     "height": "35px",
                                 })
+        details_icon = Icon(children="open_in_new",
+                            style_={
+                                "font-size": "20px",
+                                "padding": "0px 0px 0px 0px",
+                            })
+        details_button = IconButton(children=details_icon,
+                                    style_={
+                                        "padding": "8px 8px 8px 8px",
+                                    })
+
+        # TODO: Move delete button to popup window
         delete_icon = Icon(children="delete",
                            style_={
                                "font-size": "25px",
@@ -110,7 +132,7 @@ class ExperimentTableView(Container):
                            })
         delete_button = IconButton(children=delete_icon,
                                    style_={
-                                       "padding": "0px 0px 0px 0px",
+                                       "padding": "8px 8px 8px 8px",
                                    })
 
         checkbox_cell = self._body_cell(checkbox, "60px", "center")
@@ -118,7 +140,7 @@ class ExperimentTableView(Container):
         name_cell = self._body_cell(CustomText(experiment_data[1]), "150px", "left")
         status_cell = self._body_cell(CustomText(experiment_data[2]), "150px", "center")
         description_cell = self._body_cell("", "", "left")
-        delete_cell = self._body_cell(delete_button, "60px", "center")
+        details_cell = self._body_cell(details_button, "60px", "center")
 
         cells = [
             checkbox_cell,
@@ -126,7 +148,7 @@ class ExperimentTableView(Container):
             name_cell,
             status_cell,
             description_cell,
-            delete_cell
+            details_cell
         ]
 
         row = TableRow(children=cells,
@@ -137,45 +159,42 @@ class ExperimentTableView(Container):
 
         checkbox.on_event("onClick",
                           lambda widget, event, data:
-                          self.controller.onclick_row(widget, event, data, checkbox, row))
-
-        # for cell in cell
-#         row.on_event("onClick",
-#                          lambda widget, event, data:
-#                          self.controller.onclick_row(widget, event, data, checkbox, row))
-
-#         id_cell.on_event("onClick",
-#                          lambda widget, event, data:
-#                          self.controller.onclick_row(widget, event, data, checkbox, row))
-#         checkbox_cell.on_event("onClick",
-#                           lambda widget, event, data:
-#                           self.controller.onclick_row(widget, event, data, checkbox, row))
-#         name_cell.on_event("onClick",
-#                            lambda widget, event, data:
-#                            self.controller.onclick_row(widget, event, data, checkbox, row))
-#         status_cell.on_event("onClick",
-#                              lambda widget, event, data:
-#                              self.controller.onclick_row(widget, event, data, checkbox, row))
-#         description_cell.on_event("onClick",
-#                                   lambda widget, event, data:
-#                                   self.controller.onclick_row(widget, event, data, checkbox, row))
-        
-        id_cell.on_event("onDoubleClick",
-                         lambda widget, event, data:
-                         self.controller.ondoubleclick_row(widget, event, data))
+                          self.controller.onclick_checkbox(widget, event, data, row))
 
         job_id = experiment_data[0]
-        delete_button.on_event("onClick",
-                               lambda widget, event, data:
-                               self.controller.onclick_delete(widget, event, data, job_id))
+        details_button.on_event("onClick",
+                                lambda widget, event, data:
+                                self.controller.onclick_details(widget, event, data, job_id))
 
+        return row
+
+    def _empty_body_row(self):
+        checkbox_cell = self._body_cell("", "60px", "center")
+        id_cell = self._body_cell("", "150px", "center")
+        name_cell = self._body_cell("", "150px", "left")
+        status_cell = self._body_cell("", "150px", "center")
+        description_cell = self._body_cell("", "", "left")
+        details_cell = self._body_cell("", "60px", "center")
+        cells = [
+            checkbox_cell,
+            id_cell,
+            name_cell,
+            status_cell,
+            description_cell,
+            details_cell
+        ]
+        row = TableRow(children=cells,
+                       style_={
+                           "padding": "0px 0px 0px 0px",
+                       },
+                       hover=False, selected=False, ripple=True)
         return row
 
     def _body_cell(self, children, width, align) -> TableCell:
         cell = TableCell(children=children,
                          align=align,
                          style_={
-                             "padding": "0px 0px 0px 0px",
+                             "padding": "0px 8px 0px 8px",
                              "width": width,
                              "height": "45px",
                          })
@@ -199,20 +218,31 @@ class ExperimentTable:
         return rows_data
 
     def onclick_checkbox(self, widget: Checkbox, event, data, row_widget):
-        widget.checked = not widget.checked
-        row_widget.selected = not row_widget.selected
+        print("entered checkbox handler")
+        # if data is None:
+        #     return
+        if not widget.checked:
+            if self.selected_rows_count >= 1:
+                print("You can only select the maximum of 2 experiments at a time.")
+                # widget.checked = False
+                widget.fire_event("onClick", None)
+                return
+            else:
+                self.selected_rows_count += 1
+        if widget.checked:
+            self.selected_rows_count -= 1
 
-    def onclick_row(self, widget, event, data, checkbox, row):
-        if DEBUG_MODE:
-            print("clicked row", widget, event, data,)
-        row.selected = not row.selected
-        checkbox.checked = not checkbox.checked
+        # widget.
+        print("count:", self.selected_rows_count)
+        # widget.checked = not widget.checked
+        # row_widget.selected = not row_widget.selected
 
-    def onclick_delete(self, widget, event, data, job_id):
+    def onclick_details(self, widget, event, data, job_id):
         if DEBUG_MODE:
-            print("clicked delete", widget, event, data, job_id)
+            print("clicked details", widget, event, data, job_id)
 
     def ondoubleclick_row(self, widget, event, data):
+        # TODO: Deprecate this?
         if DEBUG_MODE:
             print("double clicked row", widget, event, data)
 
