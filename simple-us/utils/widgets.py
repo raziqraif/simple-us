@@ -53,7 +53,11 @@ class CustomCheckbox(IconButton):
         self._checked = False
 
         if style_ is None:
-            style_ = {"padding": "8px 8px 8px 8px"}
+            style_ = {
+                "padding": "0px 0px 0px 0px",
+                "width": "35px",
+                "height": "35px",
+            }
 
         self.style_ = style_
         self.children = self._unchecked_icon

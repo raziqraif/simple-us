@@ -4,7 +4,7 @@ from typing import List
 from ipymaterialui import TableRow
 
 from database import DBManager
-from manage.table import ExperimentTableView
+from .view import ExperimentTableView
 from utils import CustomCheckbox
 
 
@@ -29,7 +29,8 @@ class ExperimentTable:
             "4", "AllCrops", "Completed", "Allcrops test data."
         ])
         rows_data.append([
-            "5", "WWWWWWWWW", "Completed", "Allcrops test data."
+            "6", "A really long name for this experiment", "Completed",
+            "A really long description for allcrops test data."
         ])
 
         return rows_data
