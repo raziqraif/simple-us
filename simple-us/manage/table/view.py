@@ -166,7 +166,9 @@ class ExperimentTableView(Container):
                        },
                        hover=True, selected=False, ripple=True)
 
-        checkbox.on_event("onClick",
+        # Register event to all cells but details_cell, as it will affect details_button as well
+        for cell in cells[:-1]:
+            cell.on_event("onClick",
                           lambda widget, event, data:
                           self.controller.onclick_row(widget, event, data, row, checkbox))
 
@@ -174,7 +176,6 @@ class ExperimentTableView(Container):
         details_button.on_event("onClick",
                                 lambda widget, event, data:
                                 self.controller.onclick_details(widget, event, data, job_id))
-
         return row
 
     def _create_empty_body_row(self):
@@ -199,8 +200,11 @@ class ExperimentTableView(Container):
                        hover=False, selected=False, ripple=True)
         return row
 
-    def _create_body_row_cell(self, children: Any, width: Optional[int], align: str) -> TableCell:
-        width = width if width is not None else 0
+    def _create_body_row_cell(self,
+                              children: Any,
+                              width: int,
+                              align: str) -> TableCell:
+
         text_width = width - 16
         if isinstance(children, str):
             children = CustomText(children,
@@ -220,4 +224,5 @@ class ExperimentTableView(Container):
                              "width": "{}px".format(width),
                              "height": "45px",
                          })
+
         return cell
