@@ -206,3 +206,4 @@ class ExperimentTableView(Container):
                              "height": "45px",
                          })
         return cell
+

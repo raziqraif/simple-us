@@ -5,7 +5,7 @@ from typing import Optional
 class Experiment:
     """ Class to represent the SIMPLEJobs db table
 
-    Values are stored as they are read from the the db. Helper functions are used to if the values
+    Values are stored as they are read from the the db. Helper functions are used if the values
     need to be transformed.
     """
 
@@ -46,7 +46,7 @@ class Experiment:
 
     @property
     def model_str(self) -> str:
-        return self.model if self.status is not None else ""
+        return self.model if self.model is not None else ""
 
     @property
     def description_str(self) -> str:

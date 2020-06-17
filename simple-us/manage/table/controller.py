@@ -6,7 +6,6 @@ from ipymaterialui import TableRow
 from database import DBManager
 from manage.table import ExperimentTableView
 from utils import CustomCheckbox
-from utils import DEBUG_MODE
 
 
 class ExperimentTable:
@@ -52,3 +51,4 @@ class ExperimentTable:
 
     def onclick_details(self, widget, event, data, job_id):
         print("clicked details", widget, event, data, job_id)
+

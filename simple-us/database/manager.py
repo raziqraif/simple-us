@@ -23,10 +23,9 @@ from database.utils import SUBMIT_TIME
 class DBManager:
     """ Manages communication with the database file
 
-    A table row is represented represented as a list or an Experiment object in this class. It should be
-    enough to only use the Experiment object, but the list format is kept for backward compatibility.
-
-    Note: The term "job" and "experiment" are used interchangeably in this class.
+    A table row is represented represented as a list or an Experiment object in this class.
+    The Experiment object representation helps with code completion, etc but for backward
+    compatibility, the list representation is kept.
     """
 
     def __init__(self, directory_path: Path = dbutils.PRIVATE_JOBS_DIR):

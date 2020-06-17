@@ -29,7 +29,7 @@ class CustomText(Html):
 
 
 class CustomCheckbox(IconButton):
-    """ Custom checkbox widget as the default mui.Checkbox seems to be instable.
+    """ Custom checkbox widget as the default mui.Checkbox seems to be unstable.
 
     User would need to manipulate the "checked" or "unchecked" manually by switching the value of
     the checked attribute.
