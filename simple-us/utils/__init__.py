@@ -1,3 +1,3 @@
 from .misc import DEBUG_MODE
-from .widgets import CustomCheckbox
-from .widgets import CustomText
+from .widgets.checkbox import CustomCheckbox
+from .widgets.text import CustomText
