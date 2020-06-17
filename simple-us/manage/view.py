@@ -1,4 +1,3 @@
-from ipymaterialui import Html
 from ipymaterialui import Container
 
 from .table import ExperimentTable
@@ -32,8 +31,3 @@ class ManageTabView(Container):
         self.children = [self.instruction_bar, self.table]
 
         self.controller = controller
-
-
-class ManageTab:
-    def __init__(self):
-        self.view = ManageTabView(self)

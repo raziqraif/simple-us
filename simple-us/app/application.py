@@ -60,7 +60,7 @@ class App:
 
     def __init__(self):
         self.create = Box()
-        self.manage = ManageTab().view
+        self.manage: ManageTabView = ManageTab().view
         self.view = Box()
         self.about = Box()
 
