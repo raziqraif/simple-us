@@ -1,8 +1,5 @@
 from ipymaterialui import Html
 from ipymaterialui import Container
-from ipywidgets import HBox
-from ipywidgets import VBox
-from ipywidgets import Layout
 
 from .table import ExperimentTable
 from utils import CustomText
