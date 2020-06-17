@@ -29,13 +29,6 @@ class AppView(Container):
             "height": "900px",
             "padding": "0px 0px 0px 45px"
         }
-        # self.layout.width = "100%"
-        # self.layout.height = "900px"
-        # self.layout.display = "flex"
-        # self.layout.flex_direction = "row"
-        # self.layout.flex_wrap = "wrap"
-        # self.layout.justify_content = "flex-start"
-        # self.layout.align_items = "center"
 
         self.controller = controller
         self.create = create_page
