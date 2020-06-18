@@ -44,12 +44,13 @@ class AppView(Container):
                 Tab(label=CustomText("About", style_={"color": "#ffffff"}), value=self.about),
             ],
             style_={
-                "background": "#454851"
+                "background": "#454851",
+                "height": "50px",
             },
             centered=True, value=self.create
         )
 
-        self.tab_div = Html(tag="div")
+        self.tab_div = Html(tag="div", style_={"height": "850px"})
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 
         self.children = [self.tabs, self.tab_div]
@@ -70,3 +71,6 @@ class App:
         self.view.tabs.value = self.manage
         display(self.view)
 
+
+if __name__ == "__main__":
+    App()
