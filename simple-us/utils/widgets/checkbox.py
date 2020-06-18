@@ -11,7 +11,7 @@ class CustomCheckbox(IconButton):
     """
 
     def __init__(self, style_: Dict = None, **kwargs):
-        super(IconButton, self).__init__(**kwargs)
+        super(IconButton, self).__init__()
 
         self._checked_icon = Icon(children="check_box",
                                   style_={
