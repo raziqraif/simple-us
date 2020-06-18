@@ -1,33 +1,103 @@
-from ipymaterialui import Container
+from __future__ import annotations
+from copy import copy
 
-from .table import ExperimentTable
+import ipymaterialui as mui
+from ipymaterialui import Button
+from ipymaterialui import Chip
+from ipymaterialui import Container
+from ipymaterialui import Icon
+from ipymaterialui import IconButton
+
+import manage
+from .table import ExperimentTableView
+from utils import ExperimentChip
 from utils import CustomText
 
 
 class ManageTabView(Container):
-    def __init__(self, controller):
+    def __init__(self, controller: manage.ManageTab, experiment_table: ExperimentTableView):
         super(Container, self).__init__()
 
         self.style_ = {"width": "100%",
-                       "height": "100%",
+                       "height": "850px",
                        "padding": "0px 50px 0px 50px",
+                       "display": "flex",
+                       "flex-direction": "column",
                        }
 
-        instruction_text = "Select 1 experiment to display or 2 experiments to compare."
-        self.instruction_label = CustomText("Instruction:",
-                                            style_={
-                                                "font-weight": "bold",
-                                                "padding": "0px 5px 0px 0px"
-                                            })
-        self.instruction = CustomText(instruction_text)
-        self.instruction_bar = Container(children=[self.instruction_label, self.instruction],
-                                         style_={
-                                             "width": "100%",
-                                             "padding": "30px 0px 12px 0px",
-                                             "display": "flex",
-                                             "flex-direction": "row"
-                                         })
-        self.table = ExperimentTable().view
-        self.children = [self.instruction_bar, self.table]
+        self.controller: manage.ManageTab = controller
 
-        self.controller = controller
+        self.top_bar = None
+        self.table = experiment_table
+        self.bottom_bar = None
+
+        self._build_top_bar()
+        self._build_bottom_bar()
+        self.children = [self.top_bar,
+                         self.table,
+                         self.bottom_bar]
+
+    def _build_top_bar(self):
+        instruction_text = "Select 1 experiment to display or 2 experiments to compare."
+        instruction_label = CustomText("Instruction:",
+                                       style_={
+                                           "font-weight": "bold",
+                                           "padding": "0px 5px 0px 0px"
+                                       })
+        instruction = CustomText(instruction_text)
+        self.top_bar = Container(children=[instruction_label, instruction],
+                                 style_={
+                                     "width": "100%",
+                                     "padding": "30px 0px 12px 0px",
+                                     "display": "flex",
+                                     "flex-direction": "row"
+                                 })
+
+    def _build_bottom_bar(self):
+        text = CustomText("Selected widgets:",
+                          style_={
+                              "font-weight": "bold",
+                              "padding": "0px 5px 0px 0px"
+                          })
+
+        self.chips_wrapper = Container(children=[],
+                                       style={
+                                            "padding": "0px 0px 0px 0px",
+                                            "display": "flex",
+                                            "flex-direction": "row"
+                                        })
+
+        buttons_wrapper = Container(children=[],
+                                    style={
+                                        # "width": "300px",
+                                        "padding": "0px 0px 0px 0px",
+                                        "display": "flex",
+                                        "flex-direction": "row"
+                                    })
+
+        self.bottom_bar = Container(children=[text, self.chips_wrapper, buttons_wrapper],
+                                    style_={
+                                        "width": "100%",
+                                        "padding": "30px 0px 0px 0px",
+                                        "display": "flex",
+                                        "flex-direction": "row",
+                                        "align-items": "flex-start",
+                                        "flex-grow": 1,
+                                    })
+
+    def append_chip(self, experiment_id, experiment_name: str) -> Chip:
+        chip = ExperimentChip(experiment_id, experiment_name)
+        chip.on_event("onDelete", self.controller.ondelete_chip)
+
+        children = copy(self.chips_wrapper.children)
+        children.append(chip)
+        self.chips_wrapper.children = children
+        return chip
+
+    def remove_chip(self, experiment_id):
+        children = copy(self.chips_wrapper.children)
+        for ch in children:
+            if ch.experiment_id == experiment_id:
+                children.remove(ch)
+                break
+        self.chips_wrapper.children = children
