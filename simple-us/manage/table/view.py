@@ -12,8 +12,8 @@ from ipymaterialui import TableHead
 from ipymaterialui import TableRow
 
 import manage
-from utils import CustomText
-from utils.widgets import CustomCheckbox
+from utils.widgets.text import CustomText
+from utils.widgets.checkbox import CustomCheckbox
 
 
 class ExperimentTableView(Container):
@@ -22,9 +22,9 @@ class ExperimentTableView(Container):
 
         self.style_ = {
             "width": "100%",
-            "height": "300px",
-            "padding": "0px 0px",
-            # "size": "small"
+            "padding": "0px 0px 0px 0px",
+            "display": "flex",
+            "flex-direction": "column",
         }
         self.controller = controller
 
@@ -45,12 +45,19 @@ class ExperimentTableView(Container):
         head = self._build_table_head()
         body = self._build_table_body()
         self.body = body
-        self.header_wrapper = Table(children=[head],
-                                    size="small",
-                                    style_={
-                                          "width": "100%",
-                                          "padding": "0px 0px",
-                                      })
+        table_for_head = Table(children=[head],
+                               size="small",
+                               style_={
+                                   "width": "100%",
+                                   "padding": "0px 0px 0px 0px",
+                               })
+        self.header_wrapper = Container(children=[table_for_head],
+                                        style_={
+                                            "width": "100%",
+                                            "padding": "0px 0px 0px 0px",
+                                            "display": "flex",
+                                            "flex-direction": "column",
+                                        })
 
         table_for_body = Table(children=[body],
                                size="small",
@@ -67,6 +74,8 @@ class ExperimentTableView(Container):
                                             "maxHeight": "585px",
                                             "overflow-y": "auto",
                                             "padding": "0px 0px 0px 0px",
+                                            "display": "flex",
+                                            "flex-direction": "column",
                                         })
 
     def _build_table_head(self):
@@ -170,7 +179,7 @@ class ExperimentTableView(Container):
         for cell in cells[:-1]:
             cell.on_event("onClick",
                           lambda widget, event, data:
-                          self.controller.onclick_row(widget, event, data, row, checkbox))
+                          self.controller.onclick_row(widget, event, data, row))
 
         job_id = experiment_data[0]
         details_button.on_event("onClick",
