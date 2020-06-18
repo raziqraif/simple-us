@@ -78,8 +78,8 @@ class ExperimentTable:
     def selected_row_with_id(self, experiment_id) -> Optional[TableRow]:
         experiment_id = experiment_id.strip()
         for row in self.selected_rows:
-            name_in_row = self.name_from_row(row)
-            if name_in_row == experiment_id:
+            id_in_row = self.id_from_row(row)
+            if id_in_row == experiment_id:
                 return row
         return None
 
