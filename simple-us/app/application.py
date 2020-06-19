@@ -26,8 +26,11 @@ class AppView(Container):
 
         self.style_ = {
             "width": "100%",
-            "height": "900px",
-            "padding": "0px 0px 0px 45px"
+            "height": "820px",
+            "margin": "0px 0px 0px 30px",
+            "padding": "0px 0px 0px 0px",
+            "display": "flex",
+            "flex-direction": "column",
         }
 
         self.controller = controller
@@ -44,12 +47,13 @@ class AppView(Container):
                 Tab(label=CustomText("About", style_={"color": "#ffffff"}), value=self.about),
             ],
             style_={
-                "background": "#454851"
+                "background": "#454851",
+                "height": "50px",
             },
             centered=True, value=self.create
         )
 
-        self.tab_div = Html(tag="div")
+        self.tab_div = Html(tag="div", style_={"height": "850px"})
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 
         self.children = [self.tabs, self.tab_div]
@@ -60,13 +64,16 @@ class App:
 
     def __init__(self):
         self.create = Box()
-        self.manage = ManageTab().view
+        self.manage: ManageTab = ManageTab()
         self.view = Box()
         self.about = Box()
 
-        self.view = AppView(self, self.create, self.manage, self.view, self.about)
+        self.view = AppView(self, self.create, self.manage.view, self.view, self.about)
 
         # TODO: Remove this line after manage page is finished
-        self.view.tabs.value = self.manage
+        self.view.tabs.value = self.manage.view
         display(self.view)
 
+
+if __name__ == "__main__":
+    App()
