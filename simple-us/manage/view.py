@@ -3,16 +3,18 @@ from copy import copy
 
 import ipymaterialui as mui
 from ipymaterialui import Button
-from ipymaterialui import Html
 from ipymaterialui import Chip
 from ipymaterialui import Container
+from ipymaterialui import Html
 from ipymaterialui import Icon
 from ipymaterialui import IconButton
 
-import manage
 from .table import ExperimentTableView
+import manage
 from utils import ExperimentChip
 from utils import CustomText
+from utils import MAIN_BACKGROUND_COLOR
+from utils import PRIMARY_COLOR
 
 
 class ManageTabView(Container):
@@ -20,11 +22,11 @@ class ManageTabView(Container):
         super(Container, self).__init__()
 
         self.tag = "div"
-        self.style_ = {"width": "100%",
-                       "height": "850px",
-                       "padding": "0px 50px 0px 50px",
+        self.style_ = {
+                       "padding": "40px 48px 40px 48px",
                        "display": "flex",
                        "flex-direction": "column",
+                       "background": MAIN_BACKGROUND_COLOR,
                        }
 
         self.controller: manage.ManageTab = controller
@@ -44,14 +46,13 @@ class ManageTabView(Container):
         instruction_label = CustomText("Instruction:",
                                        style_={
                                            "font-weight": "bold",
-                                           "padding": "0px 5px 0px 0px"
+                                           "padding": "0px 8px 0px 0px"
                                        })
         instruction = CustomText(instruction_text)
         self.top_bar = Container(children=[instruction_label, instruction],
                                  style_={
-                                     "width": "100%",
                                      "padding": "0px 0px 0px 0px",
-                                     "margin": "30px 0px 15px 0px",
+                                     "margin": "0px 0px 16px 0px",
                                      "display": "flex",
                                      "flex-direction": "row"
                                  })
@@ -68,7 +69,7 @@ class ManageTabView(Container):
                                        style_={
                                            "display": "flex",
                                            "flex-direction": "row",
-                                           "padding": "0px 0px 0px 10px",
+                                           "padding": "0px 0px 0px 8px",
                                        })
 
         display = self._create_button("Display")
@@ -87,10 +88,10 @@ class ManageTabView(Container):
         self.bottom_bar = Container(children=[text, self.chips_wrapper, buttons_wrapper],
                                     tag="div",
                                     style_={
-                                        "width": "100%",
+                                        # "width": "100%",
                                         "height": "35px",
                                         "padding": "0px 0px 0px 0px",
-                                        "margin": "20px 0px 0px 0px",
+                                        "margin": "24px 0px 0px 0px",
                                         "display": "flex",
                                         "flex-direction": "row",
                                         "align-items": "center",
@@ -110,8 +111,8 @@ class ManageTabView(Container):
                             "width": "135px",
                             "height": "34px",
                             "padding": "0px 0px 0px 0px",
-                            "margin": "0px 0px 0px 3px",
-                            "background": "#454851",
+                            "margin": "0px 0px 0px 8px",
+                            "background": PRIMARY_COLOR,
                         },)
         return button
 
@@ -119,6 +120,8 @@ class ManageTabView(Container):
         chip = ExperimentChip(experiment_id, experiment_name, style_={"margin": "0px 5px 0px 0px"})
         chip.on_event("onDelete", self.controller.ondelete_chip)
 
+        # It seems like the changes will only take into effect in the frontend if we reassign a new object (with a new
+        # memory location) to <widgets>.children
         children = copy(self.chips_wrapper.children)
         children.append(chip)
         self.chips_wrapper.children = children
