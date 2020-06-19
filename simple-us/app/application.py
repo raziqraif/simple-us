@@ -26,8 +26,10 @@ class AppView(Container):
 
         self.style_ = {
             "width": "100%",
-            "height": "900px",
-            "padding": "0px 0px 0px 45px"
+            "height": "820px",
+            "padding": "0px 0px 0px 0px",
+            "display": "flex",
+            "flex-direction": "column",
         }
 
         self.controller = controller
@@ -44,12 +46,13 @@ class AppView(Container):
                 Tab(label=CustomText("About", style_={"color": "#ffffff"}), value=self.about),
             ],
             style_={
-                "background": "#454851"
+                "background": "#454851",
+                "height": "50px",
             },
             centered=True, value=self.create
         )
 
-        self.tab_div = Html(tag="div")
+        self.tab_div = Html(tag="div", style_={"height": "850px"})
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 
         self.children = [self.tabs, self.tab_div]
@@ -60,7 +63,7 @@ class App:
 
     def __init__(self):
         self.create = Box()
-        self.manage = ManageTab().view
+        self.manage: ManageTabView = ManageTab().view
         self.view = Box()
         self.about = Box()
 
@@ -70,3 +73,6 @@ class App:
         self.view.tabs.value = self.manage
         display(self.view)
 
+
+if __name__ == "__main__":
+    App()
