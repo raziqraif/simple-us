@@ -3,6 +3,7 @@ from copy import copy
 
 import ipymaterialui as mui
 from ipymaterialui import Button
+from ipymaterialui import Html
 from ipymaterialui import Chip
 from ipymaterialui import Container
 from ipymaterialui import Icon
@@ -18,6 +19,7 @@ class ManageTabView(Container):
     def __init__(self, controller: manage.ManageTab, experiment_table: ExperimentTableView):
         super(Container, self).__init__()
 
+        self.tag = "div"
         self.style_ = {"width": "100%",
                        "height": "850px",
                        "padding": "0px 50px 0px 50px",
@@ -48,7 +50,8 @@ class ManageTabView(Container):
         self.top_bar = Container(children=[instruction_label, instruction],
                                  style_={
                                      "width": "100%",
-                                     "padding": "30px 0px 20px 0px",
+                                     "padding": "0px 0px 0px 0px",
+                                     "margin": "30px 0px 15px 0px",
                                      "display": "flex",
                                      "flex-direction": "row"
                                  })
@@ -59,39 +62,39 @@ class ManageTabView(Container):
                               "font-weight": "bold",
                               "padding": "0px 0px 0px 0px",
                               "white-space": "nowrap",
-                              "align-self": "center",
                           })
 
         self.chips_wrapper = Container(children=[],
-                                       style={
-                                            "padding": "0px 0px 0px 0px",
-                                            # "display": "flex",
-                                            # "flex-direction": "row"
-                                        })
+                                       style_={
+                                           "display": "flex",
+                                           "flex-direction": "row",
+                                           "padding": "0px 0px 0px 10px",
+                                       })
 
         display = self._create_button("Display")
         compare = self._create_button("Compare")
 
         buttons_wrapper = Container(children=[display, compare],
-                                    style={
+                                    tag="div",
+                                    style_={
                                         "display": "flex",
                                         "flex-direction": "row",
-                                        "justify-content": "flex-end",
-                                        "flex": 1,
-                                        "width": "100%",
+                                        "justify-content": "space-between",
+                                        "width": "420px",
                                         "padding": "0px 0px 0px 0px",
                                     })
 
         self.bottom_bar = Container(children=[text, self.chips_wrapper, buttons_wrapper],
+                                    tag="div",
                                     style_={
                                         "width": "100%",
                                         "height": "35px",
-                                        "padding": "40px 0px 0px 0px",
+                                        "padding": "0px 0px 0px 0px",
+                                        "margin": "20px 0px 0px 0px",
                                         "display": "flex",
                                         "flex-direction": "row",
                                         "align-items": "center",
                                         "justify-content": "flex-start",
-                                        # "flex": 1,
                                     })
 
     def _create_button(self, text) -> Button:
@@ -104,13 +107,16 @@ class ManageTabView(Container):
                         color="#454851",
                         focus_ripple=True,
                         style_={
-                            "width": "140px",
+                            "width": "135px",
+                            "height": "34px",
+                            "padding": "0px 0px 0px 0px",
+                            "margin": "0px 0px 0px 3px",
                             "background": "#454851",
                         },)
         return button
 
     def append_chip(self, experiment_id, experiment_name: str) -> Chip:
-        chip = ExperimentChip(experiment_id, experiment_name)
+        chip = ExperimentChip(experiment_id, experiment_name, style_={"margin": "0px 5px 0px 0px"})
         chip.on_event("onDelete", self.controller.ondelete_chip)
 
         children = copy(self.chips_wrapper.children)

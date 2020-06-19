@@ -27,6 +27,7 @@ class AppView(Container):
         self.style_ = {
             "width": "100%",
             "height": "820px",
+            "margin": "0px 0px 0px 30px",
             "padding": "0px 0px 0px 0px",
             "display": "flex",
             "flex-direction": "column",
@@ -63,14 +64,14 @@ class App:
 
     def __init__(self):
         self.create = Box()
-        self.manage: ManageTabView = ManageTab().view
+        self.manage: ManageTab = ManageTab()
         self.view = Box()
         self.about = Box()
 
-        self.view = AppView(self, self.create, self.manage, self.view, self.about)
+        self.view = AppView(self, self.create, self.manage.view, self.view, self.about)
 
         # TODO: Remove this line after manage page is finished
-        self.view.tabs.value = self.manage
+        self.view.tabs.value = self.manage.view
         display(self.view)
 
 
