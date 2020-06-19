@@ -9,8 +9,8 @@ class ManageTab:
     def __init__(self):
         self.experiment_table = ExperimentTable()
         self.view = ManageTabView(self, self.experiment_table.view)
-        self.experiment_table.create_experiment_chip = lambda id_, name: self.view.append_chip(id_, name)
-        self.experiment_table.delete_experiment_chip = lambda id_: self.view.remove_chip(id_)
+        self.experiment_table.create_experiment_chip = self.view.append_chip
+        self.experiment_table.delete_experiment_chip = self.view.remove_chip
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
         experiment_id = widget.experiment_id

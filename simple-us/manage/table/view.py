@@ -79,12 +79,24 @@ class ExperimentTableView(Container):
                                         })
 
     def _build_table_head(self):
+        refresh_icon = Icon(children="refresh",
+                            style_={
+                                "color": "white",
+                                "font-size": "21px",
+                                "padding": "0px 0px 0px 0px",
+                            })
+        refresh_button = IconButton(children=refresh_icon,
+                                    style_={
+                                        "width": "35px",
+                                        "height": "35px",
+                                        "padding": "0px 0px 0px 0px",
+                                    })
         select_cell = self._create_header_cell("", "60px")
         id_cell = self._create_header_cell("ID", "150px")
         name_cell = self._create_header_cell("Name", "180px")
         status_cell = self._create_header_cell("Status", "150px")
         description_cell = self._create_header_cell("Description", "235px")
-        details_cell = self._create_header_cell("", "77px")
+        details_cell = self._create_header_cell(refresh_button, "77px", padding="0px 13px 0px 0px")
 
         header_cells = [select_cell,
                         id_cell,
@@ -105,7 +117,7 @@ class ExperimentTableView(Container):
                                })
         return table_head
 
-    def _create_header_cell(self, text, width) -> Html:
+    def _create_header_cell(self, text, width, padding="0px 0px 0px 0px") -> Html:
         cell = Html(children=CustomText(text),
                     tag="th",
                     style_={
@@ -113,7 +125,7 @@ class ExperimentTableView(Container):
                         "text-align": "center",
                         "position": "sticky",
                         "color": "#ffffff",
-                        "padding": "0px 0px 0px 0px",
+                        "padding": padding,
                         "top": "0px",
                         "height": "45px",
                         "width": width,

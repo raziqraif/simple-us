@@ -13,8 +13,9 @@ class ExperimentTable:
     def __init__(self, create_chip_callback=None, delete_chip_callback=None):
         self.view = ExperimentTableView(self)
         self.selected_rows = []
-        self._create_experiment_chip = create_chip_callback  # A callback function to create a chip widget
-        self._delete_experiment_chip = delete_chip_callback  # A callback function to delete a chip widget
+        self._create_experiment_chip = create_chip_callback  # A callback function to create a chip widget from id
+        # and name
+        self._delete_experiment_chip = delete_chip_callback  # A callback function to delete a chip widget from id
 
     def rows_data(self) -> List[List[str]]:
         db = DBManager()

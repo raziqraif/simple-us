@@ -65,8 +65,8 @@ class ManageTabView(Container):
         self.chips_wrapper = Container(children=[],
                                        style={
                                             "padding": "0px 0px 0px 0px",
-                                            "display": "flex",
-                                            "flex-direction": "row"
+                                            # "display": "flex",
+                                            # "flex-direction": "row"
                                         })
 
         display = self._create_button("Display")
@@ -74,10 +74,12 @@ class ManageTabView(Container):
 
         buttons_wrapper = Container(children=[display, compare],
                                     style={
-                                        # "width": "300px",
-                                        "padding": "0px 0px 0px 0px",
                                         "display": "flex",
-                                        "flex-direction": "row"
+                                        "flex-direction": "row",
+                                        "justify-content": "flex-end",
+                                        "flex": 1,
+                                        "width": "100%",
+                                        "padding": "0px 0px 0px 0px",
                                     })
 
         self.bottom_bar = Container(children=[text, self.chips_wrapper, buttons_wrapper],
@@ -88,12 +90,14 @@ class ManageTabView(Container):
                                         "display": "flex",
                                         "flex-direction": "row",
                                         "align-items": "center",
+                                        "justify-content": "flex-start",
+                                        # "flex": 1,
                                     })
 
     def _create_button(self, text) -> Button:
         button = Button(children=CustomText(text,
                                             style_={
-                                                "font-size": "14px",
+                                                "font-size": "13px",
                                                 "color": "#ffffff",
                                                 "align-self": "center",
                                             }),

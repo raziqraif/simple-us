@@ -26,8 +26,10 @@ class AppView(Container):
 
         self.style_ = {
             "width": "100%",
-            "height": "900px",
-            "padding": "0px 0px 0px 45px"
+            "height": "820px",
+            "padding": "0px 0px 0px 0px",
+            "display": "flex",
+            "flex-direction": "column",
         }
 
         self.controller = controller
