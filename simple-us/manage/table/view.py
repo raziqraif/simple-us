@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Any, Optional
+from typing import List
 
 from ipymaterialui import Container
 from ipymaterialui import Html
@@ -11,20 +11,20 @@ from ipymaterialui import TableCell
 from ipymaterialui import TableHead
 from ipymaterialui import TableRow
 
-import manage
-from utils.widgets.text import CustomText
-from utils.widgets.checkbox import CustomCheckbox
+from .controller import ExperimentTable
+from utils import CustomText
+from utils.widgets import CustomCheckbox
 
 
 class ExperimentTableView(Container):
-    def __init__(self, controller: manage.ExperimentTable):
+    def __init__(self, controller: ExperimentTable):
         super(Container, self).__init__()
 
         self.style_ = {
             "width": "100%",
-            "padding": "0px 0px 0px 0px",
-            "display": "flex",
-            "flex-direction": "column",
+            "height": "300px",
+            "padding": "0px 0px",
+            # "size": "small"
         }
         self.controller = controller
 
@@ -45,19 +45,12 @@ class ExperimentTableView(Container):
         head = self._build_table_head()
         body = self._build_table_body()
         self.body = body
-        table_for_head = Table(children=[head],
-                               size="small",
-                               style_={
-                                   "width": "100%",
-                                   "padding": "0px 0px 0px 0px",
-                               })
-        self.header_wrapper = Container(children=[table_for_head],
-                                        style_={
-                                            "width": "100%",
-                                            "padding": "0px 0px 0px 0px",
-                                            "display": "flex",
-                                            "flex-direction": "column",
-                                        })
+        self.header_wrapper = Table(children=[head],
+                                    size="small",
+                                    style_={
+                                          "width": "100%",
+                                          "padding": "0px 0px",
+                                      })
 
         table_for_body = Table(children=[body],
                                size="small",
@@ -74,29 +67,15 @@ class ExperimentTableView(Container):
                                             "maxHeight": "585px",
                                             "overflow-y": "auto",
                                             "padding": "0px 0px 0px 0px",
-                                            "display": "flex",
-                                            "flex-direction": "column",
                                         })
 
     def _build_table_head(self):
-        refresh_icon = Icon(children="refresh",
-                            style_={
-                                "color": "white",
-                                "font-size": "21px",
-                                "padding": "0px 0px 0px 0px",
-                            })
-        refresh_button = IconButton(children=refresh_icon,
-                                    style_={
-                                        "width": "35px",
-                                        "height": "35px",
-                                        "padding": "0px 0px 0px 0px",
-                                    })
         select_cell = self._create_header_cell("", "60px")
         id_cell = self._create_header_cell("ID", "150px")
-        name_cell = self._create_header_cell("Name", "180px")
+        name_cell = self._create_header_cell("Name", "150px")
         status_cell = self._create_header_cell("Status", "150px")
-        description_cell = self._create_header_cell("Description", "235px")
-        details_cell = self._create_header_cell(refresh_button, "77px", padding="0px 13px 0px 0px")
+        description_cell = self._create_header_cell("Description", "")
+        details_cell = self._create_header_cell("", "77px")
 
         header_cells = [select_cell,
                         id_cell,
@@ -117,23 +96,6 @@ class ExperimentTableView(Container):
                                })
         return table_head
 
-    def _create_header_cell(self, text, width, padding="0px 0px 0px 0px") -> Html:
-        cell = Html(children=CustomText(text),
-                    tag="th",
-                    style_={
-
-                        "text-align": "center",
-                        "position": "sticky",
-                        "color": "#ffffff",
-                        "padding": padding,
-                        "top": "0px",
-                        "height": "45px",
-                        "width": width,
-                        "background": "#454851",
-                        "opacity": 1.0,
-                    })
-        return cell
-
     def _build_table_body(self):
         experiment_rows = []
         for row_data in self.controller.rows_data():
@@ -151,6 +113,23 @@ class ExperimentTableView(Container):
                                })
         return table_body
 
+    def _create_header_cell(self, text, width) -> Html:
+        cell = Html(children=CustomText(text),
+                    tag="th",
+                    style_={
+
+                        "text-align": "center",
+                        "position": "sticky",
+                        "color": "#ffffff",
+                        "padding": "0px 0px 0px 0px",
+                        "top": "0px",
+                        "height": "45px",
+                        "width": width,
+                        "background": "#454851",
+                        "opacity": 1.0,
+                    })
+        return cell
+
     def _create_body_row(self, experiment_data: List[str]):
         checkbox = CustomCheckbox()
         details_icon = Icon(children="open_in_new",
@@ -160,17 +139,15 @@ class ExperimentTableView(Container):
                             })
         details_button = IconButton(children=details_icon,
                                     style_={
-                                        "width": "35px",
-                                        "height": "35px",
-                                        "padding": "0px 0px 0px 0px",
+                                        "padding": "8px 8px 8px 8px",
                                     })
 
-        checkbox_cell = self._create_body_row_cell(checkbox, 60, "center")
-        id_cell = self._create_body_row_cell(experiment_data[0], 150, "center")
-        name_cell = self._create_body_row_cell(experiment_data[1], 180, "left")
-        status_cell = self._create_body_row_cell(experiment_data[2], 150, "center")
-        description_cell = self._create_body_row_cell(experiment_data[3], 235, "left")
-        details_cell = self._create_body_row_cell(details_button, 60, "center")
+        checkbox_cell = self._create_body_row_cell(checkbox, "60px", "center")
+        id_cell = self._create_body_row_cell(CustomText(experiment_data[0]), "150px", "center")
+        name_cell = self._create_body_row_cell(CustomText(experiment_data[1]), "150px", "left")
+        status_cell = self._create_body_row_cell(CustomText(experiment_data[2]), "150px", "center")
+        description_cell = self._create_body_row_cell(CustomText(experiment_data[3]), "", "left")
+        details_cell = self._create_body_row_cell(details_button, "60px", "center")
 
         cells = [
             checkbox_cell,
@@ -187,25 +164,24 @@ class ExperimentTableView(Container):
                        },
                        hover=True, selected=False, ripple=True)
 
-        # Register event to all cells but details_cell, as it will affect details_button as well
-        for cell in cells[:-1]:
-            cell.on_event("onClick",
+        checkbox.on_event("onClick",
                           lambda widget, event, data:
-                          self.controller.onclick_row(widget, event, data, row))
+                          self.controller.onclick_row(widget, event, data, row, checkbox))
 
         job_id = experiment_data[0]
         details_button.on_event("onClick",
                                 lambda widget, event, data:
                                 self.controller.onclick_details(widget, event, data, job_id))
+
         return row
 
     def _create_empty_body_row(self):
-        checkbox_cell = self._create_body_row_cell("", 0, "center")
-        id_cell = self._create_body_row_cell("", 0, "center")
-        name_cell = self._create_body_row_cell("", 0, "left")
-        status_cell = self._create_body_row_cell("", 0, "center")
-        description_cell = self._create_body_row_cell("", 0, "left")
-        details_cell = self._create_body_row_cell("", 0, "center")
+        checkbox_cell = self._create_body_row_cell("", "60px", "center")
+        id_cell = self._create_body_row_cell("", "150px", "center")
+        name_cell = self._create_body_row_cell("", "150px", "left")
+        status_cell = self._create_body_row_cell("", "150px", "center")
+        description_cell = self._create_body_row_cell("", "", "left")
+        details_cell = self._create_body_row_cell("", "60px", "center")
         cells = [
             checkbox_cell,
             id_cell,
@@ -221,29 +197,13 @@ class ExperimentTableView(Container):
                        hover=False, selected=False, ripple=True)
         return row
 
-    def _create_body_row_cell(self,
-                              children: Any,
-                              width: int,
-                              align: str) -> TableCell:
-
-        text_width = width - 16
-        if isinstance(children, str):
-            children = CustomText(children,
-                                  style_={
-                                      "text-overflow": "ellipsis",
-                                      "width": "{}px".format(text_width),
-                                      "maxWidth": "{}px".format(text_width),
-                                      "overflow": "hidden",
-                                      "padding": "0px 0px 0px 0px",
-                                      "white-space": "nowrap"
-                                  }, tag="div")
-
+    def _create_body_row_cell(self, children, width, align) -> TableCell:
         cell = TableCell(children=children,
                          align=align,
                          style_={
                              "padding": "0px 8px 0px 8px",
-                             "width": "{}px".format(width),
+                             "width": width,
                              "height": "45px",
                          })
-
         return cell
+
