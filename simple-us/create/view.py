@@ -10,6 +10,8 @@ from ipymaterialui import InputLabel
 from ipymaterialui import MenuItem
 from ipymaterialui import Select
 from ipymaterialui import TextField
+from ipymaterialui import TextareaAutosize
+import ipywidgets as widgets
 from ipywidgets import FileUpload
 from ipywidgets import Layout
 
@@ -31,9 +33,9 @@ class CreateTabView(Container):
             "justify-content": "center",
             "align-items": "center",
             "align-self": "center",
-            "padding": "48px 48px 48px 48px",
-            "width": "500px",
-            "height": "550px",
+            "padding": "32px 72px 40px 72px",
+            "width": "550px",
+            "height": "500px",
             "margin": "0px 0px 60px 0px",
             "border-radius": "8px",
             "background": INNER_BACKGROUND_COLOR,
@@ -76,45 +78,50 @@ class CreateTabView(Container):
         self.model_wrapper = self._create_input_row_wrapper()
         custom_allcrops = self._create_menu_item("Custom AllCrops")
         custom_cornsoy = self._create_menu_item("Custom Cornsoy")
-        select = Select(children=[custom_allcrops, custom_cornsoy],
-                        value="", autofocus=True, required=True,
-                        # variant="outlined",
-                        margin="dense",
-                        style_={
-                            "font-size": "12px",
-                            "width": "150px",
-                        })
+        # select = Select(children=[custom_allcrops, custom_cornsoy],
+        #                 value="", autofocus=True, required=True,
+        #                 # variant="outlined",
+        #                 margin="dense",
+        #                 style_={
+        #                     "font-size": "12px",
+        #                     "width": "150px",
+        #                 })
+        layout = Layout(width="250px")
+        select = widgets.Dropdown(value="", options=["", "Custom AllCrop", "Custom Cornsoy"], layout=layout)
 
         self.model_wrapper.children = [label, select]
 
     def _build_name_wrapper(self):
         label = self._create_label_wrapper("Name")
         self.name_wrapper = self._create_input_row_wrapper()
-        field = TextField(autofocus=True, required=True,
-                          # variant="outlined",
-                          style_={
-                              "height": "1px",
-                              "font-size": "12px",
-                              "width": "180px",
-                              "padding": "0px 0px 0px 0px",
-                          })
+        # field = TextField(autofocus=True, required=True,
+        #                   # variant="outlined",
+        #                   style_={
+        #                       "height": "1px",
+        #                       "font-size": "12px",
+        #                       "width": "180px",
+        #                       "padding": "0px 0px 0px 0px",
+        #                   })
+        layout = Layout(width="250px")
+        field = widgets.Text(layout=layout)
         self.name_wrapper.children = [label, field]
 
     def _build_description_wrapper(self):
         label = self._create_label_wrapper("Description")
         self.description_wrapper = self._create_input_row_wrapper()
-        text_area = TextField(autofocus=True,
-                              # variant="outlined",
-                              value="",
-                              # multiline=True,
-                              input_props={"style_": {"font-size": "4px"}},
-                              style_={
-                                  "font-size": "4px",
-                                  "width": "250px",
-                                  "height": "180px",
-                                  "maxHeight": "150px",
-                                  "padding": "0px 0px 0px 0px",
-                              })
+        # layout = Layout(width="250px", max_height="100px", overlow="scroll", display="flex")
+        # text_area = widgets.Textarea(layout=layout, rows=3, placeholder="Optional")
+        text_area = TextareaAutosize(
+                                     style_={
+                                         "padding": "4px 8px 4px 8px",
+                                         "width": "234px",
+                                         "height": "55px",
+                                         "resize": "none",
+                                         "font-family": '''-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                                         Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", 
+                                         "Segoe UI Symbol"''',
+                                         "border": "1px solid darkgrey"
+                                     })
         self.description_wrapper.children = [label, text_area]
 
     def _build_configuration_wrapper(self):
@@ -156,7 +163,7 @@ class CreateTabView(Container):
                                 "justify-content": "flex-start",
                                 "align-items": "center",
                                 "height": "auto",
-                                "width": "150px",
+                                "width": "155px",
                             })
         return wrapper
 
@@ -172,13 +179,13 @@ class CreateTabView(Container):
 
     def _create_button(self, text, margin: str = "32px 0px 0px 0px") -> Button:
         button = Button(children=[CustomText(text,
-                                            style_={
-                                                "display": "flex",
-                                                "align-items": "center",
-                                                "font-size": "12px",
-                                                "color": "#ffffff",
-                                                "align-self": "center",
-                                            })],
+                                             style_={
+                                                 "display": "flex",
+                                                 "align-items": "center",
+                                                 "font-size": "12px",
+                                                 "color": "#ffffff",
+                                                 "align-self": "center",
+                                             })],
                         color="#454851",
                         focus_ripple=True,
                         style_={
