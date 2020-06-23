@@ -97,7 +97,8 @@ class ExperimentTableView(Container):
         name_cell = self._create_header_cell("Name", "180px")
         status_cell = self._create_header_cell("Status", "150px")
         description_cell = self._create_header_cell("Description", "235px")
-        details_cell = self._create_header_cell(refresh_button, "77px", padding="0px 16px 0px 0px")
+        details_cell = self._create_header_cell("", "77px", padding="0px 16px 0px 0px")
+        extra_cell = self._create_header_cell(refresh_button, "77px", padding="0px 16px 0px 0px")
 
         header_cells = [select_cell,
                         id_cell,
