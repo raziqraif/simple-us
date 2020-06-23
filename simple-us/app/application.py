@@ -1,25 +1,18 @@
 from __future__ import annotations
 
-import ipymaterialui as mui
 from ipymaterialui import Container
 from ipymaterialui import Html
 from ipymaterialui import Tab
 from ipymaterialui import Tabs
-import ipyvuetify as vue
-import ipywidgets as widgets
 from ipywidgets import Box
 from ipywidgets import jslink
-from ipywidgets import Layout
-from ipywidgets import VBox
 from IPython.display import display
 
 from create import CreateTab
 from manage import ManageTab
-from manage import ManageTabView
 from utils import CustomText
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
-from utils import PRIMARY_COLOR_DARK
 
 
 class AppView(Container):
@@ -54,7 +47,6 @@ class AppView(Container):
             style_={
                 "background": PRIMARY_COLOR,
                 "height": "60px",
-                # "border": "1px solid grey",
                 "display": "flex",
                 "flex-direction": "row",
                 "align-items": "center",
@@ -71,7 +63,6 @@ class AppView(Container):
                                 "height": "810px",
                                 "padding": "0px 0px 0px 0px",
                                 "background": MAIN_BACKGROUND_COLOR,
-                                # "border": "1px solid grey",
                             })
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 

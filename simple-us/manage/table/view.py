@@ -29,7 +29,7 @@ class ExperimentTableView(Container):
 
         self.style_ = {
             "display": "flex",
-            "align-self": "stretch",
+            # "align-self": "stretch",
             "padding": "0px 0px 0px 0px",
             "flex-direction": "column",
         }
