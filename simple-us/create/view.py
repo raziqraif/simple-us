@@ -1,3 +1,5 @@
+from copy import copy
+
 from ipymaterialui import Button
 from ipymaterialui import Container
 from ipymaterialui import FormControl
@@ -8,6 +10,8 @@ from ipymaterialui import InputLabel
 from ipymaterialui import MenuItem
 from ipymaterialui import Select
 from ipymaterialui import TextField
+from ipywidgets import FileUpload
+from ipywidgets import Layout
 
 from .controller import CreateTab
 from utils import CustomText
@@ -92,6 +96,7 @@ class CreateTabView(Container):
                               "height": "1px",
                               "font-size": "12px",
                               "width": "180px",
+                              "padding": "0px 0px 0px 0px",
                           })
         self.name_wrapper.children = [label, field]
 
@@ -108,16 +113,21 @@ class CreateTabView(Container):
                                   "width": "250px",
                                   "height": "180px",
                                   "maxHeight": "150px",
+                                  "padding": "0px 0px 0px 0px",
                               })
         self.description_wrapper.children = [label, text_area]
 
     def _build_configuration_wrapper(self):
         label = self._create_label_wrapper("Configuration File")
         self.configuration_wrapper = self._create_input_row_wrapper()
-        upload = self._create_button("Upload", "0px 0px 0px 0px")
-        upload.children = [Input(type="file",
-                                 style_={"display": "none"})]
-        self.configuration_wrapper.children = [label, upload]
+        input_ = Input(
+            input_props={
+                "type": "file",
+            },
+        )
+        Layout
+        input_ = FileUpload(accept="", multiple=False)
+        self.configuration_wrapper.children = [label, input_]
 
     def _create_input_row_wrapper(self):
         wrapper = Container(children=[],
@@ -126,6 +136,7 @@ class CreateTabView(Container):
                                 "flex-direction": "row",
                                 "margin": "24px 0px 0px 0px",
                                 "padding": "0px 0px 0px 0px",
+                                "align-items": "center",
                                 "justify-content": "flex-start",
                                 "height": "auto",
                             })
@@ -161,23 +172,23 @@ class CreateTabView(Container):
         return menu
 
     def _create_button(self, text, margin: str = "32px 0px 0px 0px") -> Button:
-        button = Button(children=CustomText(text,
+        button = Button(children=[CustomText(text,
                                             style_={
                                                 "display": "flex",
                                                 "align-items": "center",
                                                 "font-size": "12px",
                                                 "color": "#ffffff",
                                                 "align-self": "center",
-                                            }),
+                                            })],
                         color="#454851",
                         focus_ripple=True,
                         style_={
                             "display": "flex",
-
                             "width": "120px",
                             "height": "30px",
                             "padding": "0px 0px 0px 0px",
                             "margin": margin,
                             "background": PRIMARY_COLOR,
+                            "align-items": "center",
                         }, )
         return button
