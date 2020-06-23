@@ -125,7 +125,6 @@ class CreateTabView(Container):
                 "type": "file",
             },
         )
-        Layout
         input_ = FileUpload(accept="", multiple=False)
         self.configuration_wrapper.children = [label, input_]
 
@@ -189,6 +188,6 @@ class CreateTabView(Container):
                             "padding": "0px 0px 0px 0px",
                             "margin": margin,
                             "background": PRIMARY_COLOR,
-                            "align-items": "center",
+                            "align-items": "center !important",
                         }, )
         return button
