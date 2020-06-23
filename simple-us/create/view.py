@@ -127,12 +127,21 @@ class CreateTabView(Container):
     def _build_configuration_wrapper(self):
         label = self._create_label_wrapper("Configuration File")
         self.configuration_wrapper = self._create_input_row_wrapper()
-        input_ = Input(
+        input_ = Input(  # TODO: Figure out how to override the css properly.
             input_props={
                 "type": "file",
             },
+            style_={
+                "font-size": "13px",
+                "width": "250px"
+            }
         )
-        input_ = FileUpload(accept="", multiple=False)
+        # layout = Layout(padding="0px 0px 0px 0px")
+        # input_ = FileUpload(accept="", multiple=False, layout=layout)  # This is nice looking, but there's bug with
+        # the counter value. A fix was supposedly already made in the official repository, but it is probably
+        # not released yet.
+        # https://github.com/jupyter-widgets/ipywidgets/pull/2666
+
         self.configuration_wrapper.children = [label, input_]
 
     def _create_input_row_wrapper(self):
@@ -163,7 +172,7 @@ class CreateTabView(Container):
                                 "justify-content": "flex-start",
                                 "align-items": "center",
                                 "height": "auto",
-                                "width": "155px",
+                                "width": "150px",
                             })
         return wrapper
 
