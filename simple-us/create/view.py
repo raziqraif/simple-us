@@ -37,7 +37,7 @@ class CreateTabView(Container):
             "width": "550px",
             "height": "460px",
             "margin": "0px 0px 60px 0px",
-            "border-radius": "8px",
+            # "border-radius": "8px",
             "background": INNER_BACKGROUND_COLOR,
         }
 
@@ -113,8 +113,9 @@ class CreateTabView(Container):
         # text_area = widgets.Textarea(layout=layout, rows=3, placeholder="Optional")
         text_area = TextareaAutosize(
                                      style_={
+                                         "margin": "0px 0px 0px 2px",
                                          "padding": "4px 8px 4px 8px",
-                                         "width": "250px",
+                                         "width": "232px",
                                          "height": "55px",
                                          "resize": "none",
                                          "font-size": "13px",
@@ -203,7 +204,7 @@ class CreateTabView(Container):
                         style_={
                             "display": "flex",
                             "width": "120px",
-                            "height": "30px",
+                            "height": "32px",
                             "padding": "0px 0px 0px 0px",
                             "margin": margin,
                             "background": PRIMARY_COLOR,
