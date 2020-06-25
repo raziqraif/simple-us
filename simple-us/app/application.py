@@ -13,6 +13,8 @@ from manage import ManageTab
 from utils import CustomText
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
+from utils import PRIMARY_COLOR_DARK
+from view import ViewTab
 
 
 class AppView(Container):
@@ -22,8 +24,8 @@ class AppView(Container):
         super(Container, self).__init__()
 
         self.style_ = {
-            "width": "965px",
-            "margin": "48px 0px 48px 32px",
+            "width": "933px",
+            "margin": "48px 0px 48px 64px",
             "padding": "0px 0px 0px 0px",
             "display": "flex",
             "flex-direction": "column",
@@ -73,13 +75,18 @@ class App:
     """ Controller class for AppView """
 
     def __init__(self):
-        self.create: CreateTab = CreateTab()
-        self.manage: ManageTab = ManageTab()
-        self.view = Box()
-        self.about = Box()
+        self.create_tab: CreateTab = CreateTab()
+        self.manage_tab: ManageTab = ManageTab()
+        self.view_tab: ViewTab = ViewTab()
+        self.about_tab = Box()
 
-        self.view = AppView(self, self.create.view, self.manage.view, self.view, self.about)
+        self.view = AppView(self,
+                            self.create_tab.view,
+                            self.manage_tab.view,
+                            self.view_tab.view,
+                            self.about_tab)
 
+        self.view.tabs.value = self.view_tab.view
         display(self.view)
 
 

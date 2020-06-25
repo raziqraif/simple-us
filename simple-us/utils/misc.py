@@ -1,3 +1,5 @@
+from pathlib import Path
+
 DEBUG_MODE = 0
 PRIMARY_COLOR_DARK = "#78002e"
 PRIMARY_COLOR = "#ad1457"
@@ -6,3 +8,5 @@ BACKGROUND_COLOR_LIGHT = "#f5f5f6"
 BACKGROUND_COLOR = "#e1e2e1"
 INNER_BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
 MAIN_BACKGROUND_COLOR = "#ffffff"
+
+JOBS_DIRECTORY = Path(__file__).parent.parent.joinpath("data")

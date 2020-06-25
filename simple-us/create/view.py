@@ -35,9 +35,9 @@ class CreateTabView(Container):
             "align-self": "center",
             "padding": "32px 72px 40px 72px",
             "width": "550px",
-            "height": "500px",
+            "height": "460px",
             "margin": "0px 0px 60px 0px",
-            "border-radius": "8px",
+            # "border-radius": "8px",
             "background": INNER_BACKGROUND_COLOR,
         }
 
@@ -47,7 +47,7 @@ class CreateTabView(Container):
                                     ""
                                     "font-weight": "bold",
                                     "font-size": "18px",
-                                    "margin": "0px 0px 16px 0px",
+                                    "margin": "0px 0px 0px 0px",
                                     "color": "black",
                                     # "text-decoration": "underline",
                                 })
@@ -113,13 +113,13 @@ class CreateTabView(Container):
         # text_area = widgets.Textarea(layout=layout, rows=3, placeholder="Optional")
         text_area = TextareaAutosize(
                                      style_={
+                                         "margin": "0px 0px 0px 2px",
                                          "padding": "4px 8px 4px 8px",
-                                         "width": "234px",
+                                         "width": "250px",
                                          "height": "55px",
                                          "resize": "none",
-                                         "font-family": '''-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
-                                         Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", 
-                                         "Segoe UI Symbol"''',
+                                         "font-size": "13px",
+                                         "font-family": '''"Roboto", "Helvetica", "Arial", sans-serif''',
                                          "border": "1px solid darkgrey"
                                      })
         self.description_wrapper.children = [label, text_area]
@@ -130,10 +130,12 @@ class CreateTabView(Container):
         input_ = Input(  # TODO: Figure out how to override the css properly.
             input_props={
                 "type": "file",
+                "border": "none",
             },
             style_={
                 "font-size": "13px",
-                "width": "250px"
+                "width": "250px",
+                "border": "none",
             }
         )
         # layout = Layout(padding="0px 0px 0px 0px")
@@ -200,7 +202,7 @@ class CreateTabView(Container):
                         style_={
                             "display": "flex",
                             "width": "120px",
-                            "height": "30px",
+                            "height": "32px",
                             "padding": "0px 0px 0px 0px",
                             "margin": margin,
                             "background": PRIMARY_COLOR,
