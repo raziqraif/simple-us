@@ -30,7 +30,7 @@ class AppView(Container):
         super(Container, self).__init__()
 
         self.style_ = {
-            "width": "965px",
+            "width": "933px",
             "margin": "48px 0px 48px 64px",
             "padding": "0px 0px 0px 0px",
             "display": "flex",

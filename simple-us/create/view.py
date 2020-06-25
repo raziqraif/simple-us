@@ -115,13 +115,11 @@ class CreateTabView(Container):
                                      style_={
                                          "margin": "0px 0px 0px 2px",
                                          "padding": "4px 8px 4px 8px",
-                                         "width": "232px",
+                                         "width": "250px",
                                          "height": "55px",
                                          "resize": "none",
                                          "font-size": "13px",
-                                         "font-family": '''-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
-                                         Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", 
-                                         "Segoe UI Symbol"''',
+                                         "font-family": '''"Roboto", "Helvetica", "Arial", sans-serif''',
                                          "border": "1px solid darkgrey"
                                      })
         self.description_wrapper.children = [label, text_area]
