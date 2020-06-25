@@ -40,7 +40,7 @@ class SidebarView(Container):
             "padding": "32px 32px 32px 32px",
             "width": "290px",
             "height": "600px",
-            "margin": "0px 0px 60px 0px",
+            "margin": "0px 0px 0px 0px",
             # "border-radius": "8px",
             "background": INNER_BACKGROUND_COLOR,
         }

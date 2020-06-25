@@ -16,3 +16,12 @@ class Sidebar:
 
     def result_to_view(self):
         return ["", "test", "test", "test"]
+
+    def onchange_system_components(self):
+        pass
+
+    def onclick_visualize(self, widget, event, data):
+        pass
+
+    def onclick_csv(self, widget, event, data):
+        pass
