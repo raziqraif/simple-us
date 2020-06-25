@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import List, Any, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
 from ipymaterialui import Container
 from ipymaterialui import Html
@@ -12,8 +14,13 @@ from ipymaterialui import TableHead
 from ipymaterialui import TableRow
 
 import manage
-from utils.widgets.text import CustomText
-from utils.widgets.checkbox import CustomCheckbox
+from utils import BACKGROUND_COLOR
+from utils import BACKGROUND_COLOR_LIGHT
+from utils import CustomText
+from utils import CustomCheckbox
+from utils import INNER_BACKGROUND_COLOR
+from utils import MAIN_BACKGROUND_COLOR
+from utils import PRIMARY_COLOR
 
 
 class ExperimentTableView(Container):
@@ -21,9 +28,8 @@ class ExperimentTableView(Container):
         super(Container, self).__init__()
 
         self.style_ = {
-            "width": "100%",
-            "padding": "0px 0px 0px 0px",
             "display": "flex",
+            "padding": "0px 0px 0px 0px",
             "flex-direction": "column",
         }
         self.controller = controller
@@ -48,12 +54,10 @@ class ExperimentTableView(Container):
         table_for_head = Table(children=[head],
                                size="small",
                                style_={
-                                   "width": "100%",
                                    "padding": "0px 0px 0px 0px",
                                })
         self.header_wrapper = Container(children=[table_for_head],
                                         style_={
-                                            "width": "100%",
                                             "padding": "0px 0px 0px 0px",
                                             "display": "flex",
                                             "flex-direction": "column",
@@ -62,15 +66,11 @@ class ExperimentTableView(Container):
         table_for_body = Table(children=[body],
                                size="small",
                                style_={
-                                   "width": "100%",
                                    "padding": "0px 0px 0px 0px",
                                })
 
         self.body_wrapper = Container(children=[table_for_body],
                                       style_={
-                                            "background": "#F5F4F6",
-                                            "width": "100%",
-                                            # "height": "450px",
                                             "maxHeight": "585px",
                                             "overflow-y": "auto",
                                             "padding": "0px 0px 0px 0px",
@@ -96,7 +96,8 @@ class ExperimentTableView(Container):
         name_cell = self._create_header_cell("Name", "180px")
         status_cell = self._create_header_cell("Status", "150px")
         description_cell = self._create_header_cell("Description", "235px")
-        details_cell = self._create_header_cell(refresh_button, "77px", padding="0px 13px 0px 0px")
+        details_cell = self._create_header_cell("", "77px", padding="0px 16px 0px 0px")
+        extra_cell = self._create_header_cell(refresh_button, "77px", padding="0px 16px 0px 0px")
 
         header_cells = [select_cell,
                         id_cell,
@@ -107,13 +108,12 @@ class ExperimentTableView(Container):
 
         header_row = TableRow(children=header_cells,
                               style_={
-                                  "padding": "0px 10px 0px 30px",
+                                  "padding": "0px 8px 0px 32px",
                               })
         table_head = TableHead(children=[header_row],
                                sticky_header=True,
                                style_={
-                                   "width": "100%",
-                                   "background": "#454851",
+                                   "background": PRIMARY_COLOR,
                                })
         return table_head
 
@@ -129,7 +129,6 @@ class ExperimentTableView(Container):
                         "top": "0px",
                         "height": "45px",
                         "width": width,
-                        "background": "#454851",
                         "opacity": 1.0,
                     })
         return cell
@@ -146,8 +145,8 @@ class ExperimentTableView(Container):
 
         table_body = TableBody(children=experiment_rows,
                                style_={
-                                   "width": "100%",
                                    "padding": "0px 0px 0px 0px",
+                                   "background": INNER_BACKGROUND_COLOR,
                                })
         return table_body
 
@@ -226,7 +225,7 @@ class ExperimentTableView(Container):
                               width: int,
                               align: str) -> TableCell:
 
-        text_width = width - 16
+        text_width = width
         if isinstance(children, str):
             children = CustomText(children,
                                   style_={
@@ -241,7 +240,7 @@ class ExperimentTableView(Container):
         cell = TableCell(children=children,
                          align=align,
                          style_={
-                             "padding": "0px 8px 0px 8px",
+                             "padding": "0px 4px 0px 4px",
                              "width": "{}px".format(width),
                              "height": "45px",
                          })

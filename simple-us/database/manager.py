@@ -7,7 +7,7 @@ from typing import Union
 
 import sqlite3
 
-from data import Experiment
+from model import Experiment
 import database.utils as dbutils
 from database.utils import AUTHOR
 from database.utils import DESCRIPTION

@@ -18,7 +18,7 @@ class CustomText(Html):
         if "padding" not in style_.keys():
             style_["padding"] = "0px 0px 0px 0px"
         if "font-size" not in style_.keys():
-            style_["font-size"] = 15
+            style_["font-size"] = 14
 
         self.tag = tag
         self.children = text

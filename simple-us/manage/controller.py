@@ -1,5 +1,7 @@
 from copy import copy
 
+from ipymaterialui import Button
+
 from .table import ExperimentTable
 from .view import ManageTabView
 from utils import ExperimentChip
@@ -23,3 +25,15 @@ class ManageTab:
         children = copy(chips_wrapper.children)
         children.remove(widget)
         chips_wrapper.children = children
+
+    def onclick_refresh(self, widget: Button, event: str, data: dict):
+        pass
+
+    def onclick_compare(self, widget: Button, event: str, data: dict):
+        pass
+
+    def enable_button(self, button: Button):
+        pass
+
+    def disable_button(self, button: Button):
+        pass

@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-import ipymaterialui as mui
 from ipymaterialui import Container
 from ipymaterialui import Html
 from ipymaterialui import Tab
 from ipymaterialui import Tabs
-import ipyvuetify as vue
-import ipywidgets as widgets
 from ipywidgets import Box
 from ipywidgets import jslink
-from ipywidgets import Layout
-from ipywidgets import VBox
 from IPython.display import display
 
+from create import CreateTab
 from manage import ManageTab
-from manage import ManageTabView
 from utils import CustomText
+from utils import MAIN_BACKGROUND_COLOR
+from utils import PRIMARY_COLOR
 
 
 class AppView(Container):
@@ -25,12 +22,13 @@ class AppView(Container):
         super(Container, self).__init__()
 
         self.style_ = {
-            "width": "100%",
-            "height": "820px",
-            "margin": "0px 0px 0px 30px",
+            "width": "965px",
+            "margin": "48px 0px 48px 32px",
             "padding": "0px 0px 0px 0px",
             "display": "flex",
             "flex-direction": "column",
+            "background": MAIN_BACKGROUND_COLOR,
+            "align-items": "stretch",
         }
 
         self.controller = controller
@@ -47,13 +45,25 @@ class AppView(Container):
                 Tab(label=CustomText("About", style_={"color": "#ffffff"}), value=self.about),
             ],
             style_={
-                "background": "#454851",
-                "height": "50px",
+                "background": PRIMARY_COLOR,
+                "height": "60px",
+                "display": "flex",
+                "flex-direction": "row",
+                "align-items": "center",
             },
             centered=True, value=self.create
         )
 
-        self.tab_div = Html(tag="div", style_={"height": "850px"})
+        self.tab_div = Html(tag="div",
+                            style_={
+                                "display": "flex",
+                                "flex-direction": "column",
+                                "justify-content": "center",
+                                "align-items": "stretch",
+                                "height": "810px",
+                                "padding": "0px 0px 0px 0px",
+                                "background": MAIN_BACKGROUND_COLOR,
+                            })
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 
         self.children = [self.tabs, self.tab_div]
@@ -63,15 +73,13 @@ class App:
     """ Controller class for AppView """
 
     def __init__(self):
-        self.create = Box()
+        self.create: CreateTab = CreateTab()
         self.manage: ManageTab = ManageTab()
         self.view = Box()
         self.about = Box()
 
-        self.view = AppView(self, self.create, self.manage.view, self.view, self.about)
+        self.view = AppView(self, self.create.view, self.manage.view, self.view, self.about)
 
-        # TODO: Remove this line after manage page is finished
-        self.view.tabs.value = self.manage.view
         display(self.view)
 
 
