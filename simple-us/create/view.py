@@ -38,7 +38,8 @@ class CreateTabView(Container):
             "height": "460px",
             "margin": "0px 0px 60px 0px",
             # "border-radius": "8px",
-            "background": INNER_BACKGROUND_COLOR,
+            "border": "1px solid " + PRIMARY_COLOR,
+            # "background": INNER_BACKGROUND_COLOR,
         }
 
         self.controller = controller

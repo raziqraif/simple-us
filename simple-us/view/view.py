@@ -66,6 +66,7 @@ class ViewTabUI(Container):
                                 "flex-direction": "column",
                                 "justify-content": "center",
                                 "align-items": "center",
+                                "width": "618px",
                                 "height": "600px",
                                 "padding": "1px 1px 1px 1px",
                                 "margin": "0px 0px 0px 24px",

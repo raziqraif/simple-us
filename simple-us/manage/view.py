@@ -23,7 +23,7 @@ class ManageTabView(Container):
 
         self.tag = "div"
         self.style_ = {
-                       "padding": "40px 40px 40px 40px",
+                       "padding": "40px 64px 40px 64px",
                        "display": "flex",
                        "flex-direction": "column",
                        "background": MAIN_BACKGROUND_COLOR,
