@@ -1,12 +1,15 @@
 from __future__ import annotations
+
+from copy import copy
 from typing import List, Optional
 
 import ipymaterialui as mui
 from ipymaterialui import TableRow
 
-from database import DBManager
 from .view import ExperimentTableView
-from utils.widgets.checkbox import CustomCheckbox
+from ..details import Details
+from database import DBManager
+from utils import CustomCheckbox
 
 
 class ExperimentTable:
@@ -114,5 +117,9 @@ class ExperimentTable:
             self.delete_experiment_chip(id_)
 
     def onclick_details(self, widget, event, data, job_id):
-        print("clicked details", job_id)
+        details_window = Details().view
+        without_details = copy(self.view.children)
+        with_details = copy(self.view.children)
+        with_details.append(details_window)
+        self.view.children = with_details
 

@@ -56,7 +56,7 @@ class ViewTabUI(Container):
                                                          "margin": "0px 0px 8px 1px",
                                                          "align-self": "flex-start",
                                                          })
-        map_ = Map(center=(4.2105, 101.9758), zoom=4)
+        map_ = Map(center=(39.5, -98.35), zoom=4)
         map_.layout.width = "618px"
         map_.layout.height = "570px"
         map_.layout.border = "1px solid " + PRIMARY_COLOR

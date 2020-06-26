@@ -76,6 +76,7 @@ class ExperimentTableView(Container):
                                             "padding": "0px 0px 0px 0px",
                                             "display": "flex",
                                             "flex-direction": "column",
+                                            "border": "1px solid " + PRIMARY_COLOR,
                                         })
 
     def _build_table_head(self):
@@ -146,7 +147,7 @@ class ExperimentTableView(Container):
         table_body = TableBody(children=experiment_rows,
                                style_={
                                    "padding": "0px 0px 0px 0px",
-                                   "background": INNER_BACKGROUND_COLOR,
+                                   "background": "white",
                                })
         return table_body
 
