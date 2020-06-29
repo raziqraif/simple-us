@@ -98,6 +98,7 @@ class DetailsView(Dialog):
         bar = Container(style_={
             "display": "flex",
             "flex-direction": "column",
+            "padding": "32px 32px 32px 32px",
             "align-items": "center",
             "justify-content": "flex-start",
             "background": "white",
@@ -108,15 +109,24 @@ class DetailsView(Dialog):
 
         id_ = self._create_data_row("ID", "P1")
         name = self._create_data_row("Name", "Indiana Crops")
-        status = self._create_data_row("Status", "Completed")
-        description = self._create_data_row("Description", "A really long description for this experiment. "
-                                                           "This description should be wrapped.")
         model = self._create_data_row("Model", "Custom AllCrop")
+        status = self._create_data_row("Status", "Completed")
+        description = self._create_data_row("Description", "A really really long description for this experiment. "
+                                                           "This description briefly describes about the experiment. "
+                                                           "This description should be wrapped.")
         author = self._create_data_row("Author", "raziqraif")
         submission_id = self._create_data_row("Submission ID", "XPC-2342")
         submission_time = self._create_data_row("Submission Time", "2/3/2020 1743")
         published = self._create_data_row("Published", "Yes")
-
+        bar.children = [id_,
+                        name,
+                        model,
+                        description,
+                        author,
+                        submission_id,
+                        submission_time,
+                        status,
+                        published]
         return bar
 
     def close(self):
@@ -127,15 +137,15 @@ class DetailsView(Dialog):
                             style_={
                                 "display": "flex",
                                 "flex-direction": "row",
-                                "margin": "24px 0px 0px 0px",
+                                "margin": "8px 0px 0px 0px",
                                 "padding": "0px 0px 0px 0px",
-                                "align-items": "center",
+                                "align-items": "flex-start",
                                 "justify-content": "flex-start",
                                 "height": "auto",
                             })
         label_wrapper = self._create_data_label_wrapper(label)
         value_wrapper = self._create_data_value_wrapper(value)
-        wrapper.children = [label_wrapper, value_wrapper]
+        wrapper.children = [label_wrapper, ":", value_wrapper]
         return wrapper
 
     def _create_data_label_wrapper(self, text: str):
@@ -151,7 +161,7 @@ class DetailsView(Dialog):
                                 "margin": "0px 0px 0px 0px",
                                 "padding": "0px 0px 0px 0px",
                                 "justify-content": "flex-start",
-                                "align-items": "center",
+                                "align-items": "flex-start",
                                 "height": "auto",
                                 "width": "150px",
                             })
@@ -161,17 +171,16 @@ class DetailsView(Dialog):
         value_html = CustomText(value,
                                 style_={
                                     "color": "black",
-                                    "font-weight": "bold",
                                 })
         wrapper = Container(children=[value_html],
                             style_={
                                 "display": "flex",
                                 "flex-direction": "row",
-                                "margin": "0px 0px 0px 0px",
+                                "margin": "0px 0px 0px 8px",
                                 "padding": "0px 0px 0px 0px",
                                 "justify-content": "flex-start",
                                 "align-items": "center",
                                 "height": "auto",
-                                "width": "150px",
+                                "flex-grow": "1",
                             })
         return wrapper
