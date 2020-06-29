@@ -29,7 +29,7 @@ class AppView(Container):
             # "width": "933px",
             # "width": "100% !important",
             # "width": "2000px",
-            # "margin": "48px 0px 48px 64px",
+            "margin": "0px 0px 16px 0px",
             # "padding": "0px 0px 0px 0px",
             # "display": "flex",
             # "flex-direction": "column",
@@ -107,10 +107,10 @@ class App:
                             self.manage_tab.view,
                             self.view_tab.view,
                             self.about_tab)
+        self.view.tabs.value = self.manage_tab.view
 
-        self.view.tabs.value = self.view_tab.view
-        container = Container(children=self.view)
-        display(container)
+    def display(self):
+        return Container(children=self.view)
 
 
 if __name__ == "__main__":
