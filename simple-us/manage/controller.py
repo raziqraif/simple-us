@@ -3,12 +3,12 @@ from copy import copy
 from ipymaterialui import Button
 
 from .table import ExperimentTable
-from .view import ManageTabView
 from utils import ExperimentChip
 
 
 class ManageTab:
     def __init__(self):
+        from .view import ManageTabView
         self.experiment_table = ExperimentTable()
         self.view = ManageTabView(self, self.experiment_table.view)
         self.experiment_table.create_experiment_chip = self.view.append_chip

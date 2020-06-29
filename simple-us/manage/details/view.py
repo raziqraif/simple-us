@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Any
 from typing import List
 from typing import Optional
@@ -25,7 +24,7 @@ from utils import PRIMARY_COLOR
 
 
 class DetailsView(Dialog):
-    def __init__(self, controller):
+    def __init__(self, controller: Details):
         super().__init__()
         self.style_ = {
             "display": "flex",

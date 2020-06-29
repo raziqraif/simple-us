@@ -1,12 +1,9 @@
-from __future__ import annotations
-
 from copy import copy
 from typing import List, Optional
 
 import ipymaterialui as mui
 from ipymaterialui import TableRow
 
-from .view import ExperimentTableView
 from ..details import Details
 from database import DBManager
 from utils import CustomCheckbox
@@ -14,6 +11,7 @@ from utils import CustomCheckbox
 
 class ExperimentTable:
     def __init__(self, create_chip_callback=None, delete_chip_callback=None):
+        from .view import ExperimentTableView
         self.view = ExperimentTableView(self)
         self.selected_rows = []
         self._create_experiment_chip = create_chip_callback  # A callback function to create a chip widget from id

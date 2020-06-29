@@ -1,1 +1,2 @@
-from .application import App
+from .controller import App
+from .appview import AppView

@@ -1,4 +1,3 @@
-from __future__ import annotations
 from copy import copy
 
 import ipymaterialui as mui
@@ -10,6 +9,7 @@ from ipymaterialui import Icon
 from ipymaterialui import IconButton
 
 from .table import ExperimentTableView
+from .controller import ManageTab
 import manage
 from utils import ExperimentChip
 from utils import CustomText
@@ -18,7 +18,7 @@ from utils import PRIMARY_COLOR
 
 
 class ManageTabView(Container):
-    def __init__(self, controller: manage.ManageTab, experiment_table: ExperimentTableView):
+    def __init__(self, controller: ManageTab, experiment_table: ExperimentTableView):
         super(Container, self).__init__()
 
         self.tag = "div"

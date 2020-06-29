@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from ipymaterialui import Container
 from ipymaterialui import Html
 from ipymaterialui import Tab
@@ -9,6 +7,7 @@ from ipywidgets import Box
 from ipywidgets import jslink
 from IPython.display import display
 
+from .controller import App
 from create import CreateTab
 from manage import ManageTab
 from utils import CustomText
@@ -93,25 +92,3 @@ class AppView(Container):
         self.children = [self.tabs, self.tab_div]
 
 
-class App:
-    """ Controller class for AppView """
-
-    def __init__(self):
-        self.create_tab: CreateTab = CreateTab()
-        self.manage_tab: ManageTab = ManageTab()
-        self.view_tab: ViewTab = ViewTab()
-        self.about_tab = Box()
-
-        self.view = AppView(self,
-                            self.create_tab.view,
-                            self.manage_tab.view,
-                            self.view_tab.view,
-                            self.about_tab)
-        self.view.tabs.value = self.manage_tab.view
-
-    def display(self):
-        return Container(children=self.view)
-
-
-if __name__ == "__main__":
-    App()

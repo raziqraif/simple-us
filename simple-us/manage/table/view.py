@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Any
 from typing import List
 from typing import Optional
@@ -13,7 +12,7 @@ from ipymaterialui import TableCell
 from ipymaterialui import TableHead
 from ipymaterialui import TableRow
 
-import manage
+from .controller import ExperimentTable
 from utils import BACKGROUND_COLOR
 from utils import BACKGROUND_COLOR_LIGHT
 from utils import CustomText
@@ -24,7 +23,7 @@ from utils import PRIMARY_COLOR
 
 
 class ExperimentTableView(Container):
-    def __init__(self, controller: manage.ExperimentTable):
+    def __init__(self, controller: ExperimentTable):
         super(Container, self).__init__()
 
         self.style_ = {
