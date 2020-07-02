@@ -1,5 +1,8 @@
 from typing import Optional
 
+import model as model_pkg
+from database import DBManager
+
 
 class Experiment:
     """ Class to represent the SIMPLEJobs db table
@@ -33,7 +36,7 @@ class Experiment:
 
     @property
     def id_str(self) -> str:
-        return str(self.id)
+        return Experiment.to_id_str(self.id)
 
     @property
     def name_str(self) -> str:
@@ -67,6 +70,37 @@ class Experiment:
     def published_str(self) -> str:
         # TODO: Needs to return "SHARED" or "PUBLIC"
         return str(self.submission_time) if self.submission_time is not None else ""
+
+    @staticmethod
+    def to_id(id_str: str) -> int:
+        # TODO: Update this
+        return int(id_str)
+
+    @staticmethod
+    def to_id_str(id_: int, is_private=True) -> str:
+        # TODO: Update this
+        return str(id_)
+
+    @staticmethod
+    def is_private_id_str(id_str) -> bool:
+        return True  # TODO: Update this
+
+    @staticmethod
+    def is_shared_id_str(id_str) -> bool:
+        return False  # TODO: Update this
+
+    @staticmethod
+    def from_id_str(id_str: str) -> Optional[model_pkg.Experiment]:
+        id_ = Experiment.to_id(id_str)
+        is_private = Experiment.is_private_id_str(id_str)
+        exp = Experiment.from_id(id_, is_private)
+        return exp
+
+    @staticmethod
+    def from_id(id_: int, is_private: bool) -> Optional[model_pkg.Experiment]:
+        db = DBManager(private_experiments=is_private)
+        exp = db.get_experiment(id_)
+        return exp
 
 
 if __name__ == "__main__":
