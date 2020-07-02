@@ -14,7 +14,6 @@ from ipymaterialui import Slider
 from ipymaterialui import TextField
 from ipymaterialui import TextareaAutosize
 import ipywidgets as widgets
-from ipywidgets import FileUpload
 from ipywidgets import Layout
 
 from .controller import Sidebar
