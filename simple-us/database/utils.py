@@ -10,7 +10,7 @@ except:
     HOSTNAME = ""
 
 if "mygeohub" in HOSTNAME[:8]:
-    PRIVATE_JOBS_DIR = Path("~/simpleUSRun/job")
+    PRIVATE_JOBS_DIR = Path.home().joinpath("simpleUSRun/job")
 else:
     # TODO: Update your local job directory
     PRIVATE_JOBS_DIR = Path("C:\\Users\\muhdr\\Documents\\simple-us\\job")

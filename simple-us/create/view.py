@@ -12,7 +12,7 @@ from ipymaterialui import Select
 from ipymaterialui import TextField
 from ipymaterialui import TextareaAutosize
 import ipywidgets as widgets
-from ipywidgets import FileUpload
+# from ipywidgets import FileUpload
 from ipywidgets import Layout
 
 from .controller import CreateTab
@@ -139,8 +139,8 @@ class CreateTabView(Container):
                 "border": "none",
             }
         )
-        layout = Layout(padding="0px 0px 0px 0px")
-        input_ = FileUpload(accept="", multiple=False, layout=layout)  # This is nice looking, but there's bug with
+        # layout = Layout(padding="0px 0px 0px 0px")
+        # input_ = FileUpload(accept="", multiple=False, layout=layout)  # This is nice looking, but there's bug with
         # the counter value. A fix was supposedly already made in the official repository, but it is probably
         # not released yet.
         # https://github.com/jupyter-widgets/ipywidgets/pull/2666

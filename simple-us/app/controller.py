@@ -1,3 +1,4 @@
+import ipywidgets
 from ipywidgets import Box
 from ipymaterialui import Container
 
@@ -28,7 +29,7 @@ class App:
         self.view.tabs.value = self.manage_tab.view
 
     def display(self):
-        return Container(children=self.view)
+        return Container(children=[self.view])
 
 
 if __name__ == "__main__":
