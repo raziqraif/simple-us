@@ -16,15 +16,11 @@ class ManageTab:
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
         experiment_id = widget.experiment_id
-        associated_row = self.experiment_table.selected_row_with_id(experiment_id)
+        associated_row = self.experiment_table.selected_row_from_id(experiment_id)
 
         if associated_row:
-            self.experiment_table.deselect_row(associated_row)
-
-        chips_wrapper = self.view.chips_wrapper
-        children = copy(chips_wrapper.children)
-        children.remove(widget)
-        chips_wrapper.children = children
+            self.experiment_table.toggle_row(associated_row)
+            # The
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
         pass

@@ -37,14 +37,11 @@ class ExperimentTableView(Container):
         self.body_wrapper = None
         self.body = None
 
+        self.selected_rows = []
+
         self._build_table()
         self.children = [self.header_wrapper,
                          self.body_wrapper]
-
-    def rows(self):
-        if self.body is None:
-            return None
-        return self.body.children
 
     def _build_table(self):
         head = self._build_table_head()
@@ -246,3 +243,62 @@ class ExperimentTableView(Container):
                          })
 
         return cell
+
+    def _select_row(self, row: TableRow) -> None:
+        checkbox = self.checkbox_from_row(row)
+        checkbox.checked = True
+        row.selected = True
+
+    def _deselect_row(self, row: TableRow) -> None:
+        checkbox = self.checkbox_from_row(row)
+        checkbox.checked = False
+        row.selected = False
+
+    def rows(self):
+        if self.body is None:
+            return None
+        return self.body.children
+
+    def checkbox_from_row(self, row: TableRow) -> CustomCheckbox:
+        checkbox_cell = row.children[0]
+        checkbox = checkbox_cell.children
+        return checkbox
+
+    def name_from_row(self, row: TableRow) -> str:
+        name_cell = row.children[2]
+        name_div = name_cell.children
+        name = name_div.children
+        return name.strip()
+
+    def id_from_row(self, row: TableRow) -> str:
+        id_cell = row.children[1]
+        id_div = id_cell.children
+        id = id_div.children
+        return id.strip()
+
+    def selected_row_from_id(self, experiment_id: str) -> Optional[TableRow]:
+        experiment_id = experiment_id.strip()
+        for row in self.selected_rows:
+            id_in_row = self.id_from_row(row)
+            if id_in_row == experiment_id:
+                return row
+        return None
+
+    def toggle_row(self, row: TableRow):
+        checkbox = self.checkbox_from_row(row)
+        if not checkbox.checked:
+            if len(self.selected_rows) >= 2:
+                # TODO: Replace this with a snickbar.
+                # print("You can only select the maximum of 2 experiments at a time.")
+                return
+            else:
+                self._select_row(row)
+                self.selected_rows.append(row)
+                name = self.name_from_row(row)
+                id_ = self.id_from_row(row)
+                self.controller.create_experiment_chip(id_, name)
+        elif checkbox.checked:
+            self._deselect_row(row)
+            self.selected_rows.remove(row)
+            id_ = self.id_from_row(row)
+            self.controller.delete_experiment_chip(id_)

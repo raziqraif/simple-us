@@ -31,7 +31,6 @@ class DetailsView(Dialog):
             "flex-direction": "column",
             "justify-content": "center",
             "align-items": "center",
-
         }
         self.controller = controller
         self.open_ = True
