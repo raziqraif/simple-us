@@ -8,16 +8,16 @@ from typing import Union
 import sqlite3
 
 from model import Experiment
-import database.utils as dbutils
-from database.utils import AUTHOR
-from database.utils import DESCRIPTION
-from database.utils import JOB_ID
-from database.utils import JOB_NAME
-from database.utils import JOB_STATUS
-from database.utils import MODEL_TYPE
-from database.utils import PUBLISHED
-from database.utils import SUBMIT_ID
-from database.utils import SUBMIT_TIME
+from .utils import AUTHOR
+from .utils import DESCRIPTION
+from .utils import JOB_ID
+from .utils import JOB_NAME
+from .utils import JOB_STATUS
+from .utils import MODEL_TYPE
+from .utils import PUBLISHED
+from .utils import SUBMIT_ID
+from .utils import SUBMIT_TIME
+from utils import SIMPLEUtil
 
 
 class DBManager:
@@ -28,12 +28,17 @@ class DBManager:
     compatibility, the list representation is kept.
     """
 
-    def __init__(self, directory_path: Path = dbutils.PRIVATE_JOBS_DIR):
+    def __init__(self, private_experiments=True):
+        if private_experiments:
+            directory_path = SIMPLEUtil.PRIVATE_JOBS_DIR
+        else:
+            directory_path = SIMPLEUtil.SHARED_JOBS_DIR
+
         self.DB_FILE = str(directory_path.joinpath("job.db"))
         # check if db file exists
         if not os.path.isfile(self.DB_FILE):
             print('not found')
-            self.init_table(str(directory_path))
+            self.init_table(directory_path)
 
         # check if a user uses old db
         conn = sqlite3.connect(self.DB_FILE)
@@ -49,7 +54,7 @@ class DBManager:
         cur = conn.execute(sql)
         conn.close()
 
-    def init_table(self, directory_path: str):
+    def init_table(self, directory_path: Path):
         sql = '''
         CREATE TABLE SIMPLEJobs (
             jobid INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,15 +72,15 @@ class DBManager:
         # create job folder first
         # For shared db, other admins should be able to update database
         # so read,write permissions are given to the simpleggroup
-        if directory_path == dbutils.SHARED_JOBS_DIR:
+        if directory_path == SIMPLEUtil.SHARED_JOBS_DIR:
             try:
-                dbutils.mkdir_p(directory_path)
-                os.chmod(directory_path, 0o775)
+                SIMPLEUtil.mkdir(directory_path)
+                os.chmod(str(directory_path), 0o775)
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 raise
         else:
-            dbutils.mkdir_p(directory_path)
+            SIMPLEUtil.mkdir(directory_path)
 
         conn = sqlite3.connect(self.DB_FILE)
         conn.execute(sql)
@@ -83,7 +88,7 @@ class DBManager:
         conn.close()
 
         # give simpleggroup read, write permission
-        if directory_path == dbutils.SHARED_JOBS_DIR:
+        if directory_path == SIMPLEUtil.SHARED_JOBS_DIR:
             os.chmod(self.DB_FILE, 0o664)
 
     def create_new_job(self):
@@ -197,5 +202,5 @@ if __name__ == "__main__":
     # from pathlib import Path
     # path = Path(".").absolute()
     # print("path:", path.parent.parent)
-    db = DBManager(dbutils.PRIVATE_JOBS_DIR)
+    db = DBManager()
     print(db.get_experiments())

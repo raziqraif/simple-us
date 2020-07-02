@@ -1,3 +1,4 @@
+from .directory import SIMPLEUtil
 from .misc import DEBUG_MODE
 from .misc import BACKGROUND_COLOR
 from .misc import BACKGROUND_COLOR_LIGHT
