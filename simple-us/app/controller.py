@@ -1,9 +1,12 @@
+from typing import List
+
 import ipywidgets
 from ipywidgets import Box
 from ipymaterialui import Container
 
 from create import CreateTab
 from manage import ManageTab
+from model import Experiment
 from utils import CustomText
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
@@ -16,20 +19,27 @@ class App:
 
     def __init__(self):
         self.create_tab: CreateTab = CreateTab()
-        self.manage_tab: ManageTab = ManageTab()
+        self.manage_tab: ManageTab = ManageTab(self.navigate_to_view_tab)
         self.view_tab: ViewTab = ViewTab()
         self.about_tab = Box()
 
         from app import AppView
-        self.view = AppView(self,
-                            self.create_tab.view,
-                            self.manage_tab.view,
-                            self.view_tab.view,
-                            self.about_tab)
-        self.view.tabs.value = self.manage_tab.view
+        self.appview = AppView(self,
+                               self.create_tab.view,
+                               self.manage_tab.view,
+                               self.view_tab.view,
+                               self.about_tab)
+        self.appview.tabs.value = self.manage_tab.view
 
     def display(self):
-        return Container(children=[self.view])
+        return Container(children=[self.appview])
+
+    def navigate_to_view_tab(self, experiments: List[Experiment]):
+        print("Navigating")
+        self.view_tab.experiments = experiments
+        self.view_tab.refresh_sidebar()
+
+        self.appview.tabs.value = self.view_tab.view
 
 
 if __name__ == "__main__":
