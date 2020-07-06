@@ -1,10 +1,46 @@
 from typing import Optional
 
-import model as model_pkg
-from database import DBManager
+from utils import SIMPLEUtil
 
 
-class Experiment:
+class ExperimentUtil:
+    import model as model_pkg
+
+    @staticmethod
+    def to_id(id_str: str) -> int:
+        # TODO: Update this
+        return int(id_str)
+
+    @staticmethod
+    def to_id_str(id_: int, is_private=True) -> str:
+        # TODO: Update this
+        return str(id_)
+
+    @staticmethod
+    def is_private_id_str(id_str) -> bool:
+        return True  # TODO: Update this
+
+    @staticmethod
+    def is_shared_id_str(id_str) -> bool:
+        return False  # TODO: Update this
+
+    @staticmethod
+    def from_id_str(id_str: str):
+        id_ = Experiment.to_id(id_str)
+        is_private = Experiment.is_private_id_str(id_str)
+        print("id, private =", id_, is_private)
+        exp = Experiment.from_id(id_, is_private)
+        return exp
+
+    @staticmethod
+    def from_id(id_: int, is_private: bool):
+        from database import DBManager
+        db = DBManager(private_experiments=is_private)
+        exp = db.get_experiment(id_)
+        return exp
+
+
+class Experiment(ExperimentUtil):
     """ Class to represent the SIMPLEJobs db table
 
     Values are stored as they are read from the the db. Helper functions are used if the values
@@ -71,36 +107,20 @@ class Experiment:
         # TODO: Needs to return "SHARED" or "PUBLIC"
         return str(self.submission_time) if self.submission_time is not None else ""
 
-    @staticmethod
-    def to_id(id_str: str) -> int:
-        # TODO: Update this
-        return int(id_str)
+    @property
+    def is_private(self):
+        return Experiment.is_private_id_str(self.id_str)
 
-    @staticmethod
-    def to_id_str(id_: int, is_private=True) -> str:
-        # TODO: Update this
-        return str(id_)
+    @property
+    def is_completed(self):
+        return self.status_str.lower() == "completed"
 
-    @staticmethod
-    def is_private_id_str(id_str) -> bool:
-        return True  # TODO: Update this
+    @property
+    def result_list(self) -> dict:
+        return SIMPLEUtil.build_result_list(self.id)
 
-    @staticmethod
-    def is_shared_id_str(id_str) -> bool:
-        return False  # TODO: Update this
-
-    @staticmethod
-    def from_id_str(id_str: str) -> Optional[model_pkg.Experiment]:
-        id_ = Experiment.to_id(id_str)
-        is_private = Experiment.is_private_id_str(id_str)
-        exp = Experiment.from_id(id_, is_private)
-        return exp
-
-    @staticmethod
-    def from_id(id_: int, is_private: bool) -> Optional[model_pkg.Experiment]:
-        db = DBManager(private_experiments=is_private)
-        exp = db.get_experiment(id_)
-        return exp
+    def intersect_result_list(self, result_list2: dict):
+        return SIMPLEUtil.intersect_result_lists(self.result_list, result_list2)
 
 
 if __name__ == "__main__":
