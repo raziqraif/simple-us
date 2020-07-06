@@ -1,5 +1,5 @@
 from copy import copy
-from typing import List
+from typing import List, Optional
 
 from ipymaterialui import Button
 from ipymaterialui import Container
@@ -14,6 +14,7 @@ from ipymaterialui import Slider
 from ipymaterialui import TextField
 from ipymaterialui import TextareaAutosize
 import ipywidgets as widgets
+from ipywidgets import Dropdown
 from ipywidgets import Layout
 
 from .controller import Sidebar
@@ -57,6 +58,11 @@ class SidebarView(Container):
         self.filter = None
         self.buttons_wrapper = None
 
+        self.system_components_select: Optional[Dropdown] = None
+        self.spatial_resolution_select: Optional[Dropdown] = None
+        self.type_of_results_select: Optional[Dropdown] = None
+        self.result_to_view_select: Optional[Dropdown] = None
+
         self.build_system_components()
         self.build_spatial_resolution()
         self.build_type_of_results()
@@ -69,38 +75,37 @@ class SidebarView(Container):
 
     def build_system_components(self):
         text = CustomText("System Components", style_={"font-weight": "bold"})
-        options: List[str] = self.controller.system_components()
-        assert "" in options
+        options: List[str] = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        select = widgets.Dropdown(value="", options=options, layout=layout)
-        wrapper = self._create_input_wrapper([text, select])
+        self.system_components_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self.system_components_select.observe(self.controller.onchange_system_components)
+        wrapper = self._create_input_wrapper([text, self.system_components_select])
         self.system_components = wrapper
 
     def build_spatial_resolution(self):
         text = CustomText("Spatial Resolution", style_={"font-weight": "bold"})
-        options: List[str] = self.controller.spatial_resolution()
-        assert "" in options
+        options: List[str] = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        select = widgets.Dropdown(value="", options=options, layout=layout)
-        wrapper = self._create_input_wrapper([text, select])
+        self.spatial_resolution_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self.spatial_resolution_select.observe(self.controller.onchange_spatial_resolution)
+        wrapper = self._create_input_wrapper([text, self.spatial_resolution_select])
         self.spatial_resolution = wrapper
 
     def build_type_of_results(self):
         text = CustomText("Type Of Results", style_={"font-weight": "bold"})
-        options = self.controller.type_of_results()
-        assert "" in options
+        options = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        select = widgets.Dropdown(value="", options=options, layout=layout)
-        wrapper = self._create_input_wrapper([text, select])
+        self.type_of_results_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self.type_of_results_select.observe(self.controller.onchange_type_of_results)
+        wrapper = self._create_input_wrapper([text, self.type_of_results_select])
         self.type_of_results = wrapper
 
     def build_result_to_view(self):
         text = CustomText("Result To View", style_={"font-weight": "bold"})
-        options = self.controller.result_to_view()
-        assert "" in options
+        options = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        select = widgets.Dropdown(value="", options=options, layout=layout)
-        wrapper = self._create_input_wrapper([text, select])
+        self.result_to_view_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        wrapper = self._create_input_wrapper([text, self.result_to_view_select])
         self.result_to_view = wrapper
 
     def build_filter(self):
@@ -169,3 +174,31 @@ class SidebarView(Container):
                                 "padding": "0px 0px 0px 0px",
                             })
         return wrapper
+
+    def update_system_components_options(self, options: List[str]):
+        assert "Select" in options
+        self.system_components_select.options = options
+
+    def update_spatial_resolution_options(self, options: List[str]):
+        assert "Select" in options
+        self.spatial_resolution_select.options = options
+
+    def update_type_of_results_options(self, options: List[str]):
+        assert "Select" in options
+        self.type_of_results_select.options = options
+
+    def update_result_to_view_options(self, options: List[str]):
+        assert "Select" in options
+        self.result_to_view_select.options = options
+
+    def system_components_value(self) -> str:
+        return self.system_components_select.value
+
+    def spatial_resolution_value(self) -> str:
+        return self.spatial_resolution_select.value
+
+    def type_of_results_value(self) -> str:
+        return self.type_of_results_select.value
+
+    def result_to_view_value(self) -> str:
+        return self.result_to_view_select.value
