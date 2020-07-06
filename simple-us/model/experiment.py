@@ -1,11 +1,11 @@
-from typing import Optional
+import os
+from pathlib import Path
+from typing import Optional, List
 
 from utils import SIMPLEUtil
 
 
 class ExperimentUtil:
-    import model as model_pkg
-
     @staticmethod
     def to_id(id_str: str) -> int:
         # TODO: Update this
@@ -68,7 +68,7 @@ class Experiment(ExperimentUtil):
         self.submission_time = submission_time
         self.published = published
 
-    """ Some html components expect a string value. So, the following are helper methods for that """
+    """ General property methods """
 
     @property
     def id_str(self) -> str:
@@ -115,12 +115,101 @@ class Experiment(ExperimentUtil):
     def is_completed(self):
         return self.status_str.lower() == "completed"
 
-    @property
-    def result_list(self) -> dict:
-        return SIMPLEUtil.build_result_list(self.id)
+    """ Methods to access result variables """
 
-    def intersect_result_list(self, result_list2: dict):
-        return SIMPLEUtil.intersect_result_lists(self.result_list, result_list2)
+    def system_component_options(self) -> List[str]:
+        path = SIMPLEUtil.result_path(self.id_str)
+        options = []
+        if not path.is_dir():
+            return options
+        options += [item for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        return options
+
+    def spatial_resolution_options(self, system_component: str) -> List[str]:
+        path = SIMPLEUtil.result_path(self.id_str) / Path(system_component)
+        options = []
+        if not path.is_dir():
+            return options
+        options += [item for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        return options
+
+    def type_of_result_options(self, system_component: str, spatial_resolution: str) -> List[str]:
+        path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution)
+        conversion = {"LVA": "Absolute Changes", "LVB": "Base Value", "LVC": "Updated Value",
+                      "PVT": "Percent Changes"}
+
+        options = []
+        if not path.is_dir():
+            return options
+        options += [conversion[item] for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        return options
+
+    def result_to_view_options(self, system_component: str, spatial_resolution: str,
+                               type_of_result: str) -> List[str]:
+        type_of_result_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution) \
+               / Path(type_of_result)
+
+        options = []
+        if not type_of_result_path.is_dir():
+            return options
+        if len(os.listdir(type_of_result_path)) == 0:
+            return options
+        middle_dir_name = os.listdir(type_of_result_path)[0]  # TODO: Check this with older version
+        path = type_of_result_path / Path(middle_dir_name)
+
+        options += [item for item in path.glob("*.tif")]
+        return options
+
+    @property
+    def variable_options(self) -> dict:
+        variables = {}
+        system_components = self.system_component_options()
+
+        for i in system_components:
+            variables[i] = {}
+            spatial_resolutions = self.spatial_resolution_options(i)
+            for j in spatial_resolutions:
+                variables[i][j] = {}
+                type_of_results = self.type_of_result_options(i, j)
+                for k in type_of_results:
+                    variables[i][j][k] = self.result_to_view_options(i, j, k)
+
+        return variables
+
+    def intersect_variable_options(self, variable_options: dict):
+        first = self.variable_options
+        second = variable_options
+
+        variables = {}
+        for i in first.keys():
+            if i in second.keys():
+                variables[i] = {}
+            for j in first[i].keys():
+                if j in second[i].keys():
+                    variables[i][j] = {}
+                for k in first[i][j].keys():
+                    if k in second[i][j].keys():
+                        list_ = [item for item in first[i][j][k] if item in second[i][j][k]]
+                        variables[i][j][k] = list_
+
+        return variables
+
+    def _validate_variable_options(self, variables: dict):
+        for i in variables.keys():
+            if len(variables[i]) == 0:
+                variables.pop(i)
+                if len(variables) == 0:
+                    return variables
+                continue
+            for j in variables[i].keys():
+                if len(variables[i][j]) == 0:
+                    variables[i].pop(j)
+                    if len(variables[i]) == 0:
+                        return variables
+                    continue
+            # TODO Finish this
+            #     for
+            # Check if variables[i] is empty
 
 
 if __name__ == "__main__":

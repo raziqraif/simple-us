@@ -99,52 +99,14 @@ class SIMPLEUtil:
         return option_string
 
     @staticmethod
-    def result_path(jobid: int, is_private=True):
+    def result_path(exp_id_str: str, make_path=True):
+        from model import Experiment
+
+        id = Experiment.to_id(exp_id_str)
+        is_private = Experiment.is_private_id_str(exp_id_str)
         job_dir = SIMPLEUtil.PRIVATE_JOBS_DIR if is_private else SIMPLEUtil.SHARED_JOBS_DIR
-        result_path = job_dir / Path(str(jobid)) / Path("outputs") / Path("results")
+        result_path = job_dir / Path(str(id)) / Path("outputs") / Path("results")
+
+        if make_path:
+            SIMPLEUtil.mkdir(result_path)
         return result_path
-
-    @staticmethod
-    def build_result_list(jobid: int):
-        # example resultPath is self.jobpath + "/results"
-
-        result_path = SIMPLEUtil.result_path(jobid)
-        SIMPLEUtil.mkdir(result_path)
-
-        root = str(result_path)
-        print("root :", root)
-
-        result_list = {}
-
-        dir_list = [item for item in os.listdir(root) if os.path.isdir(os.path.join(root, item))]
-        print("dirlist: ", dir_list)
-
-        for dir_ in dir_list:
-            result_list[dir_] = {}
-            root2 = root + "/" + dir_
-            dirlist2 = [item for item in os.listdir(root2) if os.path.isdir(os.path.join(root2, item))]
-            for dir2 in dirlist2:
-                result_list[dir_][dir2] = {}
-                root3 = root + "/" + dir_ + "/" + dir2
-                dirlist3 = [item for item in os.listdir(root3) if os.path.isdir(os.path.join(root3, item))]
-                for dir3 in dirlist3:
-                    result_list[dir_][dir2][dir3] = []
-                    root4 = root + "/" + dir_ + "/" + dir2 + "/" + dir3
-                    dirlist4 = [item for item in os.listdir(root4) if os.path.isdir(os.path.join(root4, item))]
-                    dirlist4.sort()
-                    for dir4 in dirlist4:
-                        result_list[dir_][dir2][dir3].append(dir4)
-
-        return result_list
-
-    @staticmethod
-    def intersect_result_lists(first_list: dict, second_list: dict):
-        # consider directories in level 1
-        first_dirs_1 = [key for key in first_list.keys()]
-        second_dirs_1 = [key for key in second_list.keys()]
-        dirs_1 = [dir_ for dir_ in first_dirs_1 if dir_ in second_dirs_1]
-
-        result_list = {}
-        for dir_1 in dirs_1:
-            pass
-            # TODO: Finish this
