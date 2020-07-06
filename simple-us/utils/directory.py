@@ -136,3 +136,15 @@ class SIMPLEUtil:
                         result_list[dir_][dir2][dir3].append(dir4)
 
         return result_list
+
+    @staticmethod
+    def intersect_result_lists(first_list: dict, second_list: dict):
+        # consider directories in level 1
+        first_dirs_1 = [key for key in first_list.keys()]
+        second_dirs_1 = [key for key in second_list.keys()]
+        dirs_1 = [dir_ for dir_ in first_dirs_1 if dir_ in second_dirs_1]
+
+        result_list = {}
+        for dir_1 in dirs_1:
+            pass
+            # TODO: Finish this
