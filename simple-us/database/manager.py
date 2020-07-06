@@ -2,21 +2,21 @@ import datetime
 import os
 from pathlib import Path
 import sys
-from typing import List
+from typing import List, Optional
 from typing import Union
 
 import sqlite3
 
+from database.dbutils import AUTHOR
+from database.dbutils import DESCRIPTION
+from database.dbutils import JOB_ID
+from database.dbutils import JOB_NAME
+from database.dbutils import JOB_STATUS
+from database.dbutils import MODEL_TYPE
+from database.dbutils import PUBLISHED
+from database.dbutils import SUBMIT_ID
+from database.dbutils import SUBMIT_TIME
 from model import Experiment
-from .utils import AUTHOR
-from .utils import DESCRIPTION
-from .utils import JOB_ID
-from .utils import JOB_NAME
-from .utils import JOB_STATUS
-from .utils import MODEL_TYPE
-from .utils import PUBLISHED
-from .utils import SUBMIT_ID
-from .utils import SUBMIT_TIME
 from utils import SIMPLEUtil
 
 
@@ -27,6 +27,7 @@ class DBManager:
     The Experiment object representation helps with code completion, etc but for backward
     compatibility, the list representation is kept.
     """
+    from model import Experiment
 
     def __init__(self, private_experiments=True):
         if private_experiments:
@@ -165,9 +166,15 @@ class DBManager:
         cur = conn.execute(sql, (str(jobid),))
         return cur.fetchone()
 
-    def get_experiment(self, jobid):
-        job_as_list = self.get_job_info(jobid)
-        self.to_experiment(job_as_list)
+    def get_experiment(self, jobid) -> Optional[Experiment]:
+        # job_as_list = self.get_job_info(jobid)
+        # if job_as_list is None:
+        #     return None
+        # self.to_experiment(job_as_list)
+        for exp in self.get_experiments():
+            if exp.id == jobid:
+                return exp
+        return None
 
     def to_list(self, experiment: Experiment) -> List[Union[str, int, None]]:
         experiment_as_list = [
