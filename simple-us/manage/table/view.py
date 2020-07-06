@@ -284,6 +284,13 @@ class ExperimentTableView(Container):
                 return row
         return None
 
+    def selected_experiment_ids(self) -> List[str]:
+        ids = []
+        for row in self.selected_rows:
+            id_ = self.id_from_row(row)
+            ids.append(id_)
+        return ids
+
     def toggle_row(self, row: TableRow):
         checkbox = self.checkbox_from_row(row)
         if not checkbox.checked:

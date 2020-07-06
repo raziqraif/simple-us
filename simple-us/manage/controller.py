@@ -2,17 +2,21 @@ from copy import copy
 
 from ipymaterialui import Button
 
+from model import Experiment
 from .table import ExperimentTable
 from utils import ExperimentChip
 
 
 class ManageTab:
-    def __init__(self):
+    def __init__(self, navigate_callback):
         from .view import ManageTabView
         self.experiment_table = ExperimentTable()
         self.view = ManageTabView(self, self.experiment_table.view)
         self.experiment_table.create_experiment_chip = self.view.append_chip
         self.experiment_table.delete_experiment_chip = self.view.remove_chip
+
+        self.navigate_to_view_tab = navigate_callback  # Function callback. Accepts a list of Experiment objects.
+        # Must be set externally by the App class
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
         experiment_id = widget.experiment_id
@@ -20,16 +24,48 @@ class ManageTab:
 
         if associated_row:
             self.experiment_table.toggle_row(associated_row)
-            # The
+            # experiment_table have access to the create/delete experiment chip widget API. The chip widget removal will
+            # be done there.
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
         pass
 
+    def onclick_display(self, widget: Button, event: str, data: dict):
+        print("click display")
+        ids = self.experiment_table.selected_experiment_ids()
+        print("ids", ids)
+        assert len(ids) <= 2
+        if len(ids) == 0:
+            return  # TODO: Display error message
+        elif len(ids) == 2:
+            return  # TODO: Display error message
+        experiment = Experiment.from_id_str(ids[0])
+        if experiment is None:
+            print("Experiment none")
+            return  # TODO: display error message
+        if not experiment.is_completed:
+            print("Not completed")
+            return  # TODO: display error message
+
+        print("About to navigate")
+        self.navigate_to_view_tab([experiment])
+
     def onclick_compare(self, widget: Button, event: str, data: dict):
-        pass
+        ids = self.experiment_table.selected_experiment_ids()
+        assert len(ids) <= 2
+        if len(ids) == 0:
+            return  # TODO: Display error message
+        elif len(ids) == 1:
+            return  # TODO: Display error message
 
-    def enable_button(self, button: Button):
-        pass
+        experiments = [Experiment.from_id_str(id_str) for id_str in ids]
+        if None in experiments:
+            return  # TODO: display error message
+        for exp in experiments:
+            if not exp.is_completed:
+                return  # TODO: error message
 
-    def disable_button(self, button: Button):
-        pass
+        # TODO: Make sure result lists intersect
+
+        # Make sure that the
+        self.navigate_to_view_tab(experiments)

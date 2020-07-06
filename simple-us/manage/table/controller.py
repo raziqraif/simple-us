@@ -40,6 +40,11 @@ class ExperimentTable:
 
         return rows_data
 
+    def selected_experiment_ids(self) -> [str]:
+        """ Expose the view's method """
+
+        return self.view.selected_experiment_ids()
+
     def selected_row_from_id(self, id_):
         """ Expose the view's method """
 

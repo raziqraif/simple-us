@@ -75,6 +75,9 @@ class ManageTabView(Container):
         display = self._create_button("Display")
         compare = self._create_button("Compare")
 
+        display.on_event("onClick", self.controller.onclick_display)
+        compare.on_event("onClick", self.controller.onclick_compare)
+
         buttons_wrapper = Container(children=[display, compare],
                                     tag="div",
                                     style_={
