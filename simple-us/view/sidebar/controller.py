@@ -12,9 +12,14 @@ class Sidebar:
     def update_system_components_options(self):
         options = ["Select"]
 
-        experiment = self.experiments[0]
-        result_list = experiment.result_list
-        options += [key for key in result_list.keys()]
+        experiment = None
+        if len(self.experiments) != 0:
+            experiment = self.experiments[0]
+        if len(self.experiments) == 1:
+            options += experiment.system_component_options()
+        # elif len(self.experiments) == 2:
+        #     options += experiment.system_component_options()
+
         self.view.update_system_components_options(options)
 
     def update_spatial_resolution_options(self):
@@ -24,9 +29,14 @@ class Sidebar:
             self.view.update_spatial_resolution_options(options)
             return
 
-        experiment = self.experiments[0]
-        result_list = experiment.result_list
-        options += [key for key in result_list[sys_comp].keys()]
+        experiment = None
+        if len(self.experiments) != 0:
+            experiment = self.experiments[0]
+        if len(self.experiments) == 1:
+            options += experiment.spatial_resolution_options(sys_comp)
+        # elif len(self.experiments) == 2:
+        #     options += experiment.system_component_options(sys_comp)
+
         self.view.update_spatial_resolution_options(options)
 
     def update_type_of_results_options(self):
@@ -39,10 +49,13 @@ class Sidebar:
             print("return type of res")
             return
 
-        experiment = self.experiments[0]
-        result_list = experiment.result_list
-        options += [result_list[sys_comp][spat_res][key] for key in result_list[sys_comp][spat_res].keys()][0]
-        # options += [key for key in result_list[sys_comp][spat_res].keys()]
+        experiment = None
+        if len(self.experiments) != 0:
+            experiment = self.experiments[0]
+        if len(self.experiments) == 1:
+            options += experiment.type_of_result_options(sys_comp, spat_res)
+        # elif len(self.experiments) == 2:
+        #     options += experiment.system_component_options(sys_comp)
 
         self.view.update_type_of_results_options(options)
 
@@ -57,6 +70,12 @@ class Sidebar:
             self.view.update_result_to_view_options(options)
             print("return res to view")
             return
+
+        experiment = None
+        if len(self.experiments) != 0:
+            experiment = self.experiments[0]
+        if len(self.experiments) == 1:
+            options += experiment.result_to_view_options(sys_comp, spat_res, type_of_res)
 
         # experiment = self.experiments[0]
         # result_list = experiment.result_list

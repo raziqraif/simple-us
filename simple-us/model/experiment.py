@@ -117,6 +117,17 @@ class Experiment(ExperimentUtil):
 
     """ Methods to access result variables """
 
+    def _variable_name_conversion(self, name: str) -> str:
+        dir_name_to_displayed = {"LVA": "Absolute Changes", "LVB": "Base Value", "LVC": "Updated Value",
+                                 "PVT": "Percent Changes"}
+        displayed_to_dir_name = {"Absolute Changes": "LVA", "Base Value": "LVB", "Updated Value": "LVC",
+                                 "Percent Changes": "PVT"}
+        if name in dir_name_to_displayed.keys():
+            name = dir_name_to_displayed[name]
+        elif name in displayed_to_dir_name.keys():
+            name = displayed_to_dir_name[name]
+        return name
+
     def system_component_options(self) -> List[str]:
         path = SIMPLEUtil.result_path(self.id_str)
         options = []
@@ -135,19 +146,17 @@ class Experiment(ExperimentUtil):
 
     def type_of_result_options(self, system_component: str, spatial_resolution: str) -> List[str]:
         path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution)
-        conversion = {"LVA": "Absolute Changes", "LVB": "Base Value", "LVC": "Updated Value",
-                      "PVT": "Percent Changes"}
 
         options = []
         if not path.is_dir():
             return options
-        options += [conversion[item] for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        options += [self._variable_name_conversion(item) for item in os.listdir(path) if path.joinpath(item).is_dir()]
         return options
 
     def result_to_view_options(self, system_component: str, spatial_resolution: str,
                                type_of_result: str) -> List[str]:
         type_of_result_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution) \
-               / Path(type_of_result)
+               / Path(self._variable_name_conversion(type_of_result))
 
         options = []
         if not type_of_result_path.is_dir():
