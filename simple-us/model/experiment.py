@@ -1,8 +1,14 @@
+import re
 import os
 from pathlib import Path
 from typing import Optional, List
 
 from utils import SIMPLEUtil
+
+DIR_NAME_TO_DISPLAY_NAME = {"LVC": "Absolute Changes", "LVB": "Base Value", "LVA": "Updated Value",
+                            "PCT": "Percent Changes"}
+DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVA", "Base Value": "LVB", "Updated Value": "LVC",
+                            "Percent Changes": "PCT"}
 
 
 class ExperimentUtil:
@@ -117,46 +123,69 @@ class Experiment(ExperimentUtil):
 
     """ Methods to access result variables """
 
-    def _variable_name_conversion(self, name: str) -> str:
-        dir_name_to_displayed = {"LVA": "Absolute Changes", "LVB": "Base Value", "LVC": "Updated Value",
-                                 "PVT": "Percent Changes"}
-        displayed_to_dir_name = {"Absolute Changes": "LVA", "Base Value": "LVB", "Updated Value": "LVC",
-                                 "Percent Changes": "PVT"}
-        if name in dir_name_to_displayed.keys():
-            name = dir_name_to_displayed[name]
-        elif name in displayed_to_dir_name.keys():
-            name = displayed_to_dir_name[name]
+    def _convert_variable_name(self, name: str, dir_to_display=True, display_to_dir=True) -> str:
+        if (name in DIR_NAME_TO_DISPLAY_NAME.keys()) and dir_to_display:
+            name = DIR_NAME_TO_DISPLAY_NAME[name]
+        elif (name in DISPLAY_NAME_TO_DIR_NAME.keys()) and display_to_dir:
+            name = DISPLAY_NAME_TO_DIR_NAME[name]
         return name
 
-    def system_component_options(self) -> List[str]:
-        path = SIMPLEUtil.result_path(self.id_str)
+    def system_component_options(self, intersected_paths: Optional[List[str]] = None) -> List[str]:
+        path_ = SIMPLEUtil.result_path(self.id_str)
         options = []
-        if not path.is_dir():
+        if not path_.is_dir():
             return options
-        options += [item for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        for item in os.listdir(path_):
+            if not path_.joinpath(item).is_dir():
+                continue
+            if intersected_paths is None:
+                options.append(item)
+            elif self._variables_intersected(intersected_paths, item):
+                options.append(item)
         return options
 
-    def spatial_resolution_options(self, system_component: str) -> List[str]:
-        path = SIMPLEUtil.result_path(self.id_str) / Path(system_component)
+    def spatial_resolution_options(self, system_component: str, intersected_paths: Optional[List[str]] = None) \
+            -> List[str]:
+        path_ = SIMPLEUtil.result_path(self.id_str) / Path(system_component)
         options = []
-        if not path.is_dir():
+        if not path_.is_dir():
             return options
-        options += [item for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        for item in os.listdir(path_):
+            if not path_.joinpath(item).is_dir():
+                continue
+            if intersected_paths is None:
+                options.append(item)
+            elif self._variables_intersected(intersected_paths, system_component, item):
+                options.append(item)
         return options
 
-    def type_of_result_options(self, system_component: str, spatial_resolution: str) -> List[str]:
-        path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution)
-
+    def type_of_result_options(self, system_component: str, spatial_resolution: str,
+                               intersected_paths: Optional[List[str]] = None) -> List[str]:
         options = []
-        if not path.is_dir():
+        spatial_resolution_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) \
+            / Path(spatial_resolution)
+        if not spatial_resolution_path.is_dir():
             return options
-        options += [self._variable_name_conversion(item) for item in os.listdir(path) if path.joinpath(item).is_dir()]
+        if len(os.listdir(spatial_resolution_path)) == 0:
+            return options
+        shock_dirname = os.listdir(spatial_resolution_path)[0]  # LOOKATME: Assume there's only one shock directory
+
+        path_ = spatial_resolution_path / Path(shock_dirname)
+        if not path_.is_dir():
+            return options
+        for item in os.listdir(path_):
+            if not path_.joinpath(item).is_dir():
+                continue
+            if intersected_paths is None:
+                options.append(item)
+            elif self._variables_intersected(intersected_paths, system_component, spatial_resolution, item):
+                options.append(item)
         return options
 
-    def result_to_view_options(self, system_component: str, spatial_resolution: str,
-                               type_of_result: str) -> List[str]:
+    def result_to_view_options(self, system_component: str, spatial_resolution: str, type_of_result: str,
+                               intersected_paths: Optional[List[str]] = None) -> List[str]:
         type_of_result_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution) \
-               / Path(self._variable_name_conversion(type_of_result))
+               / Path(self._convert_variable_name(type_of_result))
 
         options = []
         if not type_of_result_path.is_dir():
@@ -164,10 +193,37 @@ class Experiment(ExperimentUtil):
         if len(os.listdir(type_of_result_path)) == 0:
             return options
         middle_dir_name = os.listdir(type_of_result_path)[0]  # TODO: Check this with older version
-        path = type_of_result_path / Path(middle_dir_name)
+        path_ = type_of_result_path / Path(middle_dir_name)
+        if not path_.is_dir():
+            return options
+        for full_path in path_.glob("*.tif^"):
+            if not path_.joinpath(full_path).is_file():
+                continue
+            if intersected_paths is None:
+                options.append(full_path.name)
+            elif self._variables_intersected(intersected_paths, system_component, spatial_resolution, full_path.name):
+                options.append(full_path.name)
 
-        options += [item for item in path.glob("*.tif")]
         return options
+
+    def _variables_intersected(self, intersected_paths: List[str], system_component: str,
+                               spatial_resolution: Optional[str] = None, type_of_result: Optional[str] = None,
+                               result_to_view: Optional[str] = None) -> bool:
+
+        pattern = system_component + ".*"
+        if spatial_resolution:
+            pattern += spatial_resolution + ".*"
+        if spatial_resolution and type_of_result:
+            converted_tor = self._convert_variable_name(type_of_result, dir_to_display=False)
+            pattern += converted_tor + ".*"
+        if spatial_resolution and type_of_result and result_to_view:
+            converted_rtv = self._convert_variable_name(result_to_view, dir_to_display=False)
+            pattern += converted_rtv
+
+        print("pattern:", pattern)
+        compiled = re.compile(pattern)
+        filtered = list(filter(compiled.match, intersected_paths))
+        return len(filtered) != 0
 
     @property
     def variable_options(self) -> dict:
@@ -185,41 +241,31 @@ class Experiment(ExperimentUtil):
 
         return variables
 
-    def intersect_variable_options(self, variable_options: dict):
-        first = self.variable_options
-        second = variable_options
+    def intersect_result_paths(self, experiment) -> List[str]:
+        """
+            Intersect all result paths for both experiments (when the root result directory is excluded) and return the
+            values
+        """
 
-        variables = {}
-        for i in first.keys():
-            if i in second.keys():
-                variables[i] = {}
-            for j in first[i].keys():
-                if j in second[i].keys():
-                    variables[i][j] = {}
-                for k in first[i][j].keys():
-                    if k in second[i][j].keys():
-                        list_ = [item for item in first[i][j][k] if item in second[i][j][k]]
-                        variables[i][j][k] = list_
+        assert isinstance(experiment, Experiment)
 
-        return variables
+        first_root = SIMPLEUtil.result_path(self.id_str)
+        second_root = SIMPLEUtil.result_path(experiment.id_str)
 
-    def _validate_variable_options(self, variables: dict):
-        for i in variables.keys():
-            if len(variables[i]) == 0:
-                variables.pop(i)
-                if len(variables) == 0:
-                    return variables
-                continue
-            for j in variables[i].keys():
-                if len(variables[i][j]) == 0:
-                    variables[i].pop(j)
-                    if len(variables[i]) == 0:
-                        return variables
-                    continue
-            # TODO Finish this
-            #     for
-            # Check if variables[i] is empty
+        first_prefix_len = len(str(first_root)) + 1
+        second_prefix_len = len(str(second_root)) + 1
+
+        first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
+        second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
+
+        intersected_paths = [path_ for path_ in first_paths if path_ in second_paths]
+        return intersected_paths
 
 
 if __name__ == "__main__":
-    Experiment()
+    e1 = Experiment(1)
+    e2 = Experiment(2)
+    ip = e1.intersect_result_paths(e2)
+    for path in ip:
+        print(path)
+    print(e1._variables_intersected(ip, "Production", "Geospatial", "Absolute Changes", "rainfed.tif"))
