@@ -19,7 +19,7 @@ class App:
 
     def __init__(self):
         self.create_tab: CreateTab = CreateTab()
-        self.manage_tab: ManageTab = ManageTab(self.navigate_to_view_tab)
+        self.manage_tab: ManageTab = ManageTab(self.view_experiments)
         self.view_tab: ViewTab = ViewTab()
         self.about_tab = Box()
 
@@ -29,16 +29,14 @@ class App:
                                self.manage_tab.view,
                                self.view_tab.view,
                                self.about_tab)
-        self.appview.tabs.value = self.manage_tab.view
+        self.appview.tabs.value = self.view_tab.view
 
     def display(self):
         return Container(children=[self.appview])
 
-    def navigate_to_view_tab(self, experiments: List[Experiment]):
+    def view_experiments(self, experiments: List[Experiment]):
         print("Navigating")
-        self.view_tab.experiments = experiments
-        self.view_tab.refresh_sidebar()
-
+        self.view_tab.new_view(experiments)
         self.appview.tabs.value = self.view_tab.view
 
 

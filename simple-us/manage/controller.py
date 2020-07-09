@@ -8,14 +8,14 @@ from utils import ExperimentChip
 
 
 class ManageTab:
-    def __init__(self, navigate_callback):
+    def __init__(self, view_experiments_callback):
         from .view import ManageTabView
         self.experiment_table = ExperimentTable()
         self.view = ManageTabView(self, self.experiment_table.view)
         self.experiment_table.create_experiment_chip = self.view.append_chip
         self.experiment_table.delete_experiment_chip = self.view.remove_chip
 
-        self.navigate_to_view_tab = navigate_callback  # Function callback. Accepts a list of Experiment objects.
+        self.view_experiments = view_experiments_callback  # Function callback. Accepts a list of Experiment objects.
         # Must be set externally by the App class
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
@@ -48,7 +48,7 @@ class ManageTab:
             return  # TODO: display error message
 
         print("About to navigate")
-        self.navigate_to_view_tab([experiment])
+        self.view_experiments([experiment])
 
     def onclick_compare(self, widget: Button, event: str, data: dict):
         ids = self.experiment_table.selected_experiment_ids()
@@ -66,6 +66,4 @@ class ManageTab:
                 return  # TODO: error message
 
         # TODO: Make sure result lists intersect
-
-        # Make sure that the
-        self.navigate_to_view_tab(experiments)
+        self.view_experiments(experiments)
