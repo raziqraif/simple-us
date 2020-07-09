@@ -1,5 +1,5 @@
 from copy import copy
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from ipymaterialui import Button
 from ipymaterialui import Container
@@ -48,78 +48,80 @@ class SidebarView(Container):
 
         self.controller = controller
 
-        self.title = CustomText("Variables", style_={"font-weight": "bold",
-                                                     "font-size": "16px",
-                                                     "margin": "0px 0px 24px 0px"})
-        self.system_components = None
-        self.spatial_resolution = None
-        self.type_of_results = None
-        self.result_to_view = None
-        self.filter = None
-        self.buttons_wrapper = None
+        self._title = CustomText("Variables", style_={"font-weight": "bold",
+                                                      "font-size": "16px",
+                                                      "margin": "0px 0px 24px 0px"})
+        self._system_component_wrapper = None
+        self._spatial_resolution_wrapper = None
+        self._type_of_result_wrapper = None
+        self._result_to_view_wrapper = None
+        self._filter_wrapper = None
+        self._buttons_wrapper = None
 
-        self.system_components_select: Optional[Dropdown] = None
-        self.spatial_resolution_select: Optional[Dropdown] = None
-        self.type_of_results_select: Optional[Dropdown] = None
-        self.result_to_view_select: Optional[Dropdown] = None
+        self._system_components_select: Optional[Dropdown] = None
+        self._spatial_resolution_select: Optional[Dropdown] = None
+        self._type_of_results_select: Optional[Dropdown] = None
+        self._result_to_view_select: Optional[Dropdown] = None
+        self._filter_slider: Optional[Slider] = None
 
-        self.build_system_components()
-        self.build_spatial_resolution()
-        self.build_type_of_results()
-        self.build_result_to_view()
-        self.build_filter()
-        self.build_buttons_wrapper()
+        self._build_system_components()
+        self._build_spatial_resolution()
+        self._build_type_of_results()
+        self._build_result_to_view()
+        self._build_filter()
+        self._build_buttons_wrapper()
 
-        self.children = [self.title, self.system_components, self.spatial_resolution, self.type_of_results,
-                         self.result_to_view, self.filter, self.buttons_wrapper]
+        self.children = [self._title, self._system_component_wrapper, self._spatial_resolution_wrapper,
+                         self._type_of_result_wrapper, self._result_to_view_wrapper, self._filter_wrapper,
+                         self._buttons_wrapper]
 
-    def build_system_components(self):
+    def _build_system_components(self):
         text = CustomText("System Components", style_={"font-weight": "bold"})
         options: List[str] = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        self.system_components_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
-        self.system_components_select.observe(self.controller.onchange_system_components)
-        wrapper = self._create_input_wrapper([text, self.system_components_select])
-        self.system_components = wrapper
+        self._system_components_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self._system_components_select.observe(self.controller.onchange_system_components)
+        wrapper = self._create_input_wrapper([text, self._system_components_select])
+        self._system_component_wrapper = wrapper
 
-    def build_spatial_resolution(self):
+    def _build_spatial_resolution(self):
         text = CustomText("Spatial Resolution", style_={"font-weight": "bold"})
         options: List[str] = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        self.spatial_resolution_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
-        self.spatial_resolution_select.observe(self.controller.onchange_spatial_resolution)
-        wrapper = self._create_input_wrapper([text, self.spatial_resolution_select])
-        self.spatial_resolution = wrapper
+        self._spatial_resolution_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self._spatial_resolution_select.observe(self.controller.onchange_spatial_resolution)
+        wrapper = self._create_input_wrapper([text, self._spatial_resolution_select])
+        self._spatial_resolution_wrapper = wrapper
 
-    def build_type_of_results(self):
+    def _build_type_of_results(self):
         text = CustomText("Type Of Results", style_={"font-weight": "bold"})
         options = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        self.type_of_results_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
-        self.type_of_results_select.observe(self.controller.onchange_type_of_results)
-        wrapper = self._create_input_wrapper([text, self.type_of_results_select])
-        self.type_of_results = wrapper
+        self._type_of_results_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        self._type_of_results_select.observe(self.controller.onchange_type_of_results)
+        wrapper = self._create_input_wrapper([text, self._type_of_results_select])
+        self._type_of_result_wrapper = wrapper
 
-    def build_result_to_view(self):
+    def _build_result_to_view(self):
         text = CustomText("Result To View", style_={"font-weight": "bold"})
         options = ["Select"]
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px")
-        self.result_to_view_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
-        wrapper = self._create_input_wrapper([text, self.result_to_view_select])
-        self.result_to_view = wrapper
+        self._result_to_view_select = widgets.Dropdown(value=options[0], options=options, layout=layout)
+        wrapper = self._create_input_wrapper([text, self._result_to_view_select])
+        self._result_to_view_wrapper = wrapper
 
-    def build_filter(self):
+    def _build_filter(self):
         text = CustomText("Filter", style_={"font-weight": "bold"})
         # material ui's slider crashes when the user moves the it too quickly
         # slider = Slider(value=[0, 100], max=100.0, min=0.00, step=0.05, marks=[0, 20, 40, 60, 80, 100])
         # layout = Layout(width="180px", margin="8px 8px 0px 8px", align_items="center")
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px", align_items="center")
-        slider = widgets.FloatRangeSlider(
+        self._filter_slider = widgets.FloatRangeSlider(
             value=[0, 100], min=0, max=100, step=0.05, continuous_update=False, readout=False,
             layout=layout,
         )
-        zero = CustomText("0%")
-        hundred = CustomText("100%")
+        # zero = CustomText("0%")
+        # hundred = CustomText("100%")
         # slider_wrapper = Container(children=[zero, slider, hundred],
         #                            style_={
         #                                "display": "flex",
@@ -129,17 +131,17 @@ class SidebarView(Container):
         #                                "padding": "0px 0px 0px 0px",
         #                                "width": "auto",
         #                            })
-        wrapper = self._create_input_wrapper([text, slider])
-        self.filter = wrapper
+        wrapper = self._create_input_wrapper([text, self._filter_slider])
+        self._filter_wrapper = wrapper
 
-    def build_buttons_wrapper(self):
+    def _build_buttons_wrapper(self):
         visualize = self._create_button("Visualize")
         csv = self._create_button("CSV")
         wrapper = self._create_input_wrapper([visualize, csv])
         style_ = copy(wrapper.style_)
         style_["margin"] = "32px 12px 32px 12px"
         wrapper.style_ = style_
-        self.buttons_wrapper = wrapper
+        self._buttons_wrapper = wrapper
 
     def _create_button(self, text: str) -> Button:
         text_html = CustomText(text,
@@ -175,30 +177,38 @@ class SidebarView(Container):
                             })
         return wrapper
 
-    def update_system_components_options(self, options: List[str]):
+    def update_system_component_options(self, options: List[str]):
         assert "Select" in options
-        self.system_components_select.options = options
+        self._system_components_select.options = options
 
     def update_spatial_resolution_options(self, options: List[str]):
         assert "Select" in options
-        self.spatial_resolution_select.options = options
+        self._spatial_resolution_select.options = options
 
     def update_type_of_results_options(self, options: List[str]):
         assert "Select" in options
-        self.type_of_results_select.options = options
+        self._type_of_results_select.options = options
 
     def update_result_to_view_options(self, options: List[str]):
         assert "Select" in options
-        self.result_to_view_select.options = options
+        self._result_to_view_select.options = options
 
-    def system_components_value(self) -> str:
-        return self.system_components_select.value
+    @property
+    def system_component(self) -> str:
+        return self._system_components_select.value
 
-    def spatial_resolution_value(self) -> str:
-        return self.spatial_resolution_select.value
+    @property
+    def spatial_resolution(self) -> str:
+        return self._spatial_resolution_select.value
 
-    def type_of_results_value(self) -> str:
-        return self.type_of_results_select.value
+    @property
+    def type_of_result(self) -> str:
+        return self._type_of_results_select.value
 
-    def result_to_view_value(self) -> str:
-        return self.result_to_view_select.value
+    @property
+    def result_to_view(self) -> str:
+        return self._result_to_view_select.value
+
+    @property
+    def filter_range(self) -> Tuple[float, float]:
+        return self._filter_slider.value
