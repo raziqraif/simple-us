@@ -159,6 +159,10 @@ class Experiment(ExperimentUtil):
                 options.append(item)
         return options
 
+    def _shock_dir_name(self, spatial_resolution_path: Path) -> str:
+        shock_dirname = os.listdir(str(spatial_resolution_path))[0]  # LOOKATME: Assume there's only one shock directory
+        return shock_dirname
+
     def type_of_result_options(self, system_component: str, spatial_resolution: str,
                                intersected_paths: Optional[List[str]] = None) -> List[str]:
         options = []
@@ -168,7 +172,8 @@ class Experiment(ExperimentUtil):
             return options
         if len(os.listdir(spatial_resolution_path)) == 0:
             return options
-        shock_dirname = os.listdir(spatial_resolution_path)[0]  # LOOKATME: Assume there's only one shock directory
+        # LOOKATME: Assume there's only one shock directory
+        shock_dirname = self._shock_dir_name(spatial_resolution_path)
 
         path_ = spatial_resolution_path / Path(shock_dirname)
         if not path_.is_dir():
@@ -177,26 +182,31 @@ class Experiment(ExperimentUtil):
             if not path_.joinpath(item).is_dir():
                 continue
             if intersected_paths is None:
-                options.append(item)
+                options.append(self._convert_variable_name(item))
             elif self._variables_intersected(intersected_paths, system_component, spatial_resolution, item):
-                options.append(item)
+                options.append(self._convert_variable_name(item))
         return options
+
+    def _type_of_result_path(self, system_component: str, spatial_resolution: str, type_of_result: str) -> Path:
+        type_of_result = self._convert_variable_name(type_of_result, dir_to_display=False)
+        spatial_resolution_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) \
+                                  / Path(spatial_resolution)
+        shock_dirname = self._shock_dir_name(spatial_resolution_path)
+        path_ = spatial_resolution_path / Path(shock_dirname) / Path(type_of_result)
+        return path_
 
     def result_to_view_options(self, system_component: str, spatial_resolution: str, type_of_result: str,
                                intersected_paths: Optional[List[str]] = None) -> List[str]:
-        type_of_result_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) / Path(spatial_resolution) \
-               / Path(self._convert_variable_name(type_of_result))
-
+        path_ = self._type_of_result_path(system_component, spatial_resolution, type_of_result)
+        print("type of result path:", path_)
         options = []
-        if not type_of_result_path.is_dir():
-            return options
-        if len(os.listdir(type_of_result_path)) == 0:
-            return options
-        middle_dir_name = os.listdir(type_of_result_path)[0]  # TODO: Check this with older version
-        path_ = type_of_result_path / Path(middle_dir_name)
         if not path_.is_dir():
             return options
-        for full_path in path_.glob("*.tif^"):
+        if len(os.listdir(str(path_))) == 0:
+            return options
+
+        for full_path in path_.glob("*.tif"):
+            print(".tif fullpath:", full_path)
             if not path_.joinpath(full_path).is_file():
                 continue
             if intersected_paths is None:
