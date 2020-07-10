@@ -2,7 +2,7 @@ from copy import copy, deepcopy
 from typing import List
 from typing import Optional
 
-from ipyleaflet import Map
+from ipyleaflet import Map, Path
 from ipymaterialui import Button, Tabs, Tab
 from ipymaterialui import Container
 from ipymaterialui import FormControl
@@ -133,7 +133,7 @@ class ViewTabUI(Container):
         self._map_wrapper_full = self._create_map_wrapper(self._map_title_full)
         self._map_wrapper_top = self._create_map_wrapper(self._map_title_top, False)
         self._map_wrapper_bottom = self._create_map_wrapper(self._map_title_bottom, False)
-        initial_maps_area = Container(children=["test"],  # FIXME
+        initial_maps_area = Container(children=[""],
                                       style_={
                                           "display": "flex",
                                           "flex-direction": "column",
@@ -224,6 +224,11 @@ class ViewTabUI(Container):
                 children = copy(self._tab_bar.children)
                 children.remove(tab)
                 self._tab_bar.children = children
+
+    def add_layer(self, map_: any, tile_folder_path: Path):
+        S
+        print(tile_folder_path)
+        layer = TileLayer()
 
     def maps(self) -> Optional[List[Map]]:
         if self._view_widgets_wrapper.children[0] == self._empty_text:
