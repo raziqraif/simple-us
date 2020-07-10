@@ -9,7 +9,7 @@ class Sidebar:
         from .view import SidebarView
         self.view = SidebarView(self)
         self.context: Optional[ViewContext] = None
-        self.visualize_variables = None  # Callback function. Must be set externally
+        self.visualize_variables = None  # LOOKATME: Callback function. Must be set externally
 
     @property
     def experiments(self) -> List[Experiment]:

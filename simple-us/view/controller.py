@@ -49,4 +49,17 @@ class ViewTab:
 
     def visualize_variables(self, system_component: str, spatial_resolution: str, type_of_result: str,
                             result_to_view: str, filter_range: Tuple[float, float]) -> None:
-        pass
+        assert self.active_context is not None
+        experiments = self.active_context.experiments
+        count = len(experiments)
+        assert count > 0
+        tif_file_path_1 = experiments[0].result_path(system_component, spatial_resolution, type_of_result,
+                                                     result_to_view)
+        assert tif_file_path_1 is not None
+        assert tif_file_path_1.exists()
+        if count == 2:
+            tif_file_path_2 = experiments[1].result_path(system_component, spatial_resolution, type_of_result,
+                                                         result_to_view)
+            assert tif_file_path_2 is not None
+            assert tif_file_path_2.exists()
+
