@@ -123,12 +123,19 @@ class Experiment(ExperimentUtil):
 
     """ Methods to access result variables """
 
-    def _convert_variable_name(self, name: str, dir_to_display=True, display_to_dir=True) -> str:
-        if (name in DIR_NAME_TO_DISPLAY_NAME.keys()) and dir_to_display:
+    def _convert_variable_name(self, name: str, dir_to_display_name=True, display_to_dir_name=True) -> str:
+        # NOTE: dir stands for directory
+        if (name in DIR_NAME_TO_DISPLAY_NAME.keys()) and dir_to_display_name:
             name = DIR_NAME_TO_DISPLAY_NAME[name]
-        elif (name in DISPLAY_NAME_TO_DIR_NAME.keys()) and display_to_dir:
+        elif (name in DISPLAY_NAME_TO_DIR_NAME.keys()) and display_to_dir_name:
             name = DISPLAY_NAME_TO_DIR_NAME[name]
         return name
+
+    def _directory_to_display_name(self, variable: str):
+        self._convert_variable_name(variable, display_to_dir_name=False)
+
+    def _display_to_directory_name(self, variable: str):
+        self._convert_variable_name(variable, dir_to_display_name=False)
 
     def system_component_options(self, intersected_paths: Optional[List[str]] = None) -> List[str]:
         path_ = SIMPLEUtil.result_path(self.id_str)
@@ -188,7 +195,7 @@ class Experiment(ExperimentUtil):
         return options
 
     def _type_of_result_path(self, system_component: str, spatial_resolution: str, type_of_result: str) -> Path:
-        type_of_result = self._convert_variable_name(type_of_result, dir_to_display=False)
+        type_of_result = self._convert_variable_name(type_of_result, dir_to_display_name=False)
         spatial_resolution_path = SIMPLEUtil.result_path(self.id_str) / Path(system_component) \
                                   / Path(spatial_resolution)
         shock_dirname = self._shock_dir_name(spatial_resolution_path)
@@ -224,10 +231,10 @@ class Experiment(ExperimentUtil):
         if spatial_resolution:
             pattern += spatial_resolution + ".*"
         if spatial_resolution and type_of_result:
-            converted_tor = self._convert_variable_name(type_of_result, dir_to_display=False)
+            converted_tor = self._convert_variable_name(type_of_result, dir_to_display_name=False)
             pattern += converted_tor + ".*"
         if spatial_resolution and type_of_result and result_to_view:
-            converted_rtv = self._convert_variable_name(result_to_view, dir_to_display=False)
+            converted_rtv = self._convert_variable_name(result_to_view, dir_to_display_name=False)
             pattern += converted_rtv
 
         print("pattern:", pattern)
@@ -235,21 +242,27 @@ class Experiment(ExperimentUtil):
         filtered = list(filter(compiled.match, intersected_paths))
         return len(filtered) != 0
 
-    @property
-    def variable_options(self) -> dict:
-        variables = {}
-        system_components = self.system_component_options()
+    def result_path(self, system_component: Optional[str] = None, spatial_resolution: Optional[str] = None,
+                    type_of_result: Optional[str] = None, result_to_view: Optional[str] = None) -> Optional[Path]:
+        # Format: ../root_job_dir/<id>/<system_component>/<spatial_resolution>/<shock_dir>/<type_of_result>
+        # /<result_to_view>
 
-        for i in system_components:
-            variables[i] = {}
-            spatial_resolutions = self.spatial_resolution_options(i)
-            for j in spatial_resolutions:
-                variables[i][j] = {}
-                type_of_results = self.type_of_result_options(i, j)
-                for k in type_of_results:
-                    variables[i][j][k] = self.result_to_view_options(i, j, k)
+        # TODO: Use this method to simplify some of the above methods
 
-        return variables
+        path_ = SIMPLEUtil.result_path(self.id_str)
+        if system_component is None:
+            return path_ if path_.exists() else None
+        path_ = path_ / system_component
+        if spatial_resolution is None:
+            return path_ if path_.exists() else None
+        path_ = path_ / spatial_resolution
+        if type_of_result is None:
+            return path_ if path_.exists() else None
+        path_ = path_ / self._shock_dir_name(path_) / self._display_to_directory_name(type_of_result)
+        if result_to_view is None:
+            return path_ if path_.exists() else None
+        path_ = path_ / result_to_view / self._display_to_directory_name(result_to_view)
+        return path_
 
     def intersect_result_paths(self, experiment) -> List[str]:
         """
