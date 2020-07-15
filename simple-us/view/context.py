@@ -7,8 +7,6 @@ DEFAULT_SELECTION = "Select"
 
 
 class ViewContext:
-    __id__ = 1
-
     def __init__(self, experiments: List[Experiment]):
         assert experiments is not None
         assert 1 <= len(experiments) <= 2
@@ -16,8 +14,6 @@ class ViewContext:
             assert experiments[0].id_str != experiments[1].id_str
         self.experiments: List[Experiment] = experiments
         self.maps: any = []
-        self.id = ViewContext.__id__
-        ViewContext.__id__ += 1
         self._system_component: Optional[str] = None
         self._spatial_resolution: Optional[str] = None
         self._type_of_result: Optional[str] = None
@@ -36,8 +32,8 @@ class ViewContext:
     @property
     def title(self) -> str:
         if len(self.experiments) == 2:
-            return "Compare - " + self.experiments[0].id_str + " & " + self.experiments[1].id_str
-        return "Display - " + self.experiments[0].id_str
+            return self.experiments[0].id_str + " & " + self.experiments[1].id_str
+        return self.experiments[0].id_str
 
     @property
     def map_titles(self) -> List[str]:
@@ -69,7 +65,7 @@ class ViewContext:
 
     @type_of_result.setter
     def type_of_result(self, value: str):
-        self._spatial_resolution = value
+        self._type_of_result = value
 
     @property
     def result_to_view(self) -> str:

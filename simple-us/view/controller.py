@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -13,53 +14,59 @@ class ViewTab:
         self._sidebar = Sidebar()
         self._sidebar.visualize_variables = self.visualize_variables
         self.contexts: List[ViewContext] = []
-        self.active_context: Optional[ViewContext] = None
+        self.active_context: Optional[ViewContext] = None  # Needed to save the state of the previous context when
+        # context switch happens
 
         self.view = ViewTabUI(self, self._sidebar.view)
 
-    @property
-    def active_tab_model(self) -> any:
-        return self.active_context
-
-    def maps_from_model(self, tab_model: any) -> any:
-        assert isinstance(tab_model, ViewContext)
-        return tab_model.maps
-
-    def map_titles_from_model(self, tab_model: any) -> List[str]:
-        assert isinstance(tab_model, ViewContext)
-        return tab_model.map_titles
-
-    def save_maps_to_model(self, maps: List[any], tab_model: any):
-        assert isinstance(tab_model, ViewContext)
-        tab_model.maps = maps
+    def cache_maps(self, maps: List[any], context: ViewContext):
+        assert isinstance(context, ViewContext)
+        context.maps = maps
 
     def new_view(self, experiments: List[Experiment]):
         """ New display/compare view"""
 
         context = ViewContext(experiments)
         self.contexts.append(context)
-        self._switch_context(context)
         self.view.new_tab(context.title, context, context.is_comparison)
+        # self._switch_context(context)
 
     def _switch_context(self, context: ViewContext):
-        self._sidebar.switch_context(context)
+        assert isinstance(context, ViewContext)
         if self.active_context:
             self.active_context.maps = self.view.maps()
         self.active_context = context
+        self._sidebar.switch_context(context)
+        self.view.show_maps(context)
 
     def visualize_variables(self, system_component: str, spatial_resolution: str, type_of_result: str,
                             result_to_view: str, filter_range: Tuple[float, float]) -> None:
         assert self.active_context is not None
+        print("Reached visualize var")
         experiments = self.active_context.experiments
         count = len(experiments)
         assert count > 0
-        tif_file_path_1 = experiments[0].result_path(system_component, spatial_resolution, type_of_result,
-                                                     result_to_view)
+        # tif_file_path_1 = experiments[0].result_path(system_component, spatial_resolution, type_of_result,
+        #                                              result_to_view)
+        tif_file_path_1 = Path()
         assert tif_file_path_1 is not None
         assert tif_file_path_1.exists()
         if count == 2:
-            tif_file_path_2 = experiments[1].result_path(system_component, spatial_resolution, type_of_result,
-                                                         result_to_view)
+            # tif_file_path_2 = experiments[1].result_path(system_component, spatial_resolution, type_of_result,
+            #                                              result_to_view)
+            tif_file_path_2 = Path()
             assert tif_file_path_2 is not None
             assert tif_file_path_2.exists()
 
+        maps = self.view.maps()
+        if maps is None:
+            return
+        self.view.add_layer(maps[0], tif_file_path_1)
+        if count == 2:
+            self.view.add_layer(maps[1], tif_file_path_2)
+
+    def onchange_tab(self, data):
+        tab_index = data["new"]
+        assert isinstance(tab_index, int)
+        context = self.view.context(tab_index)
+        self._switch_context(context)
