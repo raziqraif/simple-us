@@ -14,27 +14,25 @@ DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVA", "Base Value": "LVB", "Upd
 class ExperimentUtil:
     @staticmethod
     def to_id(id_str: str) -> int:
-        # TODO: Update this
-        return int(id_str)
+        id_ = int(id_str[1:])
+        return id_
 
     @staticmethod
     def to_id_str(id_: int, is_private=True) -> str:
-        # TODO: Update this
-        return str(id_)
+        return "P" + str(id_) if is_private else "S" + str(id_)
 
     @staticmethod
-    def is_private_id_str(id_str) -> bool:
-        return True  # TODO: Update this
+    def is_private_id_str(id_str: str) -> bool:
+        return id_str[0] == "P"
 
     @staticmethod
-    def is_shared_id_str(id_str) -> bool:
-        return False  # TODO: Update this
+    def is_shared_id_str(id_str: str) -> bool:
+        return id_str[0] == "S"
 
     @staticmethod
     def from_id_str(id_str: str):
         id_ = Experiment.to_id(id_str)
         is_private = Experiment.is_private_id_str(id_str)
-        print("id, private =", id_, is_private)
         exp = Experiment.from_id(id_, is_private)
         return exp
 
@@ -110,8 +108,7 @@ class Experiment(ExperimentUtil):
 
     @property
     def published_str(self) -> str:
-        # TODO: Needs to return "SHARED" or "PUBLIC"
-        return str(self.submission_time) if self.submission_time is not None else ""
+        return "Private" if self.is_private else "Shared"
 
     @property
     def is_private(self):
@@ -205,7 +202,6 @@ class Experiment(ExperimentUtil):
     def result_to_view_options(self, system_component: str, spatial_resolution: str, type_of_result: str,
                                intersected_paths: Optional[List[str]] = None) -> List[str]:
         path_ = self._type_of_result_path(system_component, spatial_resolution, type_of_result)
-        print("type of result path:", path_)
         options = []
         if not path_.is_dir():
             return options
@@ -213,7 +209,6 @@ class Experiment(ExperimentUtil):
             return options
 
         for full_path in path_.glob("*.tif"):
-            print(".tif fullpath:", full_path)
             if not path_.joinpath(full_path).is_file():
                 continue
             if intersected_paths is None:
@@ -237,7 +232,6 @@ class Experiment(ExperimentUtil):
             converted_rtv = self._convert_variable_name(result_to_view, dir_to_display_name=False)
             pattern += converted_rtv
 
-        print("pattern:", pattern)
         compiled = re.compile(pattern)
         filtered = list(filter(compiled.match, intersected_paths))
         return len(filtered) != 0
@@ -269,7 +263,6 @@ class Experiment(ExperimentUtil):
             Intersect all result paths for both experiments (when the root result directory is excluded) and return the
             values
         """
-
         assert isinstance(experiment, Experiment)
 
         first_root = SIMPLEUtil.result_path(self.id_str)

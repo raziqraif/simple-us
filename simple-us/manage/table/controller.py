@@ -64,10 +64,3 @@ class ExperimentTable:
         with_details = copy(self.view.children)
         with_details.append(details_window)
         self.view.children = with_details
-
-    def onclick_display(self):
-        pass
-
-    def onclick_compare(self):
-        pass
-
