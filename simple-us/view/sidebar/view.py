@@ -136,6 +136,7 @@ class SidebarView(Container):
 
     def _build_buttons_wrapper(self):
         visualize = self._create_button("Visualize")
+        visualize.on_event("onClick", self.controller.onclick_visualize)
         csv = self._create_button("CSV")
         wrapper = self._create_input_wrapper([visualize, csv])
         style_ = copy(wrapper.style_)
@@ -192,6 +193,26 @@ class SidebarView(Container):
     def update_result_to_view_options(self, options: List[str]):
         assert "Select" in options
         self._result_to_view_select.options = options
+
+    def set_system_component(self, value: str):
+        print("sys comp: ", value)
+        assert value in self._system_components_select.options
+        self._system_components_select.value = value
+
+    def set_spatial_resolution(self, value: str):
+        print("spat res: ", value)
+        assert value in self._spatial_resolution_select.options
+        self._spatial_resolution_select.value = value
+
+    def set_type_of_result(self, value: str):
+        print("type of res: ", value)
+        assert value in self._type_of_results_select.options
+        self._type_of_results_select.value = value
+
+    def set_result_to_view(self, value: str):
+        print("res to view : ", value)
+        assert value in self._result_to_view_select.options
+        self._result_to_view_select.value = value
 
     @property
     def system_component(self) -> str:
