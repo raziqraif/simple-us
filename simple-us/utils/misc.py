@@ -13,3 +13,8 @@ INNER_BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
 MAIN_BACKGROUND_COLOR = "#ffffff"
 
 JOBS_DIRECTORY = Path(__file__).parent.parent.joinpath("data")
+
+
+def top_level_directory() -> Path:
+    return Path(__file__).parent.parent
+
