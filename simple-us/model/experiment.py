@@ -126,12 +126,17 @@ class Experiment(ExperimentUtil):
             name = DIR_NAME_TO_DISPLAY_NAME[name]
         elif (name in DISPLAY_NAME_TO_DIR_NAME.keys()) and display_to_dir_name:
             name = DISPLAY_NAME_TO_DIR_NAME[name]
+
+        if (".tif" in name) and dir_to_display_name:
+            split_1 = name.split("_")
+            split_2 = split_1[2].split(".")
+            name = split_2[0].title()
         return name
 
-    def _directory_to_display_name(self, variable: str):
+    def directory_to_display_name(self, variable: str):
         self._convert_variable_name(variable, display_to_dir_name=False)
 
-    def _display_to_directory_name(self, variable: str):
+    def display_to_directory_name(self, variable: str):
         self._convert_variable_name(variable, dir_to_display_name=False)
 
     def system_component_options(self, intersected_paths: Optional[List[str]] = None) -> List[str]:
@@ -252,10 +257,10 @@ class Experiment(ExperimentUtil):
         path_ = path_ / spatial_resolution
         if type_of_result is None:
             return path_ if path_.exists() else None
-        path_ = path_ / self._shock_dir_name(path_) / self._display_to_directory_name(type_of_result)
+        path_ = path_ / self._shock_dir_name(path_) / self.display_to_directory_name(type_of_result)
         if result_to_view is None:
             return path_ if path_.exists() else None
-        path_ = path_ / result_to_view / self._display_to_directory_name(result_to_view)
+        path_ = path_ / result_to_view / self.display_to_directory_name(result_to_view)
         return path_
 
     def intersect_result_paths(self, experiment) -> List[str]:
@@ -276,7 +281,6 @@ class Experiment(ExperimentUtil):
 
         intersected_paths = [path_ for path_ in first_paths if path_ in second_paths]
         return intersected_paths
-
 
 if __name__ == "__main__":
     e1 = Experiment(1)
