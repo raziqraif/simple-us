@@ -3,3 +3,7 @@ ipymaterialui==0.1.4
 ipyvuetify==1.4.0
 ipyleaflet==0.13.0
 ipython==7.14.0
+gdal==3.0.4
+numpy==1.18.4
+pillow==7.1.2
+notebook==6.0.3
