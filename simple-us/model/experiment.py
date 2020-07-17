@@ -127,17 +127,17 @@ class Experiment(ExperimentUtil):
         elif (name in DISPLAY_NAME_TO_DIR_NAME.keys()) and display_to_dir_name:
             name = DISPLAY_NAME_TO_DIR_NAME[name]
 
-        if (".tif" in name) and dir_to_display_name:
-            split_1 = name.split("_")
-            split_2 = split_1[2].split(".")
-            name = split_2[0].title()
+        # if (".tif" in name) and dir_to_display_name:
+        #     split_1 = name.split("_")
+        #     split_2 = split_1[2].split(".")
+        #     name = split_2[0].title()
         return name
 
     def directory_to_display_name(self, variable: str):
-        self._convert_variable_name(variable, display_to_dir_name=False)
+        return self._convert_variable_name(variable, display_to_dir_name=False)
 
     def display_to_directory_name(self, variable: str):
-        self._convert_variable_name(variable, dir_to_display_name=False)
+        return self._convert_variable_name(variable, dir_to_display_name=False)
 
     def system_component_options(self, intersected_paths: Optional[List[str]] = None) -> List[str]:
         path_ = SIMPLEUtil.result_path(self.id_str)
@@ -169,7 +169,10 @@ class Experiment(ExperimentUtil):
         return options
 
     def _shock_dir_name(self, spatial_resolution_path: Path) -> str:
+        assert spatial_resolution_path.exists()
+        print(os.listdir(str(spatial_resolution_path)))
         shock_dirname = os.listdir(str(spatial_resolution_path))[0]  # LOOKATME: Assume there's only one shock directory
+        print("shock dirname:", shock_dirname)
         return shock_dirname
 
     def type_of_result_options(self, system_component: str, spatial_resolution: str,
@@ -252,15 +255,19 @@ class Experiment(ExperimentUtil):
         if system_component is None:
             return path_ if path_.exists() else None
         path_ = path_ / system_component
+        print(path_)
         if spatial_resolution is None:
             return path_ if path_.exists() else None
         path_ = path_ / spatial_resolution
+        print(path_)
         if type_of_result is None:
             return path_ if path_.exists() else None
         path_ = path_ / self._shock_dir_name(path_) / self.display_to_directory_name(type_of_result)
+        print(path_)
         if result_to_view is None:
             return path_ if path_.exists() else None
-        path_ = path_ / result_to_view / self.display_to_directory_name(result_to_view)
+        path_ = path_ / result_to_view
+        print(path_)
         return path_
 
     def intersect_result_paths(self, experiment) -> List[str]:
