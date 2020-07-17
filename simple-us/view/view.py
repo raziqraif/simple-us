@@ -236,14 +236,6 @@ class ViewTabUI(Container):
 
         self._show_empty_text()
 
-    def add_layer(self, map_: any, tile_folder_path: Path):
-
-        print(tile_folder_path)
-        url = "http://localhost:8889/notebooks/Documents/simple-us/job/1/outputs/results/Production/Geospatial/p_QCROPgl/LVA/tile_folder/{z}/{x}/{-y}.png"
-        layer = TileLayer(url=url, opacity=0.75, name="Test")
-        assert isinstance(map_, Map)
-        map_.add_layer(layer)
-
     def maps(self) -> Optional[List[Map]]:
         if self._body.children[0] == self._empty_text:
             return None
