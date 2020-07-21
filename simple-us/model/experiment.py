@@ -7,7 +7,7 @@ from utils import SIMPLEUtil
 
 DIR_NAME_TO_DISPLAY_NAME = {"LVC": "Absolute Changes", "LVB": "Base Value", "LVA": "Updated Value",
                             "PCT": "Percent Changes"}
-DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVA", "Base Value": "LVB", "Updated Value": "LVC",
+DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVC", "Base Value": "LVB", "Updated Value": "LVA",
                             "Percent Changes": "PCT"}
 
 

@@ -24,8 +24,6 @@ class DBManager:
     """ Manages communication with the database file
 
     A table row is represented represented as a list or an Experiment object in this class.
-    The Experiment object representation helps with code completion, etc but for backward
-    compatibility, the list representation is kept.
     """
     from model import Experiment
 
@@ -210,4 +208,5 @@ if __name__ == "__main__":
     # path = Path(".").absolute()
     # print("path:", path.parent.parent)
     db = DBManager()
+    db.update_job_status(1, "Completed", 2)
     print(db.get_experiments())
