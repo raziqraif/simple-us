@@ -31,9 +31,7 @@ class ManageTab:
         pass
 
     def onclick_display(self, widget: Button, event: str, data: dict):
-        print("click display")
         ids = self.experiment_table.selected_experiment_ids()
-        print("ids", ids)
         assert len(ids) <= 2
         if len(ids) == 0:
             return  # TODO: Display error message
@@ -41,13 +39,10 @@ class ManageTab:
             return  # TODO: Display error message
         experiment = Experiment.from_id_str(ids[0])
         if experiment is None:
-            print("Experiment none")
             return  # TODO: display error message
         if not experiment.is_completed:
-            print("Not completed")
             return  # TODO: display error message
 
-        print("About to navigate")
         self.view_experiments([experiment])
 
     def onclick_compare(self, widget: Button, event: str, data: dict):

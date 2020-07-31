@@ -1,4 +1,4 @@
-from .directory import SIMPLEUtil
+from .simpleutil import SIMPLEUtil
 from .misc import DEBUG_MODE
 from .misc import BACKGROUND_COLOR
 from .misc import BACKGROUND_COLOR_LIGHT
@@ -8,5 +8,6 @@ from .misc import PRIMARY_COLOR
 from .misc import PRIMARY_COLOR_DARK
 from .misc import PRIMARY_COLOR_LIGHT
 from .widgets import CustomCheckbox
-from .widgets import ExperimentChip
 from .widgets import CustomText
+from .widgets import CustomMap
+from .widgets import ExperimentChip

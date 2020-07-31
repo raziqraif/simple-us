@@ -27,17 +27,6 @@ class ExperimentTable:
             r_data = [exp.id_str, exp.name_str, exp.status_str, exp.description_str]
             rows_data.append(r_data)
 
-        rows_data.append([
-            "3", "Corn", "Pending", "Corn test data."
-        ])
-        rows_data.append([
-            "4", "AllCrops", "Completed", "Allcrops test data."
-        ])
-        rows_data.append([
-            "6", "A really long name for this experiment", "Completed",
-            "A really long description for allcrops test data."
-        ])
-
         return rows_data
 
     def selected_experiment_ids(self) -> [str]:

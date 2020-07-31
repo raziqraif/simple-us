@@ -296,7 +296,6 @@ class ExperimentTableView(Container):
         if not checkbox.checked:
             if len(self.selected_rows) >= 2:
                 # TODO: Replace this with a snickbar.
-                # print("You can only select the maximum of 2 experiments at a time.")
                 return
             else:
                 self._select_row(row)

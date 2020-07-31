@@ -2,6 +2,7 @@ from typing import List
 from typing import Optional
 
 from model import Experiment
+from utils import SIMPLEUtil
 
 DEFAULT_SELECTION = "Select"
 
@@ -14,6 +15,8 @@ class ViewContext:
             assert experiments[0].id_str != experiments[1].id_str
         self.experiments: List[Experiment] = experiments
         self.maps: any = []
+        self.session_id: int = SIMPLEUtil.new_session_id()
+
         self._system_component: Optional[str] = None
         self._spatial_resolution: Optional[str] = None
         self._type_of_result: Optional[str] = None
