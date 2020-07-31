@@ -7,7 +7,7 @@ from ipymaterialui import Container
 from create import CreateTab
 from manage import ManageTab
 from model import Experiment
-from utils import CustomText
+from utils import CustomText, SIMPLEUtil
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
 from utils import PRIMARY_COLOR_DARK
@@ -32,10 +32,10 @@ class App:
         self.appview.tabs.value = self.view_tab.view
 
     def display(self):
+        SIMPLEUtil.init_working_directory()
         return Container(children=[self.appview])
 
     def view_experiments(self, experiments: List[Experiment]):
-        print("Navigating")
         self.view_tab.new_view(experiments)
         self.appview.tabs.value = self.view_tab.view
 
