@@ -2926,7 +2926,7 @@ def main():
 if __name__ == '__main__':
     main()
 
-# NOTE: The following lines are newly added and are not from the original file
+# LOOKHERE: The following lines are newly added for the SIMPLE-G US tool and are not from the original file
 
 from typing import List, Union
 
