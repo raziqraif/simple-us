@@ -1,5 +1,6 @@
 import os
 from os import listdir
+from os.path import splitext
 import re
 from pathlib import Path
 from typing import Optional, List
@@ -54,46 +55,35 @@ class VariableModel:
                                                            to_directory_name=True)
         return value
 
-    def shock_dirname(self) -> str:
-        shock_dirname = VariableService.shock(self.id_str, self.system_component(), self.spatial_resolution())
-        return shock_dirname
+    def simple_variable(self) -> str:
+        simple_variable = VariableService.simple_variable(self.id_str, self.system_component(),
+                                                          self.spatial_resolution())
+        return simple_variable
 
     def file_path(self) -> Path:
+        # NOTE: Variable path format - .../system component/spatial resolution/SIMPLE variable/type of result/result to
+        # view
+
         return VariableService.result_to_view_path(self.id_str, self.system_component(), self.spatial_resolution(),
                                                    self.type_of_result(), self.result_to_view())
 
-    def processed_tif_path(self) -> Path:
-        # Not necessarily already existed
-        assert self.type_of_result(as_dirname=True).lower() == "geospatial"
-        path_ = self.file_path().parent
-        file_name = self.file_path().stem + "_temp.tiff"
-        return path_ / file_name
+    def is_raster(self):
+        extension = splitext(str(self.file_path()))[1]
+        return ".tif" in extension  # Can be .tiff too
 
-    def colorized_tif_path(self) -> Path:
-        # Not necessarily already existed
-        # Only for tif file visualization
-        assert self.type_of_result(as_dirname=True).lower() == "geospatial"
-        path_ = self.file_path().parent
-        file_name = self.file_path().stem + "_temp_color.tiff"
-        return path_ / file_name
+    def is_vector(self):
+        return not self.is_raster()
 
-    def tile_folder_path(self) -> Path:
-        # Only for tif file visualization
-        assert self.type_of_result(as_dirname=True).lower() == "geospatial"
-        path_ = self.file_path().parent
-        if (self.filter_min == 0) and (self.filter_max == 100):
-            folder_name = self.file_path().stem + "_{}_{}".format(self.filter_min, self.filter_max)
-        else:
-            folder_name = self.file_path().stem + "_filtered"
-
-        return path_ / folder_name
-
-    def remove_temp_files(self):
-        self.processed_tif_path().unlink(missing_ok=True)
-        self.colorized_tif_path().unlink(missing_ok=True)
+    def is_filtered(self):
+        return not ((self.filter_min == 0) and (self.filter_max == 100))
 
 
 class VariableService:
+    # NOTE: Variable path format - .../system component/spatial resolution/SIMPLE variable/type of result/result to view
+    def __init__(self, id_str_1: str, id_str_2: Optional[str] = None):
+        self.id_str_1 = id_str_1
+        self.id_str_2 = id_str_2
+
     @classmethod
     def convert_system_component(cls, system_component: str, to_display_name=False, to_directory_name=False):
         # Convert from display name to directory name or vice versa
@@ -121,13 +111,13 @@ class VariableService:
                                type_of_result: str, to_display_name=False, to_directory_name=False):
         # Convert from display name to directory name or vice versa
         assert to_directory_name or to_display_name
-        shock_name = cls.shock(id_str, system_component, spatial_resolution)
+        simple_variable = cls.simple_variable(id_str, system_component, spatial_resolution)
         file_format = ".tif" if spatial_resolution.lower() == "geospatial" else ".shp"
         suffix = cls._result_to_view_suffix(result_to_view)
         name = None
         if to_directory_name:
-            name = "{}_{}{}".format(shock_name, suffix, file_format) if len(suffix) != 0 \
-                else "{}{}".format(shock_name, file_format)
+            name = "{}_{}{}".format(simple_variable, suffix, file_format) if len(suffix) != 0 \
+                else "{}{}".format(simple_variable, file_format)
         elif to_display_name:
             name = cls._result_to_view_display_name(result_to_view, id_str, system_component, spatial_resolution,
                                                     type_of_result)
@@ -137,7 +127,7 @@ class VariableService:
     @classmethod
     def _result_to_view_display_name(cls, result_to_view: str, id_str: str, system_component: str,
                                      spatial_resolution: str, type_of_result: str) -> str:
-        assert id_str is not None       # Not used, as of current display name format
+        assert id_str is not None  # Not used, as of current display name format
         assert type_of_result is not None
         system_component = cls.convert_system_component(system_component, to_display_name=True).lower()
         spatial_resolution = cls.convert_spatial_resolution(spatial_resolution, to_display_name=True).lower()
@@ -177,7 +167,7 @@ class VariableService:
     @classmethod
     def system_component_options(cls, id_str: str, intersected_paths: Optional[List[str]] = None) -> List[str]:
         # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
-        root = SIMPLEUtil.result_path(id_str)
+        root = SIMPLEUtil.experiment_result_path(id_str)
         options = []
         if not root.is_dir():
             return options
@@ -200,7 +190,7 @@ class VariableService:
         for spatial_resolution in os.listdir(system_component_path):
             if not system_component_path.joinpath(spatial_resolution).is_dir():
                 continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, system_component,
+            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component,
                                                                        spatial_resolution):
                 converted = cls.convert_spatial_resolution(spatial_resolution, to_display_name=True)
                 options.append(converted)
@@ -211,13 +201,13 @@ class VariableService:
                                intersected_paths: Optional[List[str]] = None) -> List[str]:
         # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
         options = []
-        path_ = cls.shock_path(id_str, system_component, spatial_resolution)
+        path_ = cls.simple_variable_path(id_str, system_component, spatial_resolution)
         if not path_.is_dir():
             return options
         for item in os.listdir(str(path_)):
             if not path_.joinpath(item).is_dir():
                 continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, system_component,
+            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component,
                                                                        spatial_resolution, item):
                 converted = cls.convert_type_of_result(item, to_display_name=True)
                 options.append(converted)
@@ -267,7 +257,7 @@ class VariableService:
 
     @classmethod
     def system_component_path(cls, id_str, system_component: str):
-        path_ = SIMPLEUtil.result_path(id_str) / cls.convert_system_component(system_component, to_directory_name=True)
+        path_ = SIMPLEUtil.experiment_result_path(id_str) / cls.convert_system_component(system_component, to_directory_name=True)
         return path_
 
     @classmethod
@@ -277,24 +267,24 @@ class VariableService:
         return path_
 
     @classmethod
-    def shock(cls, id_str: str, system_component: str, spatial_resolution: str) -> str:
+    def simple_variable(cls, id_str: str, system_component: str, spatial_resolution: str) -> str:
         spatial_resolution_path = cls.spatial_resolution_path(id_str, system_component, spatial_resolution)
         directories = listdir(str(spatial_resolution_path))
-        shock_dirname = directories[0]  # LOOKATME: Assume there's only one shock directory
-        return shock_dirname
+        simple_variable = directories[0]  # LOOKATME: Assume there's only one simple variable directory
+        return simple_variable
 
     @classmethod
-    def shock_path(cls, id_str: str, system_component: str, spatial_resolution: str) -> Path:
+    def simple_variable_path(cls, id_str: str, system_component: str, spatial_resolution: str) -> Path:
         spatial_resolution_path = cls.spatial_resolution_path(id_str, system_component, spatial_resolution)
-        # Assumption: There is only one shock directory
-        shock_dirname = cls.shock(id_str, system_component, spatial_resolution)
-        return spatial_resolution_path / shock_dirname
+        # Assumption: There is only one simple variable directory
+        simple_variable = cls.simple_variable(id_str, system_component, spatial_resolution)
+        return spatial_resolution_path / simple_variable
 
     @classmethod
     def type_of_result_path(cls, id_str: str, system_component: str, spatial_resolution: str,
                             type_of_result: str) -> Path:
 
-        path_ = cls.shock_path(id_str, system_component, spatial_resolution) / cls.convert_type_of_result(
+        path_ = cls.simple_variable_path(id_str, system_component, spatial_resolution) / cls.convert_type_of_result(
             type_of_result, to_directory_name=True)
         return path_
 
@@ -314,8 +304,8 @@ class VariableService:
             experiments) when the root result directory is excluded and return the values
         """
 
-        first_root = SIMPLEUtil.result_path(first_id_str)
-        second_root = SIMPLEUtil.result_path(second_id_str)
+        first_root = SIMPLEUtil.experiment_result_path(first_id_str)
+        second_root = SIMPLEUtil.experiment_result_path(second_id_str)
 
         first_prefix_len = len(str(first_root)) + 1
         second_prefix_len = len(str(second_root)) + 1
@@ -327,3 +317,21 @@ class VariableService:
 
         intersected_paths = [path_ for path_ in first_paths if path_ in second_paths]
         return intersected_paths
+
+    def _valid_variable_paths(self) -> List[str]:
+        first_root = SIMPLEUtil.experiment_result_path(self.id_str_1)
+        first_prefix_len = len(str(first_root)) + 1
+        first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
+        first_paths += [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.shp")]
+
+        if self.id_str_2:
+            second_root = SIMPLEUtil.experiment_result_path(self.id_str_2)
+            second_prefix_len = len(str(second_root)) + 1
+            second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
+            second_paths += [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.shp")]
+
+            valid_paths = [path_ for path_ in first_paths if path_ in second_paths]
+        else:
+            valid_paths = first_paths
+
+        return valid_paths

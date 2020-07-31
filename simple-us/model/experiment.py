@@ -39,8 +39,8 @@ class ExperimentUtil:
     @staticmethod
     def from_id(id_: int, is_private: bool):
         from database import DBManager
-        db = DBManager(private_experiments=is_private)
-        exp = db.get_experiment(id_)
+        db = DBManager()
+        exp = db.get_experiment(id_, is_private)
         return exp
 
 
