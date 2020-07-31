@@ -15,12 +15,12 @@ from ipymaterialui import Select
 from ipymaterialui import TextField
 from ipymaterialui import TextareaAutosize
 import ipywidgets as widgets
-from ipywidgets import Layout
+from ipywidgets import Layout, jslink
 
 from .context import ViewContext
 from .controller import ViewTab
 from .sidebar import SidebarView
-from utils import CustomText
+from utils import CustomText, CustomMap
 from utils import INNER_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR_LIGHT
 from utils import PRIMARY_COLOR
@@ -34,16 +34,16 @@ class TabWithContext(Tab):
 
 class ViewTabUI(Container):
 
-    def __init__(self, controller: ViewTab, sidebar: any, **kwargs):
+    def __init__(self, controller: ViewTab, sidebar: SidebarView, **kwargs):
         super().__init__(**kwargs)
 
         self.controller: ViewTab = controller
 
         self._tab_bar: Optional[Container] = None
-        self._body: Optional[Container] = None
-        self._view_widgets_wrapper: Optional[Container] = None
-        self._sidebar: any = sidebar
-        self._maps_area: Optional[Container] = None
+        self._body: Optional[Container] = None  # contains view widgets wrapper
+        self._view_widgets_wrapper: Optional[Container] = None  # contains sidebar and maps area / "no experiment" label
+        self._sidebar: SidebarView = sidebar
+        self._maps_area: Optional[Container] = None  # contains maps and titles
 
         self._map_title_full: Optional[CustomText]
         self._map_title_top: Optional[CustomText] = None
@@ -65,9 +65,9 @@ class ViewTabUI(Container):
             "align-items": "center",
             "align-self": "center",
             "padding": "0px 0px 0px 0px",
-            "width": "90%",
+            "width": "1090px",
             "border": "1px solid " + PRIMARY_COLOR,
-            "height": "730px",
+            "height": "750px",
             "margin": "40px 40px 40px 40px",
             # "border-radius": "8px",
             # "background": INNER_BACKGROUND_COLOR,
@@ -119,18 +119,24 @@ class ViewTabUI(Container):
     def _build_maps_area(self):
         self._map_title_full = CustomText("", style_={"font-weight": "bold",
                                                       "font-size": "14px",
-                                                      "margin": "0px 0px 8px 1px",
+                                                      "padding": "0px 0px 0px 0px",
+                                                      "margin": "0px 0px 0px 0px",
                                                       "align-self": "flex-start",
+                                                      "width": "100%",
                                                       })
         self._map_title_top = CustomText("", style_={"font-weight": "bold",
                                                      "font-size": "14px",
-                                                     "margin": "0px 0px 8px 1px",
+                                                     "padding": "0px 0px 0px 0px",
+                                                     "margin": "0px 0px 0px 0px",
                                                      "align-self": "flex-start",
+                                                     "width": "100%",
                                                      })
         self._map_title_bottom = CustomText("", style_={"font-weight": "bold",
                                                         "font-size": "14px",
-                                                        "margin": "0px 0px 8px 1px",
+                                                        "padding": "0px 0px 0px 0px",
+                                                        "margin": "8px 0px 0px 0px",
                                                         "align-self": "flex-start",
+                                                        "width": "100%",
                                                         })
         self._map_wrapper_full = self._create_map_wrapper(self._map_title_full)
         self._map_wrapper_top = self._create_map_wrapper(self._map_title_top, False)
@@ -139,37 +145,38 @@ class ViewTabUI(Container):
                                       style_={
                                           "display": "flex",
                                           "flex-direction": "column",
-                                          "justify-content": "center",
+                                          "justify-content": "flex-start",
                                           "align-items": "center",
                                           "align-self": "center",
                                           "padding": "0px 0px 0px 0px",
-                                          "margin": "0px 0px 0px 0px",
-                                          "width": "650px",
-                                          "height": "600px",
+                                          "margin": "0px 0px 0px 16px",
+                                          "width": "720px",
+                                          "height": "640px",
                                           # "width": "100%",
                                           # "height": "480px",
                                       })
         self._maps_area = initial_maps_area
 
     def _create_map_wrapper(self, title, full_height=True) -> Container:
-        height = "100%" if full_height else "50%"
+        height = "640px" if full_height else "316px"
         wrapper = Container(children=[title],
                             style_={
                                 "display": "flex",
                                 "flex-direction": "column",
-                                "justify-content": "center",
+                                "justify-content": "flex-start",
                                 "align-items": "center",
-                                # "width": "618px",
+                                "width": "100%",
                                 "height": height,
-                                "padding": "1px 1px 1px 1px",
-                                "margin": "0px 0px 0px 24px",
+                                "padding": "0px 0px 0px 0px",
+                                "margin": "0px 0px 0px 0px",
                             })
         return wrapper
 
     def _create_empty_map(self, full_height=True):
-        height = "570px" if full_height else "270px"
-        layout = Layout(width="600px", height=height)
-        return Map(layout=layout, center=(39.5, -98.35), zoom=4)  # TODO: Update this
+        height = "614px" if full_height else "290px"
+        # layout = Layout(width="600px", height=height)
+        return CustomMap("720px", height)
+        # return Map(layout=layout, center=(39.5, -98.35), zoom=4)  # TODO: Update this
 
     def new_tab(self, tab_name: str, tab_model: any, comparison: bool = False):
         children = self._tab_bar.children
@@ -207,8 +214,7 @@ class ViewTabUI(Container):
         if self._body.children[0] == self._empty_text:
             self._body.children = [self._view_widgets_wrapper]
         title = context.map_titles[0]
-        map_ = context.maps[0]
-
+        map_: CustomMap = context.maps[0]
         self._map_title_full.children = title
         self._map_wrapper_full.children = [self._map_title_full, map_]
         self._maps_area.children = [self._map_wrapper_full]
@@ -223,6 +229,8 @@ class ViewTabUI(Container):
         self._map_wrapper_top.children = [self._map_title_top, maps[0]]
         self._map_wrapper_bottom.children = [self._map_title_bottom, maps[1]]
         self._maps_area.children = [self._map_wrapper_top, self._map_wrapper_bottom]
+        maps[0].link(maps[1])
+        maps[1].link(maps[0])
 
     def _show_empty_text(self):
         self._body.children = [self._empty_text]
@@ -236,7 +244,7 @@ class ViewTabUI(Container):
 
         self._show_empty_text()
 
-    def maps(self) -> Optional[List[Map]]:
+    def maps(self) -> Optional[List[CustomMap]]:
         if self._body.children[0] == self._empty_text:
             return None
 
