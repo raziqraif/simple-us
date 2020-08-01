@@ -4,7 +4,7 @@ from typing import List, Optional
 import ipymaterialui as mui
 from ipymaterialui import TableRow
 
-from ..details import Details
+from ..detailsdialog import Details
 from database import DBManager
 from utils import CustomCheckbox
 
