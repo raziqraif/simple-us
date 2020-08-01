@@ -17,6 +17,7 @@ import ipywidgets as widgets
 from ipywidgets import Dropdown
 from ipywidgets import Layout
 
+from utils.misc import SECONDARY_COLOR
 from .controller import Sidebar
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
@@ -62,7 +63,8 @@ class SidebarView(Container):
         self._spatial_resolution_select: Optional[Dropdown] = None
         self._type_of_results_select: Optional[Dropdown] = None
         self._result_to_view_select: Optional[Dropdown] = None
-        self._filter_slider: Optional[Slider] = None
+        self._filter_title: Optional[CustomText] = None
+        self._filter_slider: Optional[widgets.FloatRangeSlider] = None
 
         self._build_system_components()
         self._build_spatial_resolution()
@@ -111,15 +113,16 @@ class SidebarView(Container):
         self._result_to_view_wrapper = wrapper
 
     def _build_filter(self):
-        text = CustomText("Filter", style_={"font-weight": "bold"})
+        text = CustomText("Filter: 0 - 100%", style_={"font-weight": "bold"})
         # material ui's slider crashes when the user moves the it too quickly
         # slider = Slider(value=[0, 100], max=100.0, min=0.00, step=0.05, marks=[0, 20, 40, 60, 80, 100])
         # layout = Layout(width="180px", margin="8px 8px 0px 8px", align_items="center")
-        layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px", align_items="center")
+        layout = Layout(width=WIDGET_LEN, margin="4px 0px 0px 0px", align_items="center")
         self._filter_slider = widgets.FloatRangeSlider(
             value=[0, 100], min=0, max=100, step=1, continuous_update=True, readout=False,
             layout=layout,
         )
+        self._filter_slider.observe(self.controller.onchange_filter_range)
         # zero = CustomText("0%")
         # hundred = CustomText("100%")
         # slider_wrapper = Container(children=[zero, slider, hundred],
@@ -132,19 +135,23 @@ class SidebarView(Container):
         #                                "width": "auto",
         #                            })
         wrapper = self._create_input_wrapper([text, self._filter_slider])
+        self._filter_title = wrapper.children[0]
         self._filter_wrapper = wrapper
 
     def _build_buttons_wrapper(self):
         visualize = self._create_button("Visualize")
         visualize.on_event("onClick", self.controller.onclick_visualize)
         csv = self._create_button("CSV")
-        wrapper = self._create_input_wrapper([visualize, csv])
+        csv.on_event("onClick", self.controller.onclick_csv)
+        close = self._create_button("Close", SECONDARY_COLOR)
+        close.on_event("onClick", self.controller.onclick_close)
+        wrapper = self._create_input_wrapper([visualize, csv, close])
         style_ = copy(wrapper.style_)
         style_["margin"] = "32px 12px 32px 12px"
         wrapper.style_ = style_
         self._buttons_wrapper = wrapper
 
-    def _create_button(self, text: str) -> Button:
+    def _create_button(self, text: str, background: str = PRIMARY_COLOR) -> Button:
         text_html = CustomText(text,
                                style_={
                                    "display": "flex",
@@ -154,7 +161,8 @@ class SidebarView(Container):
                                    "align-self": "center",
                                })
         button = Button(children=[text_html],
-                        color="#454851",
+                        # color="#454851",
+                        color=background,
                         focus_ripple=True,
                         style_={
                             "display": "flex",
@@ -162,7 +170,7 @@ class SidebarView(Container):
                             "height": "35px",
                             "padding": "0px 0px 0px 0px",
                             "margin": "4px 0px 4px 0px",
-                            "background": PRIMARY_COLOR,
+                            "background": background,
                             "align-items": "center !important",
                         }, )
         return button
@@ -214,6 +222,8 @@ class SidebarView(Container):
         assert 0 <= max_ <= 100
         assert min_ <= max_
 
+        self._filter_slider.value = (min_, max_)
+        self._filter_title.children = "Filter: {} - {}%".format(min_, max_)
 
     @property
     def system_component(self) -> str:

@@ -1,27 +1,20 @@
 from multiprocessing import cpu_count
-import os
 import shutil
 from pathlib import Path
-import threading
-from typing import Optional, Tuple
+from typing import Tuple
 
-import numpy
-from ipyleaflet import Map, LayerGroup
 from ipyleaflet import TileLayer
-import osgeo
 from osgeo import gdal
 from osgeo.gdal import DEMProcessing
 from osgeo.gdal import DEMProcessingOptions
-from notebook import notebookapp
 
 # from lib.gdal2tiles import gdal2tiles
 from gdalscripts import gdal_calc
 from gdalscripts import gdal2tiles
 from gdalscripts import gdal_edit
 from model.variableutil import VariableModel
-from utils import CustomMap, SIMPLEUtil
-from utils.misc import top_level_directory, NODATA
-from utils.widgets.map import RasterService
+from utils import SIMPLEUtil
+from utils.misc import NODATA
 
 
 class RasterLayerUtil:
@@ -36,6 +29,7 @@ class RasterLayerUtil:
         self._tif_basename = self.variable_model.file_path().stem
         self._temp_working_directory = self._get_temp_working_directory()
         self.processed_raster_path = self._temp_working_directory / (self._tif_basename + "_temp.tiff")
+        self._warped_tif_path = self._temp_working_directory / (self._tif_basename + "_temp_warped.tiff")
         self._color_file_path = self._temp_working_directory / (self._tif_basename + "_temp_color.txt")
         self._filtered_tif_path = self._temp_working_directory / (self._tif_basename + "_temp_filter.tiff")
         self._colorized_tif_path = self._temp_working_directory / (self._tif_basename + "_temp_color.tiff")
@@ -83,6 +77,7 @@ class RasterLayerUtil:
 
     def create_layer(self) -> TileLayer:
         self._process_raster()
+        print("min max:", self._min_max_of_raster(self.processed_raster_path))
         self._colorize_raster()
         self._tile_raster()
 
@@ -93,6 +88,10 @@ class RasterLayerUtil:
         # Filter and warp the raster
         # self.processed_raster_path will be created
 
+        options = gdal.WarpOptions(dstSRS="EPSG:4326", dstNodata=NODATA, format="GTiff",
+                                   resampleAlg="bilinear")
+        # Python-GDAL binding does not support
+        gdal.Warp(str(self._warped_tif_path), str(self.variable_model.file_path()), options=options)
         self._filter_raster()
         # Make sure the projection is correct, and reset the NODATA value
         options = gdal.WarpOptions(dstSRS="EPSG:4326", dstNodata=NODATA, format="GTiff",
@@ -100,15 +99,10 @@ class RasterLayerUtil:
         gdal.Warp(str(self.processed_raster_path), str(self._filtered_tif_path), options=options)
 
     def _filter_raster(self):
-        min_, max_ = self._min_max_of_raster(self.variable_model.file_path())
+        min_, max_ = self._min_max_of_raster(self._warped_tif_path)
         range_ = max_ - min_
         new_min = min_ + self.variable_model.filter_min / float(100) * range_
         new_max = min_ + self.variable_model.filter_max / float(100) * range_
-
-        print("filtering:")
-        print("min:", min_, new_min)
-        print("max:", max_, new_max)
-        print("range:", range_)
 
         # How to use - https://gdal.org/programs/gdal_calc.html
         filter_expression = "A*logical_and(A>={},A<={})".format(new_min, new_max)
@@ -133,6 +127,7 @@ class RasterLayerUtil:
         print("range:", range_)
 
     def _min_max_of_raster(self, tif_path: Path) -> Tuple[float, float]:
+        gdal_edit.gdal_edit(["argv_placeholder", "-unsetstats", str(self._filtered_tif_path)])
         # open the image
         raster = gdal.Open(str(tif_path))
         assert raster is not None
@@ -142,6 +137,8 @@ class RasterLayerUtil:
         stats = band.GetStatistics(False, True)
         min_: float = float(stats[0])
         max_: float = float(stats[1])
+
+        raster = None  # Close the dataset -https://gdal.org/tutorials/raster_api_tut.html
         return min_, max_
 
     def _colorize_raster(self):
@@ -179,6 +176,7 @@ class RasterLayerUtil:
 
         with open(str(self._color_file_path), "w+"):
             self._color_file_path.write_text(file_content)
+        gtif = None  # Close the dataset -https://gdal.org/tutorials/raster_api_tut.html
 
     def _tile_raster(self):
         from utils.misc import REBUILD_RASTER_TILE

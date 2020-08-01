@@ -10,7 +10,7 @@ DEFAULT_SELECTION = "Select"
 
 class Sidebar:
     def __init__(self):
-        from .view import SidebarView
+        from .experimentview import SidebarView
         self.view = SidebarView(self)
         self.context: Optional[ViewContext] = None
         self.visualize_variables = None  # LOOKATME: Callback function. Must be set externally
@@ -25,6 +25,8 @@ class Sidebar:
             self.context.spatial_resolution = self.view.spatial_resolution
             self.context.type_of_result = self.view.type_of_result
             self.context.result_to_view = self.view.result_to_view
+            self.context.filter_min = self.view.filter_min
+            self.context.filter_max = self.view.filter_max
         self.context = context
         self._refresh_options()
         self._refresh_selections()
@@ -67,7 +69,27 @@ class Sidebar:
         assert self.visualize_variables is not None
         self.visualize_variables(sys_comp, spat_res, type_of_res, res_to_view, filter_min, filter_max)
 
+    def onchange_filter_range(self, change):
+        if change['name'] == 'value' and (change['new'] != change['old']):
+            old_min, old_max = [int(value) for value in change['old']]
+            min_, max_ = [int(value) for value in change['new']]
+            if min_ != max_:
+                self.view.set_filter_range(min_, max_)
+                return
+            if min_ == old_min:
+                max_ += 1
+            elif max_ == old_max:
+                min_ -= 1
+            elif max_ != 0:
+                min_ = max_ - 1
+            elif min_ != 100:
+                max_ = min_ + 1
+            self.view.set_filter_range(min_, max_)
+
     def onclick_csv(self, widget, event, data):
+        pass
+
+    def onclick_close(self, widget, event, data):
         pass
 
     def _refresh_selections(self):
@@ -75,6 +97,7 @@ class Sidebar:
         self.view.set_spatial_resolution(self.context.spatial_resolution)
         self.view.set_type_of_result(self.context.type_of_result)
         self.view.set_result_to_view(self.context.result_to_view)
+        self.view.set_filter_range(self.context.filter_min, self.context.filter_max)
 
     def _refresh_options(self):
         self._update_system_components_options()
@@ -87,14 +110,7 @@ class Sidebar:
 
         if len(self.experiments) == 0:
             return
-        experiment = self.experiments[0]
-        if len(self.experiments) == 1:
-            options += VariableService.system_component_options(experiment.id_str)
-        elif len(self.experiments) == 2:
-            experiment_2 = self.experiments[1]
-            intersected_paths = VariableService.intersect_variable_paths(experiment.id_str, experiment_2.id_str)
-            options += VariableService.system_component_options(experiment_2.id_str, intersected_paths)
-
+        options += self.context.variable_service.system_component_options()
         self.view.update_system_component_options(options)
 
     def _update_spatial_resolution_options(self):
@@ -106,13 +122,7 @@ class Sidebar:
 
         if len(self.experiments) == 0:
             return
-        experiment = self.experiments[0]
-        if len(self.experiments) == 1:
-            options += VariableService.spatial_resolution_options(experiment.id_str, sys_comp)
-        elif len(self.experiments) == 2:
-            experiment_2 = self.experiments[1]
-            intersected_paths = VariableService.intersect_variable_paths(experiment.id_str, experiment_2.id_str)
-            options += VariableService.spatial_resolution_options(experiment_2.id_str, sys_comp, intersected_paths)
+        options += self.context.variable_service.spatial_resolution_options(sys_comp)
         self.view.update_spatial_resolution_options(options)
 
     def _update_type_of_result_options(self):
@@ -126,14 +136,7 @@ class Sidebar:
 
         if len(self.experiments) == 0:
             return
-        experiment = self.experiments[0]
-        if len(self.experiments) == 1:
-            options += VariableService.type_of_result_options(experiment.id_str, sys_comp, spat_res)
-        elif len(self.experiments) == 2:
-            experiment_2 = self.experiments[1]
-            intersected_paths = VariableService.intersect_variable_paths(experiment.id_str, experiment_2.id_str)
-            options += VariableService.type_of_result_options(experiment.id_str, sys_comp, spat_res, intersected_paths)
-
+        options += self.context.variable_service.type_of_result_options(sys_comp, spat_res)
         self.view.update_type_of_results_options(options)
 
     def _update_result_to_view_options(self):
@@ -149,13 +152,6 @@ class Sidebar:
 
         if len(self.experiments) == 0:
             return
-        experiment = self.experiments[0]
-        if len(self.experiments) == 1:
-            options += VariableService.result_to_view_options(experiment.id_str, sys_comp, spat_res, type_of_res)
-        elif len(self.experiments) == 2:
-            experiment_2 = self.experiments[1]
-            intersected_paths = VariableService.intersect_variable_paths(experiment.id_str, experiment_2.id_str)
-            options += VariableService.result_to_view_options(experiment.id_str, sys_comp, spat_res, type_of_res,
-                                                              intersected_paths)
+        options += self.context.variable_service.result_to_view_options(sys_comp, spat_res, type_of_res)
 
         self.view.update_result_to_view_options(options)

@@ -61,7 +61,7 @@ class CustomMap(Map):
             self.substitute_layer(self._gdal_layer, layer)
         else:
             self.add_layer(layer)
-
+        self._gdal_layer = layer
         self._raster_service = None
         self._legend_bar.refresh(None, None)
         self.center = (39.5, -98.35)
@@ -125,6 +125,7 @@ class RasterService:
         self._y_end = self._y_origin - self._pixel_height * rows
 
         self._data = band.ReadAsArray(0, 0, cols, rows)
+        dataset = None  # Close the dataset - https://gdal.org/tutorials/raster_api_tut.html
 
     def value(self, latitude: float, longitude: float) -> Optional[float]:
         from ..misc import NODATA

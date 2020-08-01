@@ -2,6 +2,7 @@ from typing import List
 from typing import Optional
 
 from model import Experiment
+from model.variableutil import VariableService
 from utils import SIMPLEUtil
 
 DEFAULT_SELECTION = "Select"
@@ -17,12 +18,17 @@ class ViewContext:
         self.maps: any = []
         self.session_id: int = SIMPLEUtil.new_session_id()
 
+        if self.is_display:
+            self.variable_service: VariableService = VariableService(experiments[0].id_str)
+        else:
+            self.variable_service: VariableService = VariableService(experiments[0].id_str, experiments[1].id_str)
+
         self._system_component: Optional[str] = None
         self._spatial_resolution: Optional[str] = None
         self._type_of_result: Optional[str] = None
         self._result_to_view: Optional[str] = None
-        self._filter_lower_bound: Optional[str] = None
-        self._filter_upper_bound: Optional[str] = None
+        self._filter_lower_bound: Optional[int] = None
+        self._filter_upper_bound: Optional[int] = None
 
     @property
     def is_comparison(self) -> bool:
@@ -79,17 +85,17 @@ class ViewContext:
         self._result_to_view = value
 
     @property
-    def filter_lower_bound(self) -> float:
-        return self._filter_lower_bound if self._filter_lower_bound is not None else 0.0
+    def filter_min(self) -> int:
+        return self._filter_lower_bound if self._filter_lower_bound is not None else 0
 
-    @filter_lower_bound.setter
-    def filter_lower_bound(self, value: str):
+    @filter_min.setter
+    def filter_min(self, value: int):
         self._filter_lower_bound = value
 
     @property
-    def filter_upper_bound(self) -> float:
-        return self._filter_upper_bound if self._filter_upper_bound is not None else 100.0
+    def filter_max(self) -> int:
+        return self._filter_upper_bound if self._filter_upper_bound is not None else 100
 
-    @filter_upper_bound.setter
-    def filter_upper_bound(self, value: str):
+    @filter_max.setter
+    def filter_max(self, value: int):
         self._filter_upper_bound = value
