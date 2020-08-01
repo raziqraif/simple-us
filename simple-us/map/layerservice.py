@@ -37,10 +37,10 @@ class RasterLayerUtil:
 
     def _get_temp_working_directory(self) -> Path:
         if self.variable_model.is_filtered():
-            file_path = str(self.variable_model.file_path())
+            parent_file_path = str(self.variable_model.file_path().parent)
             id_str = self.variable_model.id_str
             file_path_root = str(SIMPLEUtil.experiment_result_path(id_str))
-            suffix = file_path.split(file_path_root)[1].replace("\\", "/")
+            suffix = parent_file_path.split(file_path_root)[1].replace("\\", "/")
             suffix = suffix[1:] if (suffix[0] == "/") else suffix
             temp_working_directory = SIMPLEUtil.TEMP_DIR / self.variable_model.id_str / suffix
             print("temp working directory: ", temp_working_directory)

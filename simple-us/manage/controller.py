@@ -19,43 +19,39 @@ class ManageTab:
         self.view_experiments: Callable[[Experiment, Optional[Experiment]], bool] = view_experiments_callback
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
-        self._toggle_experiment_row(widget.experiment_id_str)
-        # experiment_table have access to the create/delete experiment chip widget API. The chip widget removal will
-        # be done there.
+        self.experiment_table.toggle_experiment_row(widget.experiment_id_str)
 
-    def _toggle_experiment_row(self, experiment_id_str: str):
-        associated_row = self.experiment_table.selected_row_from_id(experiment_id_str)
-        if associated_row:
-            self.experiment_table.toggle_row(associated_row)
+        # experiment_table have access to the create/delete experiment chip widget API.
+        # The chip widget removal will be done there.
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
         pass
 
     def onclick_display(self, widget: Button, event: str, data: dict):
-        ids = self.experiment_table.selected_experiment_ids()
-        assert len(ids) <= 2
-        if len(ids) == 0:
+        experiments = self.experiment_table.selected_experiments()
+        assert len(experiments) <= 2
+        if len(experiments) == 0:
             return  # TODO: Display error message
-        elif len(ids) == 2:
+        elif len(experiments) == 2:
             return  # TODO: Display error message
-        experiment = Experiment.from_id_str(ids[0])
+
+        experiment = experiments[0]
         if experiment is None:
             return  # TODO: display error message
         if not experiment.is_completed:
             return  # TODO: display error message
 
         if self.view_experiments(experiment, None):
-            self._toggle_experiment_row(experiment.id_str)
+            self.experiment_table.toggle_experiment_row(experiment.id_str)
 
     def onclick_compare(self, widget: Button, event: str, data: dict):
-        ids = self.experiment_table.selected_experiment_ids()
-        assert len(ids) <= 2
-        if len(ids) == 0:
+        experiments = self.experiment_table.selected_experiments()
+        assert len(experiments) <= 2
+        if len(experiments) == 0:
             return  # TODO: Display error message
-        elif len(ids) == 1:
+        elif len(experiments) == 1:
             return  # TODO: Display error message
 
-        experiments = [Experiment.from_id_str(id_str) for id_str in ids]
         if None in experiments:
             return  # TODO: display error message
         for exp in experiments:
@@ -64,5 +60,5 @@ class ManageTab:
 
         # TODO: Make sure result lists intersect
         if self.view_experiments(experiments[0], experiments[1]):
-            self._toggle_experiment_row(experiments[0].id_str)
-            self._toggle_experiment_row(experiments[1].id_str)
+            self.experiment_table.toggle_experiment_row(experiments[0].id_str)
+            self.experiment_table.toggle_experiment_row(experiments[1].id_str)

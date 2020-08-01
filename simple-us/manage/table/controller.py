@@ -24,19 +24,13 @@ class ExperimentTable:
         experiments = db.get_experiments()
         return experiments
 
-    def selected_experiment_ids(self) -> [str]:
-        """ Expose the view's method """
+    def selected_experiments(self) -> List[Optional[Experiment]]:
+        id_strs = self.view.selected_experiments_id_str()
+        experiments = [Experiment.from_id_str(id_str) for id_str in id_strs]
+        return experiments
 
-        return self.view.selected_experiment_ids()
-
-    def selected_row_from_id(self, id_str: str):
-        """ Expose the view's method """
-
-        return self.view.selected_row_from_id(id_str)
-
-    def toggle_row(self, row: TableRow):
-        """ Expose the view's method """
-
+    def toggle_experiment_row(self, id_str: str):
+        row = self.view.selected_row_from_id(id_str)
         self.view.toggle_row(row)
 
     def onclick_row(self, widget, event, data, row: TableRow):

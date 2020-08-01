@@ -44,9 +44,8 @@ class ExperimentTableView(Container):
                          self.body_wrapper]
 
     def _build_table(self):
-        head = self._build_table_head()
-        body = self._build_table_body()
-        self.body = body
+        head = self._create_table_head()
+        self._build_table_body()
         table_for_head = Table(children=[head],
                                size="small",
                                style_={
@@ -59,7 +58,7 @@ class ExperimentTableView(Container):
                                             "flex-direction": "column",
                                         })
 
-        table_for_body = Table(children=[body],
+        table_for_body = Table(children=[self.body],
                                size="small",
                                style_={
                                    "padding": "0px 0px 0px 0px",
@@ -75,7 +74,7 @@ class ExperimentTableView(Container):
                                             "border": "1px solid " + PRIMARY_COLOR,
                                         })
 
-    def _build_table_head(self):
+    def _create_table_head(self):
         refresh_icon = Icon(children="refresh",
                             style_={
                                 "color": "white",
@@ -131,23 +130,12 @@ class ExperimentTableView(Container):
         return cell
 
     def _build_table_body(self):
-        experiment_rows = []
-        for experiment in self.controller.read_experiments():
-            row_data = [experiment.id_str, experiment.name, experiment.status, experiment.author,
-                        experiment.description]
-            row = self._create_body_row(row_data)
-            experiment_rows.append(row)
-
-        while len(experiment_rows) < 13:
-            row = self._create_empty_body_row()
-            experiment_rows.append(row)
-
-        table_body = TableBody(children=experiment_rows,
-                               style_={
-                                   "padding": "0px 0px 0px 0px",
-                                   "background": "white",
-                               })
-        return table_body
+        self.body = TableBody(children=[],
+                              style_={
+                                  "padding": "0px 0px 0px 0px",
+                                  "background": "white",
+                              })
+        self.refresh_table()
 
     def _create_body_row(self, experiment_data: List[str]):
         checkbox = CustomCheckbox()
@@ -281,7 +269,7 @@ class ExperimentTableView(Container):
                 return row
         return None
 
-    def selected_experiment_ids(self) -> List[str]:
+    def selected_experiments_id_str(self) -> List[str]:
         ids = []
         for row in self.selected_rows:
             id_ = self._id_from_row(row)
@@ -305,3 +293,17 @@ class ExperimentTableView(Container):
             self.selected_rows.remove(row)
             id_ = self._id_from_row(row)
             self.controller.delete_experiment_chip(id_)
+
+    def refresh_table(self):
+        experiment_rows = []
+        for experiment in self.controller.read_experiments():
+            row_data = [experiment.id_str, experiment.name, experiment.status, experiment.author,
+                        experiment.description]
+            row = self._create_body_row(row_data)
+            experiment_rows.append(row)
+
+        while len(experiment_rows) < 13:
+            row = self._create_empty_body_row()
+            experiment_rows.append(row)
+
+        self.body.children = experiment_rows
