@@ -33,6 +33,9 @@ class ExperimentTable:
         row = self.view.selected_row_from_id_str(id_str)
         self.view.toggle_row(row)
 
+    def refresh_experiments(self):
+        self.view.refresh_table()
+
     def onclick_row(self, widget, event, data, row: TableRow):
         self.view.toggle_row(row)
 

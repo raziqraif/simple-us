@@ -323,10 +323,6 @@ class ExperimentTableView(Container):
         for experiment in self.controller.load_experiments():
             row = self._create_body_row(experiment)
             experiment_rows.append(row)
-        test_experiment = Experiment(id=12343244342342432, name="fjsdkfldsjfdsklfjsdlkfjsdffdsfsdfsdafsdfsdfsa", status="Pending",
-                                     author="fdsfsdfsfsdfdjskfljsdflksdjflksdjfklsdjfslkafsdfsd",
-                                     description="fdklajlksdafjsda;ldfjs;lfkjsfdsaffdsafjdskfljsdfklsdjfsl")
-        experiment_rows.append(self._create_body_row(test_experiment))
         while len(experiment_rows) < 13:
             row = self._create_empty_body_row()
             experiment_rows.append(row)

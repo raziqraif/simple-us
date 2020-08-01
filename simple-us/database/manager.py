@@ -1,4 +1,5 @@
 import datetime
+from getpass import getuser
 import os
 from pathlib import Path
 import sys
@@ -7,24 +8,24 @@ from typing import Union
 
 import sqlite3
 
-from .dbutils import AUTHOR_DBCOL
-from .dbutils import AUTHOR_DBKEY
-from .dbutils import DESCRIPTION_DBCOL
-from .dbutils import DESCRIPTION_DBKEY
-from .dbutils import ID_DBCOL
-from .dbutils import ID_DBKEY
-from .dbutils import MODEL_DBCOL            # CustomCornsoy or CustomAllcrops
-from .dbutils import MODEL_DBKEY
-from .dbutils import NAME_DBCOL
-from .dbutils import NAME_DBKEY
-from .dbutils import PUBLISHED_DBCOL        # 1 if shared experiment 0 if private experiment
-from .dbutils import PUBLISHED_DBKEY
-from .dbutils import STATUS_DBCOL           # Completed / Pending / Failed
-from .dbutils import STATUS_DBKEY
-from .dbutils import SUBMISSION_ID_DBCOL
-from .dbutils import SUBMISSION_ID_DBKEY
-from .dbutils import SUBMISSION_TIME_DB_COL
-from .dbutils import SUBMISSION_TIME_DBKEY
+from database.dbutils import AUTHOR_DBCOL
+from database.dbutils import AUTHOR_DBKEY
+from database.dbutils import DESCRIPTION_DBCOL
+from database.dbutils import DESCRIPTION_DBKEY
+from database.dbutils import ID_DBCOL
+from database.dbutils import ID_DBKEY
+from database.dbutils import MODEL_DBCOL            # CustomCornsoy or CustomAllcrops
+from database.dbutils import MODEL_DBKEY
+from database.dbutils import NAME_DBCOL
+from database.dbutils import NAME_DBKEY
+from database.dbutils import PUBLISHED_DBCOL        # 1 if shared experiment 0 if private experiment
+from database.dbutils import PUBLISHED_DBKEY
+from database.dbutils import STATUS_DBCOL           # Completed / Pending / Failed
+from database.dbutils import STATUS_DBKEY
+from database.dbutils import SUBMISSION_ID_DBCOL
+from database.dbutils import SUBMISSION_ID_DBKEY
+from database.dbutils import SUBMISSION_TIME_DB_COL
+from database.dbutils import SUBMISSION_TIME_DBKEY
 
 from model import Experiment
 from utils import SIMPLEUtil
@@ -114,7 +115,7 @@ class DBManager:
 
         conn.commit()
         conn.close()
-        experiment = Experiment(id=jobid, name=name, description=description, model=model)
+        experiment = Experiment(id=jobid, name=name, description=description, model=model, author=getuser())
         self.update_experiment(experiment)
         return experiment
 
@@ -233,15 +234,16 @@ if __name__ == "__main__":
     db = DBManager()
     # id_ = db.create_new_job()
     # db.update_job_status(1, "Completed", 2)
-    exp_ = Experiment(1, "Experiment", status="Completed", description="Corn test data.")
+    import getpass
+    user = "raziqraif"
+    exp_ = Experiment(1, "Experiment", status="Completed", description="Corn test data.", author=user)
     db.update_experiment(exp_)
-    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop")
+    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user)
     db.update_experiment(exp_)
-    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop")
+    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user)
     db.update_experiment(exp_)
-    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop")
+    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user)
     db.update_experiment(exp_)
-    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop")
+    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user)
     db.update_experiment(exp_)
-    exp_ = Experiment(6, "UM-E5", status="Completed", description="SIMPLE-G Workshop")
-    db.update_experiment(exp_)
+    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user)

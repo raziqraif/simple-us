@@ -25,7 +25,7 @@ class ManageTab:
         # The chip widget removal will be done there.
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
-        pass
+        self.experiment_table.refresh_experiments()
 
     def onclick_display(self, widget: Button, event: str, data: dict):
         experiments = self.experiment_table.selected_experiments()

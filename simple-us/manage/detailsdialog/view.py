@@ -127,7 +127,9 @@ class DetailsView(Dialog):
         return bar
 
     def close(self):
+        print("closing")
         self.open_ = False
+        del self  # It seems like the application becomes slow if the object does not get explicitly deleted
 
     def _create_data_row(self, label: str, value: str):
         wrapper = Container(children=[],

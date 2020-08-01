@@ -8,6 +8,7 @@ from ipymaterialui import Html
 from ipymaterialui import Icon
 from ipymaterialui import IconButton
 
+from utils.misc import SECONDARY_COLOR
 from .table import ExperimentTableView
 from .controller import ManageTab
 import manage
@@ -46,14 +47,26 @@ class ManageTabView(Container):
         instruction_label = CustomText("Instruction:",
                                        style_={
                                            "font-weight": "bold",
-                                           "padding": "0px 8px 0px 0px"
-                                       })
-        instruction = CustomText(instruction_text)
-        self.top_bar = Container(children=[instruction_label, instruction],
+                                           "padding": "0px 8px 0px 0px",
+                                   })
+        instruction = CustomText(instruction_text, style_={"display": "flex", "flex-grow": "1"})
+        refresh = self._create_button("Refresh", background=SECONDARY_COLOR)
+        refresh.on_event("onClick", self.controller.onclick_refresh)
+        refresh_wrapper = Container(children=[refresh],
+                                    style_={
+                                        "padding": "0px 0px 0px 0px",
+                                        "margin": "0px 0px 0px 0px",
+                                        "display": "flex",
+                                        "flex-grow": "1",
+                                        "flex-direction": "row",
+                                        "justify-content": "flex-end",
+                                    })
+        self.top_bar = Container(children=[instruction_label, instruction, refresh],
                                  style_={
                                      "padding": "0px 0px 0px 0px",
                                      "margin": "0px 0px 16px 0px",
                                      "display": "flex",
+                                     "align-items": "center",
                                      "flex-direction": "row"
                                  })
 
@@ -101,13 +114,15 @@ class ManageTabView(Container):
                                         "justify-content": "flex-start",
                                     })
 
-    def _create_button(self, text) -> Button:
-        button = Button(children=CustomText(text,
-                                            style_={
-                                                "font-size": "13px",
-                                                "color": "#ffffff",
-                                                "align-self": "center",
-                                            }),
+    def _create_button(self, text, icon: Icon = None, background: str = PRIMARY_COLOR) -> Button:
+        html_text = CustomText(text,
+                               style_={
+                                   "font-size": "13px",
+                                   "color": "#ffffff",
+                                   "align-self": "center",
+                               })
+        children = [html_text] if icon is None else [html_text, icon]
+        button = Button(children=children,
                         color="#454851",
                         focus_ripple=True,
                         style_={
@@ -115,7 +130,7 @@ class ManageTabView(Container):
                             "height": "34px",
                             "padding": "0px 0px 0px 0px",
                             "margin": "0px 0px 0px 8px",
-                            "background": PRIMARY_COLOR,
+                            "background": background,
                         },)
         return button
 
