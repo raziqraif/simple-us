@@ -11,40 +11,7 @@ DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVC", "Base Value": "LVB", "Upd
                             "Percent Changes": "PCT"}
 
 
-class ExperimentUtil:
-    @staticmethod
-    def to_id(id_str: str) -> int:
-        id_ = int(id_str[1:])
-        return id_
-
-    @staticmethod
-    def to_id_str(id_: int, is_private=True) -> str:
-        return "P" + str(id_) if is_private else "S" + str(id_)
-
-    @staticmethod
-    def is_private_id_str(id_str: str) -> bool:
-        return id_str[0] == "P"
-
-    @staticmethod
-    def is_shared_id_str(id_str: str) -> bool:
-        return id_str[0] == "S"
-
-    @staticmethod
-    def from_id_str(id_str: str):
-        id_ = Experiment.to_id(id_str)
-        is_private = Experiment.is_private_id_str(id_str)
-        exp = Experiment.from_id(id_, is_private)
-        return exp
-
-    @staticmethod
-    def from_id(id_: int, is_private: bool):
-        from database import DBManager
-        db = DBManager()
-        exp = db.get_experiment(id_, is_private)
-        return exp
-
-
-class Experiment(ExperimentUtil):
+class Experiment:
     """ Class to represent the SIMPLEJobs db table
 
     Values are stored as they are read from the the db. Helper functions are used if the values
@@ -117,6 +84,37 @@ class Experiment(ExperimentUtil):
     @property
     def is_completed(self):
         return self.status_str.lower() == "completed"
+
+    @staticmethod
+    def to_id(id_str: str) -> int:
+        id_ = int(id_str[1:])
+        return id_
+
+    @staticmethod
+    def to_id_str(id_: int, is_private=True) -> str:
+        return "P" + str(id_) if is_private else "S" + str(id_)
+
+    @staticmethod
+    def is_private_id_str(id_str: str) -> bool:
+        return id_str[0] == "P"
+
+    @staticmethod
+    def is_shared_id_str(id_str: str) -> bool:
+        return id_str[0] == "S"
+
+    @staticmethod
+    def from_id_str(id_str: str):
+        id_ = Experiment.to_id(id_str)
+        is_private = Experiment.is_private_id_str(id_str)
+        exp = Experiment.from_id(id_, is_private)
+        return exp
+
+    @staticmethod
+    def from_id(id_: int, is_private: bool):
+        from database import DBManager
+        db = DBManager()
+        exp = db.get_experiment(id_, is_private)
+        return exp
 
 
 if __name__ == "__main__":

@@ -20,11 +20,12 @@ from ipywidgets import Layout
 from osgeo import gdal
 
 from model.variableutil import VariableModel
+from utils import CustomText
+from utils.misc import NODATA
 
 
 class CustomMap(Map):
     def __init__(self, width: str, height: str):
-        from .text import CustomText
         super().__init__(scroll_wheel_zoom=True, zoom_control=False)
         self.layout = Layout(width=width, height=height, margin="8px 0px 0px 0px")
         self.center = (39.5, -98.35)
@@ -128,7 +129,6 @@ class RasterService:
         dataset = None  # Close the dataset - https://gdal.org/tutorials/raster_api_tut.html
 
     def value(self, latitude: float, longitude: float) -> Optional[float]:
-        from ..misc import NODATA
         if (longitude < self._x_origin) or (longitude > self._x_end):
             return None
         elif (latitude > self._y_origin) or (latitude < self._y_end):
@@ -193,7 +193,6 @@ class LegendBar(Container):
         self.style_ = self._create_style(bucket_number=len(buckets), hidden=False)
 
     def _create_bucket(self, value: float, color: str):
-        from .text import CustomText
         if value > 1000 or value < -1000:
             value_str = "{:.2e}".format(value)
         else:
