@@ -7,7 +7,7 @@ from .text import CustomText
 
 
 class ExperimentChip(Chip):
-    def __init__(self, experiment_id: str, experiment_name: str, text_width: str = "100px", variant: str = "outlined",
+    def __init__(self, experiment_id_str: str, experiment_name: str, text_width: str = "100px", variant: str = "outlined",
                  style_: Optional[Dict] = None):
 
         super(Chip, self).__init__()
@@ -28,7 +28,7 @@ class ExperimentChip(Chip):
                                 })
 
         self.experiment_name = experiment_name
-        self.experiment_id = experiment_id
+        self.experiment_id_str = experiment_id_str
         self.clickable = False
         self.variant = variant
         self.style_ = style_

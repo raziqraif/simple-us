@@ -4,6 +4,7 @@ from typing import List, Optional
 import ipymaterialui as mui
 from ipymaterialui import TableRow
 
+from model import Experiment
 from ..detailsdialog import Details
 from database import DBManager
 from utils import CustomCheckbox
@@ -12,32 +13,26 @@ from utils import CustomCheckbox
 class ExperimentTable:
     def __init__(self):
         from .view import ExperimentTableView
-        self.view = ExperimentTableView(self)
+        self.view: ExperimentTableView = ExperimentTableView(self)
 
         # Both the following attributes will be set externally by ManageTab
         self.create_experiment_chip = None  # A callback function to create a chip widget from id and name
         self.delete_experiment_chip = None  # A callback function to delete a chip widget from id
 
-    def rows_data(self) -> List[List[str]]:
+    def read_experiments(self) -> List[Experiment]:
         db = DBManager()
         experiments = db.get_experiments()
-
-        rows_data: List[List[str]] = []
-        for exp in experiments:
-            r_data = [exp.id_str, exp.name_str, exp.status_str, exp.description_str]
-            rows_data.append(r_data)
-
-        return rows_data
+        return experiments
 
     def selected_experiment_ids(self) -> [str]:
         """ Expose the view's method """
 
         return self.view.selected_experiment_ids()
 
-    def selected_row_from_id(self, id_):
+    def selected_row_from_id(self, id_str: str):
         """ Expose the view's method """
 
-        return self.view.selected_row_from_id(id_)
+        return self.view.selected_row_from_id(id_str)
 
     def toggle_row(self, row: TableRow):
         """ Expose the view's method """

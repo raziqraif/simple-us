@@ -133,7 +133,7 @@ class ManageTabView(Container):
     def remove_chip(self, experiment_id):
         children = copy(self.chips_wrapper.children)
         for ch in children:
-            if ch.experiment_id == experiment_id:
+            if ch.experiment_id_str == experiment_id:
                 children.remove(ch)
                 break
         self.chips_wrapper.children = children

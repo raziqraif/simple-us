@@ -1,4 +1,5 @@
 from copy import copy
+from typing import Callable, Optional
 
 from ipymaterialui import Button
 
@@ -15,17 +16,17 @@ class ManageTab:
         self.experiment_table.create_experiment_chip = self.view.append_chip
         self.experiment_table.delete_experiment_chip = self.view.remove_chip
 
-        self.view_experiments = view_experiments_callback  # Function callback. Accepts a list of Experiment objects.
-        # Must be set externally by the App class
+        self.view_experiments: Callable[[Experiment, Optional[Experiment]], bool] = view_experiments_callback
 
     def ondelete_chip(self, widget: ExperimentChip, event, data):
-        experiment_id = widget.experiment_id
-        associated_row = self.experiment_table.selected_row_from_id(experiment_id)
+        self._toggle_experiment_row(widget.experiment_id_str)
+        # experiment_table have access to the create/delete experiment chip widget API. The chip widget removal will
+        # be done there.
 
+    def _toggle_experiment_row(self, experiment_id_str: str):
+        associated_row = self.experiment_table.selected_row_from_id(experiment_id_str)
         if associated_row:
             self.experiment_table.toggle_row(associated_row)
-            # experiment_table have access to the create/delete experiment chip widget API. The chip widget removal will
-            # be done there.
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
         pass
@@ -43,7 +44,8 @@ class ManageTab:
         if not experiment.is_completed:
             return  # TODO: display error message
 
-        self.view_experiments([experiment])
+        if self.view_experiments(experiment, None):
+            self._toggle_experiment_row(experiment.id_str)
 
     def onclick_compare(self, widget: Button, event: str, data: dict):
         ids = self.experiment_table.selected_experiment_ids()
@@ -61,4 +63,6 @@ class ManageTab:
                 return  # TODO: error message
 
         # TODO: Make sure result lists intersect
-        self.view_experiments(experiments)
+        if self.view_experiments(experiments[0], experiments[1]):
+            self._toggle_experiment_row(experiments[0].id_str)
+            self._toggle_experiment_row(experiments[1].id_str)

@@ -151,6 +151,9 @@ class VariableService:
             valid_paths = first_paths
         return valid_paths
 
+    def has_valid_variables(self) -> bool:
+        return len(self.system_component_options()) != 0
+
     def system_component_options(self) -> List[str]:
         # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
         options = list(self._system_components)

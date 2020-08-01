@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Optional
+from typing import Callable
 
 import ipywidgets
 from ipywidgets import Box
@@ -35,10 +36,13 @@ class App:
         SIMPLEUtil.init_working_directory()
         return Container(children=[self.appview])
 
-    def view_experiments(self, experiments: List[Experiment]):
-        self.view_tab.new_view(experiments)
-        self.appview.tabs.value = self.view_tab.view
-
+    def view_experiments(self, experiment_1: Experiment, experiment_2: Optional[Experiment]) -> bool:
+        experiments = [experiment_1] if experiment_2 is None else [experiment_1, experiment_2]
+        created = self.view_tab.new_view(experiments)
+        if created:
+            self.appview.tabs.value = self.view_tab.view
+            return True
+        return False
 
 if __name__ == "__main__":
     App()

@@ -132,7 +132,9 @@ class ExperimentTableView(Container):
 
     def _build_table_body(self):
         experiment_rows = []
-        for row_data in self.controller.rows_data():
+        for experiment in self.controller.read_experiments():
+            row_data = [experiment.id_str, experiment.name, experiment.status, experiment.author,
+                        experiment.description]
             row = self._create_body_row(row_data)
             experiment_rows.append(row)
 
@@ -245,32 +247,27 @@ class ExperimentTableView(Container):
         return cell
 
     def _select_row(self, row: TableRow) -> None:
-        checkbox = self.checkbox_from_row(row)
+        checkbox = self._checkbox_from_row(row)
         checkbox.checked = True
         row.selected = True
 
     def _deselect_row(self, row: TableRow) -> None:
-        checkbox = self.checkbox_from_row(row)
+        checkbox = self._checkbox_from_row(row)
         checkbox.checked = False
         row.selected = False
 
-    def rows(self):
-        if self.body is None:
-            return None
-        return self.body.children
-
-    def checkbox_from_row(self, row: TableRow) -> CustomCheckbox:
+    def _checkbox_from_row(self, row: TableRow) -> CustomCheckbox:
         checkbox_cell = row.children[0]
         checkbox = checkbox_cell.children
         return checkbox
 
-    def name_from_row(self, row: TableRow) -> str:
+    def _name_from_row(self, row: TableRow) -> str:
         name_cell = row.children[2]
         name_div = name_cell.children
         name = name_div.children
         return name.strip()
 
-    def id_from_row(self, row: TableRow) -> str:
+    def _id_from_row(self, row: TableRow) -> str:
         id_cell = row.children[1]
         id_div = id_cell.children
         id = id_div.children
@@ -279,7 +276,7 @@ class ExperimentTableView(Container):
     def selected_row_from_id(self, experiment_id: str) -> Optional[TableRow]:
         experiment_id = experiment_id.strip()
         for row in self.selected_rows:
-            id_in_row = self.id_from_row(row)
+            id_in_row = self._id_from_row(row)
             if id_in_row == experiment_id:
                 return row
         return None
@@ -287,12 +284,12 @@ class ExperimentTableView(Container):
     def selected_experiment_ids(self) -> List[str]:
         ids = []
         for row in self.selected_rows:
-            id_ = self.id_from_row(row)
+            id_ = self._id_from_row(row)
             ids.append(id_)
         return ids
 
     def toggle_row(self, row: TableRow):
-        checkbox = self.checkbox_from_row(row)
+        checkbox = self._checkbox_from_row(row)
         if not checkbox.checked:
             if len(self.selected_rows) >= 2:
                 # TODO: Replace this with a snickbar.
@@ -300,11 +297,11 @@ class ExperimentTableView(Container):
             else:
                 self._select_row(row)
                 self.selected_rows.append(row)
-                name = self.name_from_row(row)
-                id_ = self.id_from_row(row)
+                name = self._name_from_row(row)
+                id_ = self._id_from_row(row)
                 self.controller.create_experiment_chip(id_, name)
         elif checkbox.checked:
             self._deselect_row(row)
             self.selected_rows.remove(row)
-            id_ = self.id_from_row(row)
+            id_ = self._id_from_row(row)
             self.controller.delete_experiment_chip(id_)

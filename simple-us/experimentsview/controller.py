@@ -25,12 +25,15 @@ class ViewTab:
         assert isinstance(context, ViewContext)
         context.maps = maps
 
-    def new_view(self, experiments: List[Experiment]):
+    def new_view(self, experiments: List[Experiment]) -> bool:
         """ New display/compare view"""
 
         context = ViewContext(experiments)
+        if not context.variable_service.has_valid_variables():
+            return False
         self.contexts.append(context)
         self.view.new_tab(context.title, context, context.is_comparison)
+        return True
 
     def visualize_variables(self, system_component: str, spatial_resolution: str, type_of_result: str,
                             result_to_view: str, filter_min: int, filter_max: int) -> None:
