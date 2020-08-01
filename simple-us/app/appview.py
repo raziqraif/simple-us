@@ -14,7 +14,7 @@ from utils import CustomText
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
 from utils import PRIMARY_COLOR_DARK
-from view import ViewTab
+from experimentsview import ViewTab
 
 TAB_HEIGHT = "60px"
 

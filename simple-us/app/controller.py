@@ -11,7 +11,7 @@ from utils import CustomText, SIMPLEUtil
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
 from utils import PRIMARY_COLOR_DARK
-from view import ViewTab
+from experimentsview import ViewTab
 
 
 class App:
