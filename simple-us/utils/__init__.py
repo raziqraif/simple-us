@@ -9,5 +9,4 @@ from .misc import PRIMARY_COLOR_DARK
 from .misc import PRIMARY_COLOR_LIGHT
 from .widgets import CustomCheckbox
 from .widgets import CustomText
-from .widgets import CustomMap
 from .widgets import ExperimentChip

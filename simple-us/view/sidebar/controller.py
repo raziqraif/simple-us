@@ -10,7 +10,7 @@ DEFAULT_SELECTION = "Select"
 
 class Sidebar:
     def __init__(self):
-        from .experimentview import SidebarView
+        from .view import SidebarView
         self.view = SidebarView(self)
         self.context: Optional[ViewContext] = None
         self.visualize_variables = None  # LOOKATME: Callback function. Must be set externally

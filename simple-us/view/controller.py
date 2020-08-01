@@ -13,7 +13,7 @@ from model.variableutil import VariableModel
 
 class ViewTab:
     def __init__(self):
-        from .experimentview import ViewTabUI
+        from .view import ViewTabUI
         self._sidebar = Sidebar()
         self._sidebar.visualize_variables = self.visualize_variables
         self.contexts: List[ViewContext] = []
