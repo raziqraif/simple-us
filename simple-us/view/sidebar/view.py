@@ -1,7 +1,7 @@
 from copy import copy
 from typing import List, Optional, Tuple
 
-from ipymaterialui import Button
+from ipymaterialui import Button, Icon
 from ipymaterialui import Container
 from ipymaterialui import FormControl
 from ipymaterialui import FormControlLabel
@@ -141,17 +141,24 @@ class SidebarView(Container):
     def _build_buttons_wrapper(self):
         visualize = self._create_button("Visualize")
         visualize.on_event("onClick", self.controller.onclick_visualize)
-        csv = self._create_button("CSV")
+        download_icon = Icon(children="cloud_download_outline_blank",
+                             style_={
+                                 "color": "white",
+                                 "font-size": "18px",
+                                 "padding": "0px 0px 0px 0px",
+                                 "margin": "0px 0px 0px 8px",
+                             })
+        csv = self._create_button("CSV", icon=download_icon)
         csv.on_event("onClick", self.controller.onclick_csv)
         close = self._create_button("Close", SECONDARY_COLOR)
         close.on_event("onClick", self.controller.onclick_close)
         wrapper = self._create_input_wrapper([visualize, csv, close])
         style_ = copy(wrapper.style_)
-        style_["margin"] = "32px 12px 32px 12px"
+        style_["margin"] = "32px 12px 0px 12px"
         wrapper.style_ = style_
         self._buttons_wrapper = wrapper
 
-    def _create_button(self, text: str, background: str = PRIMARY_COLOR) -> Button:
+    def _create_button(self, text: str, background: str = PRIMARY_COLOR, icon: Icon = None) -> Button:
         text_html = CustomText(text,
                                style_={
                                    "display": "flex",
@@ -160,7 +167,8 @@ class SidebarView(Container):
                                    "color": "#ffffff",
                                    "align-self": "center",
                                })
-        button = Button(children=[text_html],
+        children = [text_html] if icon is None else [text_html, icon]
+        button = Button(children=children,
                         # color="#454851",
                         color=background,
                         focus_ripple=True,

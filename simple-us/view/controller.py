@@ -1,11 +1,9 @@
-from pathlib import Path
-from typing import List, Union
+from typing import List
 from typing import Optional
-from typing import Tuple
 
-from .context import ViewContext
-from .layerservice import RasterLayerUtil
-from .layerservice import VectorLayerUtil
+from .viewcontext import ViewContext
+from map.layerservice import RasterLayerUtil
+from map.layerservice import VectorLayerUtil
 from .sidebar import Sidebar
 from model import Experiment
 from model.variableutil import VariableModel

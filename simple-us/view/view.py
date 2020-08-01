@@ -17,10 +17,10 @@ from ipymaterialui import TextareaAutosize
 import ipywidgets as widgets
 from ipywidgets import Layout, jslink
 
-from .context import ViewContext
+from .viewcontext import ViewContext
 from .controller import ViewTab
 from .sidebar import SidebarView
-from model import CustomMap
+from map import CustomMap
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR_LIGHT

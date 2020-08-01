@@ -164,7 +164,7 @@ class LegendBar(Container):
     def _create_style(self, bucket_number=10, hidden=False):
         style_ = {
             "width": str(self._bucket_width * bucket_number) + "px",
-            "height": "15px",
+            "height": "16px",
             "border-radius": "15px",
             "display": "none" if hidden else "flex",
             "flex-direction": "row",
@@ -197,7 +197,7 @@ class LegendBar(Container):
             value_str = "{:.2e}".format(value)
         else:
             value_str = "{:.2f}".format(value)
-        text = CustomText(value_str, style_={"font-size": "8px", "opacity": "1.0"})
+        text = CustomText(value_str, style_={"font-size": "8.5px", "opacity": "1.0"})
         bucket = Container(children=text,
                            style_={
                                "width": str(self._bucket_width) + "px",
