@@ -3,7 +3,7 @@ from os import listdir
 from os.path import splitext
 import re
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Set, Union
 
 from utils import SIMPLEUtil
 
@@ -79,10 +79,105 @@ class VariableModel:
 
 
 class VariableService:
-    # NOTE: Variable path format - .../system component/spatial resolution/SIMPLE variable/type of result/result to view
+    # Variable path format - SIMPLEUtil.result_path(id_str) / system component/spatial resolution/SIMPLE variable \
+    # /type of result/result to view
+
     def __init__(self, id_str_1: str, id_str_2: Optional[str] = None):
-        self.id_str_1 = id_str_1
-        self.id_str_2 = id_str_2
+        self.id_str_1: str = id_str_1
+        self.id_str_2: str = id_str_2
+
+        # The options for each variable is stored in a set
+        self._system_components: Set = set()
+        self._spatial_resolutions: dict = {}  # spatial_resolution as key
+        self._simple_variables: dict = {}  # (system_component, spatial_resolution) as key
+        # NOTE: It is assumed that there is only one simple variable for each pair of system component and spatial
+        # resolution. So, simple_variable is not used as a key for _type_of_results
+        self._type_of_results: dict = {}  # (system_component, spatial_resolution) as key
+        self._results_to_view: dict = {}  # (system_component, spatial_resolution, type_of_result) as key
+
+        self._read_variables()
+
+    def _read_variables(self):
+        variable_paths = self._get_variable_paths()
+        for path in variable_paths:
+            self._process_variable_path(path)
+
+    def _process_variable_path(self, truncated_variable_path: str):
+        path = truncated_variable_path.replace("\\", "/")
+        path = path if path[0] != "/" else path[1:]
+        variables = path.split("/")
+        system_component, spatial_resolution, simple_variable, type_of_result, result_to_view = variables
+        display_system_component = self.convert_system_component(system_component, to_display_name=True)
+        display_spatial_resolution = self.convert_spatial_resolution(spatial_resolution, to_display_name=True)
+        display_type_of_result = self.convert_type_of_result(type_of_result, to_display_name=True)
+        display_result_to_view = self.convert_result_to_view(result_to_view, self.id_str_1,  system_component,
+                                                             spatial_resolution, type_of_result, to_display_name=True)
+        self._system_components.add(display_system_component)
+        if system_component in self._spatial_resolutions.keys():
+            self._spatial_resolutions[system_component].add(display_spatial_resolution)
+        else:
+            self._spatial_resolutions[system_component] = {display_spatial_resolution}
+        if (system_component, spatial_resolution) in self._simple_variables.keys():
+            self._simple_variables[(system_component, spatial_resolution)].add(simple_variable)
+        else:
+            self._simple_variables[(system_component, spatial_resolution)] = {simple_variable}
+        # NOTE: It is assumed that there is only one simple variable for each pair of system component and spatial
+        # resolution. So, simple_variable is not used as a key for _type_of_results
+        if (system_component, spatial_resolution) in self._type_of_results.keys():
+            self._type_of_results[(system_component, spatial_resolution)].add(display_type_of_result)
+        else:
+            self._type_of_results[(system_component, spatial_resolution)] = {display_type_of_result}
+        if (system_component, spatial_resolution, type_of_result) in self._results_to_view.keys():
+            self._results_to_view[(system_component, spatial_resolution, type_of_result)].add(display_result_to_view)
+        else:
+            self._results_to_view[(system_component, spatial_resolution, type_of_result)] = {display_result_to_view}
+
+    def _get_variable_paths(self) -> List[str]:
+        # Note: SIMPLEUtil.result_path(id_str) will be truncated from the paths
+        # Note: If id_str_2 is specified, the paths will be intersected.
+        first_root = SIMPLEUtil.experiment_result_path(self.id_str_1)
+        first_prefix_len = len(str(first_root)) + 1  # +1 to account for the forward/back slash
+        first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
+        first_paths += [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.shp")]
+
+        if self.id_str_2:
+            second_root = SIMPLEUtil.experiment_result_path(self.id_str_2)
+            second_prefix_len = len(str(second_root)) + 1
+            second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
+            second_paths += [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.shp")]
+
+            valid_paths = [path_ for path_ in first_paths if path_ in second_paths]
+        else:
+            valid_paths = first_paths
+        return valid_paths
+
+    def system_component_options(self) -> List[str]:
+        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
+        options = list(self._system_components)
+        options.sort()
+        return options
+
+    def spatial_resolution_options(self, system_component: str) -> List[str]:
+        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
+        system_component = self.convert_system_component(system_component, to_directory_name=True)
+        options = list(self._spatial_resolutions[system_component])
+        options.sort()
+        return options
+
+    def type_of_result_options(self, system_component: str, spatial_resolution: str) -> List[str]:
+        system_component = self.convert_system_component(system_component, to_directory_name=True)
+        spatial_resolution = self.convert_spatial_resolution(spatial_resolution, to_directory_name=True)
+        options = list(self._type_of_results[(system_component, spatial_resolution)])
+        options.sort()
+        return options
+
+    def result_to_view_options(self, system_component: str, spatial_resolution: str, type_of_result: str) -> List[str]:
+        system_component = self.convert_system_component(system_component, to_directory_name=True)
+        spatial_resolution = self.convert_spatial_resolution(spatial_resolution, to_directory_name=True)
+        type_of_result = self.convert_type_of_result(type_of_result, to_directory_name=True)
+        options = list(self._results_to_view[(system_component, spatial_resolution, type_of_result)])
+        options.sort()
+        return options
 
     @classmethod
     def convert_system_component(cls, system_component: str, to_display_name=False, to_directory_name=False):
@@ -111,7 +206,9 @@ class VariableService:
                                type_of_result: str, to_display_name=False, to_directory_name=False):
         # Convert from display name to directory name or vice versa
         assert to_directory_name or to_display_name
-        simple_variable = cls.simple_variable(id_str, system_component, spatial_resolution)
+        spatial_resolution_path = cls.spatial_resolution_path(id_str, system_component, spatial_resolution)
+        simple_variable = listdir(str(spatial_resolution_path))[0]  # It is assumed there is only one simple variable
+        # directory
         file_format = ".tif" if spatial_resolution.lower() == "geospatial" else ".shp"
         suffix = cls._result_to_view_suffix(result_to_view)
         name = None
@@ -165,99 +262,9 @@ class VariableService:
         return suffix
 
     @classmethod
-    def system_component_options(cls, id_str: str, intersected_paths: Optional[List[str]] = None) -> List[str]:
-        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
-        root = SIMPLEUtil.experiment_result_path(id_str)
-        options = []
-        if not root.is_dir():
-            return options
-        for system_component in os.listdir(root):
-            if not root.joinpath(system_component).is_dir():
-                continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component):
-                converted = cls.convert_system_component(system_component, to_display_name=True)
-                options.append(converted)
-        return options
-
-    @classmethod
-    def spatial_resolution_options(cls, id_str: str, system_component: str,
-                                   intersected_paths: Optional[List[str]] = None) -> List[str]:
-        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
-        system_component_path = cls.system_component_path(id_str, system_component)
-        options = []
-        if not system_component_path.is_dir():
-            return options
-        for spatial_resolution in os.listdir(system_component_path):
-            if not system_component_path.joinpath(spatial_resolution).is_dir():
-                continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component,
-                                                                       spatial_resolution):
-                converted = cls.convert_spatial_resolution(spatial_resolution, to_display_name=True)
-                options.append(converted)
-        return options
-
-    @classmethod
-    def type_of_result_options(cls, id_str: str, system_component: str, spatial_resolution: str,
-                               intersected_paths: Optional[List[str]] = None) -> List[str]:
-        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
-        options = []
-        path_ = cls.simple_variable_path(id_str, system_component, spatial_resolution)
-        if not path_.is_dir():
-            return options
-        for item in os.listdir(str(path_)):
-            if not path_.joinpath(item).is_dir():
-                continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component,
-                                                                       spatial_resolution, item):
-                converted = cls.convert_type_of_result(item, to_display_name=True)
-                options.append(converted)
-        return options
-
-    @classmethod
-    def result_to_view_options(cls, id_str: str, system_component: str, spatial_resolution: str, type_of_result: str,
-                               intersected_paths: Optional[List[str]] = None) -> List[str]:
-        # Note: The variables need to be in one of the intersected paths if intersected_paths is specified
-        type_of_result_path = cls.type_of_result_path(id_str, system_component, spatial_resolution, type_of_result)
-        options = []
-        if not type_of_result_path.is_dir():
-            return options
-        if len(os.listdir(str(type_of_result_path))) == 0:
-            return options
-
-        pattern = "*.tif" if spatial_resolution.lower() == "geospatial" else "*.shp"
-        for full_path in type_of_result_path.glob(pattern):
-            if not type_of_result_path.joinpath(full_path).is_file():
-                continue
-            if (intersected_paths is None) or cls._variables_intersect(intersected_paths, id_str, system_component,
-                                                                       spatial_resolution, full_path.name):
-                converted = cls.convert_result_to_view(full_path.name, id_str, system_component, spatial_resolution,
-                                                       type_of_result, to_display_name=True)
-                options.append(converted)
-        return options
-
-    @classmethod
-    def _variables_intersect(cls, intersected_paths: List[str], id_str: str, system_component: str,
-                             spatial_resolution: Optional[str] = None, type_of_result: Optional[str] = None,
-                             result_to_view: Optional[str] = None) -> bool:
-
-        pattern = cls.convert_system_component(system_component, to_directory_name=True) + ".*"
-        if spatial_resolution:
-            pattern += spatial_resolution + ".*"
-        if spatial_resolution and type_of_result:
-            converted_tor = cls.convert_type_of_result(type_of_result, to_directory_name=True)
-            pattern += converted_tor + ".*"
-        if spatial_resolution and type_of_result and result_to_view:
-            converted_rtv = cls.convert_result_to_view(result_to_view, id_str, system_component, spatial_resolution,
-                                                       type_of_result, to_directory_name=True)
-            pattern += converted_rtv
-
-        compiled = re.compile(pattern)
-        filtered = list(filter(compiled.match, intersected_paths))
-        return len(filtered) != 0
-
-    @classmethod
     def system_component_path(cls, id_str, system_component: str):
-        path_ = SIMPLEUtil.experiment_result_path(id_str) / cls.convert_system_component(system_component, to_directory_name=True)
+        path_ = SIMPLEUtil.experiment_result_path(id_str) / cls.convert_system_component(system_component,
+                                                                                         to_directory_name=True)
         return path_
 
     @classmethod
@@ -296,42 +303,3 @@ class VariableService:
                 / cls.convert_result_to_view(result_to_view, id_str, system_component, spatial_resolution,
                                              type_of_result, to_directory_name=True)
         return path_
-
-    @classmethod
-    def intersect_variable_paths(cls, first_id_str: str, second_id_str: str) -> List[str]:
-        """
-            Intersect all full variable paths from both experiments (aka, intersect all result-to-view paths from both
-            experiments) when the root result directory is excluded and return the values
-        """
-
-        first_root = SIMPLEUtil.experiment_result_path(first_id_str)
-        second_root = SIMPLEUtil.experiment_result_path(second_id_str)
-
-        first_prefix_len = len(str(first_root)) + 1
-        second_prefix_len = len(str(second_root)) + 1
-
-        first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
-        first_paths += [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.shp")]
-        second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
-        second_paths += [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.shp")]
-
-        intersected_paths = [path_ for path_ in first_paths if path_ in second_paths]
-        return intersected_paths
-
-    def _valid_variable_paths(self) -> List[str]:
-        first_root = SIMPLEUtil.experiment_result_path(self.id_str_1)
-        first_prefix_len = len(str(first_root)) + 1
-        first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
-        first_paths += [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.shp")]
-
-        if self.id_str_2:
-            second_root = SIMPLEUtil.experiment_result_path(self.id_str_2)
-            second_prefix_len = len(str(second_root)) + 1
-            second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
-            second_paths += [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.shp")]
-
-            valid_paths = [path_ for path_ in first_paths if path_ in second_paths]
-        else:
-            valid_paths = first_paths
-
-        return valid_paths
