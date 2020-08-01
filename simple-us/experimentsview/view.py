@@ -23,7 +23,6 @@ from .sidebar import SidebarView
 from map import CustomMap
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
-from utils import PRIMARY_COLOR_LIGHT
 from utils import PRIMARY_COLOR
 
 

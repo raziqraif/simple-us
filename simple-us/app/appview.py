@@ -13,7 +13,6 @@ from manage import ManageTab
 from utils import CustomText
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
-from utils import PRIMARY_COLOR_DARK
 from experimentsview import ViewTab
 
 TAB_HEIGHT = "60px"

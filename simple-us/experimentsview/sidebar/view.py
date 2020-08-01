@@ -21,7 +21,6 @@ from utils.misc import SECONDARY_COLOR
 from .controller import Sidebar
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
-from utils import PRIMARY_COLOR_LIGHT
 from utils import PRIMARY_COLOR
 
 WIDGET_LEN = "220px"

@@ -15,7 +15,6 @@ from ipymaterialui import Paper
 
 from .controller import Details
 from utils import BACKGROUND_COLOR
-from utils import BACKGROUND_COLOR_LIGHT
 from utils import CustomText
 from utils import CustomCheckbox
 from utils import INNER_BACKGROUND_COLOR

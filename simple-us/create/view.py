@@ -18,7 +18,6 @@ from ipywidgets import Layout
 from .controller import CreateTab
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
-from utils import PRIMARY_COLOR_LIGHT
 from utils import PRIMARY_COLOR
 
 

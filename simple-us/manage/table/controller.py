@@ -19,7 +19,7 @@ class ExperimentTable:
         self.create_experiment_chip = None  # A callback function to create a chip widget from id and name
         self.delete_experiment_chip = None  # A callback function to delete a chip widget from id
 
-    def read_experiments(self) -> List[Experiment]:
+    def load_experiments(self) -> List[Experiment]:
         db = DBManager()
         experiments = db.get_experiments()
         return experiments
@@ -30,7 +30,7 @@ class ExperimentTable:
         return experiments
 
     def toggle_experiment_row(self, id_str: str):
-        row = self.view.selected_row_from_id(id_str)
+        row = self.view.selected_row_from_id_str(id_str)
         self.view.toggle_row(row)
 
     def onclick_row(self, widget, event, data, row: TableRow):
