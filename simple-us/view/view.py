@@ -40,7 +40,7 @@ class ViewTabUI(Container):
 
         self.controller: ViewTab = controller
 
-        self._tab_bar: Optional[Container] = None
+        self._tab_bar: Optional[Tabs] = None
         self._body: Optional[Container] = None  # contains view widgets wrapper
         self._view_widgets_wrapper: Optional[Container] = None  # contains sidebar and maps area / "no experiment" label
         self._sidebar: SidebarView = sidebar
@@ -113,6 +113,8 @@ class ViewTabUI(Container):
                 "flex-direction": "row",
                 "align-items": "center",
             },
+            variant="scrollable",
+            scroll_buttons="on",
             centered=False, tab_model=0,
         )
         self._tab_bar.observe(self.controller.onchange_tab, 'value')
