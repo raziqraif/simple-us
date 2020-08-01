@@ -39,7 +39,7 @@ class SidebarView(Container):
             "align-self": "center",
             "padding": "32px 32px 32px 32px",
             "width": "290px",
-            "height": "600px",
+            "height": "640px",
             "margin": "0px 0px 0px 0px",
             # "border-radius": "8px",
             "border": "1px solid " + PRIMARY_COLOR,
@@ -117,7 +117,7 @@ class SidebarView(Container):
         # layout = Layout(width="180px", margin="8px 8px 0px 8px", align_items="center")
         layout = Layout(width=WIDGET_LEN, margin="8px 0px 0px 0px", align_items="center")
         self._filter_slider = widgets.FloatRangeSlider(
-            value=[0, 100], min=0, max=100, step=0.05, continuous_update=False, readout=False,
+            value=[0, 100], min=0, max=100, step=1, continuous_update=True, readout=False,
             layout=layout,
         )
         # zero = CustomText("0%")
@@ -195,24 +195,25 @@ class SidebarView(Container):
         self._result_to_view_select.options = options
 
     def set_system_component(self, value: str):
-        print("sys comp: ", value)
         assert value in self._system_components_select.options
         self._system_components_select.value = value
 
     def set_spatial_resolution(self, value: str):
-        print("spat res: ", value)
         assert value in self._spatial_resolution_select.options
         self._spatial_resolution_select.value = value
 
     def set_type_of_result(self, value: str):
-        print("type of res: ", value)
         assert value in self._type_of_results_select.options
         self._type_of_results_select.value = value
 
     def set_result_to_view(self, value: str):
-        print("res to view : ", value)
-        assert value in self._result_to_view_select.options
         self._result_to_view_select.value = value
+
+    def set_filter_range(self, min_: int, max_: int):
+        assert 0 <= min_ <= 100
+        assert 0 <= max_ <= 100
+        assert min_ <= max_
+
 
     @property
     def system_component(self) -> str:
@@ -231,5 +232,15 @@ class SidebarView(Container):
         return self._result_to_view_select.value
 
     @property
-    def filter_range(self) -> Tuple[float, float]:
-        return self._filter_slider.value
+    def filter_range(self) -> Tuple[int, int]:
+        min_ = self.filter_min
+        max_ = self.filter_max
+        return min_, max_
+
+    @property
+    def filter_min(self) -> int:
+        return int(self._filter_slider.value[0])
+
+    @property
+    def filter_max(self) -> int:
+        return int(self._filter_slider.value[1])
