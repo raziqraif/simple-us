@@ -13,13 +13,14 @@ class Sidebar:
         from .view import SidebarView
         self.view = SidebarView(self)
         self.context: Optional[ViewContext] = None
-        self.visualize_variables = None  # LOOKATME: Callback function. Must be set externally
+        self.visualize_variables_callback = None  # LOOKATME: Callback function. Must be set externally.
+        self.close_tab_callback = None  # LOOKATME: Callback function. Must be set externally
 
     @property
     def experiments(self) -> List[Experiment]:
         return self.context.experiments if self.context is not None else []
 
-    def switch_context(self, context: ViewContext):
+    def switch_context(self, context: Optional[ViewContext]):
         if self.context:
             self.context.system_component = self.view.system_component
             self.context.spatial_resolution = self.view.spatial_resolution
@@ -28,8 +29,9 @@ class Sidebar:
             self.context.filter_min = self.view.filter_min
             self.context.filter_max = self.view.filter_max
         self.context = context
-        self._refresh_options()
-        self._refresh_selections()
+        if context is not None:
+            self._refresh_options()
+            self._refresh_selections()
 
     def onchange_system_components(self, change):
         if change['name'] == 'value' and (change['new'] != change['old']):
@@ -45,6 +47,23 @@ class Sidebar:
         if change['name'] == 'value' and (change['new'] != change['old']):
             self.view.set_result_to_view(DEFAULT_SELECTION)
             self._update_result_to_view_options()
+
+    def onchange_filter_range(self, change):
+        if change['name'] == 'value' and (change['new'] != change['old']):
+            old_min, old_max = [int(value) for value in change['old']]
+            min_, max_ = [int(value) for value in change['new']]
+            if min_ != max_:
+                self.view.set_filter_range(min_, max_)
+                return
+            if min_ == old_min:
+                max_ += 1
+            elif max_ == old_max:
+                min_ -= 1
+            elif max_ != 0:
+                min_ = max_ - 1
+            elif min_ != 100:
+                max_ = min_ + 1
+            self.view.set_filter_range(min_, max_)
 
     def onclick_visualize(self, widget, event, data):
         sys_comp = self.view.system_component
@@ -66,31 +85,16 @@ class Sidebar:
         if filter_min == filter_max:
             return
 
-        assert self.visualize_variables is not None
-        self.visualize_variables(sys_comp, spat_res, type_of_res, res_to_view, filter_min, filter_max)
-
-    def onchange_filter_range(self, change):
-        if change['name'] == 'value' and (change['new'] != change['old']):
-            old_min, old_max = [int(value) for value in change['old']]
-            min_, max_ = [int(value) for value in change['new']]
-            if min_ != max_:
-                self.view.set_filter_range(min_, max_)
-                return
-            if min_ == old_min:
-                max_ += 1
-            elif max_ == old_max:
-                min_ -= 1
-            elif max_ != 0:
-                min_ = max_ - 1
-            elif min_ != 100:
-                max_ = min_ + 1
-            self.view.set_filter_range(min_, max_)
+        assert self.visualize_variables_callback is not None
+        self.visualize_variables_callback(sys_comp, spat_res, type_of_res, res_to_view, filter_min, filter_max)
 
     def onclick_csv(self, widget, event, data):
         pass
 
     def onclick_close(self, widget, event, data):
-        pass
+        assert self.context is not None
+        assert self.close_tab_callback is not None
+        self.close_tab_callback(self.context)
 
     def _refresh_selections(self):
         self.view.set_system_component(self.context.system_component)

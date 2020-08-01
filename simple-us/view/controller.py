@@ -13,14 +13,15 @@ class ViewTab:
     def __init__(self):
         from .view import ViewTabUI
         self._sidebar = Sidebar()
-        self._sidebar.visualize_variables = self.visualize_variables
+        self._sidebar.visualize_variables_callback = self.visualize_variables
         self.contexts: List[ViewContext] = []
         self.active_context: Optional[ViewContext] = None  # Needed to save the state of the previous context when
         # context switch happens
 
         self.view = ViewTabUI(self, self._sidebar.view)
+        self._sidebar.close_tab_callback = self.view.close_tab
 
-    def cache_maps(self, maps: List[any], context: ViewContext):
+    def assign_maps(self, maps: List[any], context: ViewContext):
         assert isinstance(context, ViewContext)
         context.maps = maps
 
@@ -56,16 +57,18 @@ class ViewTab:
     def onchange_tab(self, data):
         tab_index = data["new"]
         assert isinstance(tab_index, int)
-        context = self.view.context(tab_index)
-        self._switch_context(context)
+        if tab_index >= 0:
+            context = self.view.context(tab_index)
+            self.switch_context(context)
 
-    def _switch_context(self, context: ViewContext):
-        assert isinstance(context, ViewContext)
+    def switch_context(self, context: Optional[ViewContext]):
         if self.active_context:
             self.active_context.maps = self.view.maps()
         self.active_context = context
         self._sidebar.switch_context(context)
-        self.view.show_maps(context)
+
+        if context is not None:
+            self.view.show_maps(context)
 
     def onclick_close(self):
         pass

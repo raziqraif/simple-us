@@ -53,7 +53,6 @@ class ViewTabUI(Container):
         self._map_wrapper_top: Optional[Container] = None
         self._map_wrapper_bottom: Optional[Container] = None
 
-        self._default_tab: Optional[TabWithContext] = None
         self._empty_text: CustomText = \
             CustomText("Experiments selected for display/compare will appear here.")
         self._init_ui()
@@ -101,9 +100,8 @@ class ViewTabUI(Container):
         self.children = [self._tab_bar, self._body]
 
     def _build_tab_bar(self):
-        self._default_tab = CustomText("", tag="span", style_={"font-weight": "bold"})
         self._tab_bar = Tabs(
-            children=[self._default_tab],
+            children=[],
             style_={
                 "background": PRIMARY_COLOR,
                 # "height": "65px",
@@ -181,23 +179,23 @@ class ViewTabUI(Container):
         return CustomMap("720px", height)
         # return Map(layout=layout, center=(39.5, -98.35), zoom=4)  # TODO: Update this
 
-    def new_tab(self, tab_name: str, tab_model: any, comparison: bool = False):
+    def new_tab(self, tab_name: str, context: ViewContext, comparison: bool = False):
         children = self._tab_bar.children
-        children = copy(children) if children[0] != self._default_tab else []  # copy() is needed.
+        children = copy(children)  # copy() is needed.
         # It seems like if the memory address of children is the same, the DOM will not get updated.
 
         tab = TabWithContext(label=CustomText(tab_name,
                                               style_={
                                                 "color": "#ffffff",
                                                 "padding": "0px 0px 0px 0px",
-                                            }), context=tab_model, selected=True)
+                                            }), context=context, selected=True)
         children.append(tab)
         self._tab_bar.children = children
         if comparison:
             maps = [self._create_empty_map(full_height=False) for count in range(2)]
         else:
             maps = [self._create_empty_map()]
-        self.controller.cache_maps(maps, tab_model)
+        self.controller.assign_maps(maps, context)
         self._tab_bar.value = len(children) - 1  # onchange_tab will trigger after this line
 
     def show_maps(self, context: ViewContext):
@@ -238,14 +236,25 @@ class ViewTabUI(Container):
     def _show_empty_text(self):
         self._body.children = [self._empty_text]
 
-    def close_tab(self, tab_model):
+    def close_tab(self, context: ViewContext):
+        index = 0
         for tab in self._tab_bar.children:
-            if isinstance(tab, TabWithContext) and (tab.context == tab_model):
+            if isinstance(tab, TabWithContext) and (tab.context == context):
                 children = copy(self._tab_bar.children)
                 children.remove(tab)
-                self._tab_bar.children = children
+                if len(children) == 0:
+                    children = []
 
-        self._show_empty_text()
+                self._tab_bar.children = children
+                current_index = index if index < len(children) else len(children) - 1
+                if len(children) != 0:
+                    current_tab = self._tab_bar.children[current_index]
+                    self.controller.switch_context(current_tab.context)
+                else:
+                    self.controller.switch_context(None)
+                    self._show_empty_text()
+                self._tab_bar.value = current_index
+            index += 1
 
     def maps(self) -> Optional[List[CustomMap]]:
         if self._body.children[0] == self._empty_text:
@@ -264,4 +273,5 @@ class ViewTabUI(Container):
         assert 0 <= tab_index <= len(self._tab_bar.children) - 1
         tab: TabWithContext = self._tab_bar.children[tab_index]
         assert isinstance(tab, TabWithContext)
+        assert tab.context is not None
         return tab.context
