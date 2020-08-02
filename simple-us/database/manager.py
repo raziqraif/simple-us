@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from getpass import getuser
 import os
 from pathlib import Path
@@ -38,11 +38,12 @@ class DBManager:
     """
     from model import Experiment
 
-    def __init__(self):
-        self.private_db_file = str(SIMPLEUtil.PRIVATE_JOBS_DIR / "job.db")
-        self.shared_db_file = str(SIMPLEUtil.SHARED_JOBS_DIR / "job.db")
+    PRIVATE_DB_FILE = str(SIMPLEUtil.PRIVATE_JOBS_DIR / "job.db")
+    SHARED_DB_FILE = str(SIMPLEUtil.SHARED_JOBS_DIR / "job.db")
 
-        if not Path(self.private_db_file).exists():
+    def __init__(self):
+
+        if not Path(self.PRIVATE_DB_FILE).exists():
             self.initialize_db(is_private=True)
         # Note: Shared DB are not automatically created
 
@@ -75,18 +76,18 @@ class DBManager:
         else:
             SIMPLEUtil.PRIVATE_JOBS_DIR.mkdir(parents=True, exist_ok=True)
 
-        conn = sqlite3.connect(self.private_db_file if is_private else self.shared_db_file)
+        conn = sqlite3.connect(self.PRIVATE_DB_FILE if is_private else self.SHARED_DB_FILE)
         conn.execute(sql)
         conn.commit()
         conn.close()
 
         # give simpleggroup read, write permission
         if not is_private:
-            os.chmod(self.shared_db_file, 0o664)
+            os.chmod(self.SHARED_DB_FILE, 0o664)
 
     def _validate_private_db(self):
         # check if a user uses old db
-        conn = sqlite3.connect(self.private_db_file)
+        conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'PRAGMA table_info(SIMPLEJobs);'
         cur = conn.execute(sql)
         ret = cur.fetchall()
@@ -99,12 +100,23 @@ class DBManager:
         cur = conn.execute(sql)
         conn.close()
 
+    @classmethod
+    def last_modified(cls) -> datetime:
+        # Return the latest time a db (shared/private) was modified
+        private = os.path.getmtime(cls.PRIVATE_DB_FILE)
+        private = datetime.fromtimestamp(private)
+        if Path(cls.SHARED_DB_FILE).exists():
+            shared = os.path.getmtime(cls.SHARED_DB_FILE)
+            shared = datetime.fromtimestamp(shared)
+            return private if private > shared else private
+        return private
+
     def new_experiment(self, name: Optional[str] = None, description: Optional[str] = None,
                        model: Optional[str] = None) -> Experiment:
-        now = datetime.datetime.now()
+        now = datetime.now()
         submit_time = now.strftime('%m/%d/%Y %H:%M:%S')
 
-        conn = sqlite3.connect(self.private_db_file)
+        conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'insert into SIMPLEJobs(submitTime,jobstatus) values (?,?);'
         conn.execute(sql, (submit_time, 'Pending'))
         conn.commit()
@@ -122,10 +134,10 @@ class DBManager:
     def _insert_experiment(self, experiment: Experiment) -> int:
         """ Should only be used to insert seed data """""
 
-        now = datetime.datetime.now()
+        now = datetime.now()
         submit_time = now.strftime('%m/%d/%Y %H:%M:%S')
 
-        db_file = self.private_db_file if experiment.is_private else self.shared_db_file
+        db_file = self.PRIVATE_DB_FILE if experiment.is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         sql = 'insert into SIMPLEJobs(submitId, submitTime, author, jobstatus, jobname, modeltype, ' \
               'published, description) values (?,?,?,?,?,?,?,?);'
@@ -143,13 +155,13 @@ class DBManager:
         return jobid
 
     def get_experiments(self) -> List[Experiment]:
-        conn = sqlite3.connect(self.private_db_file)
+        conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'select * from SIMPLEJobs order by jobid;'
         cur = conn.execute(sql)
         jobs_as_lists = cur.fetchall()
 
-        if Path(self.shared_db_file).exists():
-            conn = sqlite3.connect(self.private_db_file)
+        if Path(self.SHARED_DB_FILE).exists():
+            conn = sqlite3.connect(self.PRIVATE_DB_FILE)
             sql = 'select * from SIMPLEJobs order by jobid;'
             cur = conn.execute(sql)
             jobs_as_lists += cur.fetchall()
@@ -161,14 +173,17 @@ class DBManager:
         return experiments
 
     def get_experiment(self, jobid: int, is_private: bool) -> Optional[Experiment]:
-        db_file = self.private_db_file if is_private else self.shared_db_file
+        db_file = self.PRIVATE_DB_FILE if is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         sql = 'select * from SIMPLEJobs where jobid = ?;'
         cur = conn.execute(sql, (str(jobid),))
         job_as_list = cur.fetchone()
 
-        exp = self._to_experiment(job_as_list)
-        return exp
+        if job_as_list is not None:
+            exp = self._to_experiment(job_as_list)
+            return exp
+        else:
+            return None
 
     def update_experiment(self, experiment: Experiment) -> bool:
         params = {}
@@ -195,7 +210,7 @@ class DBManager:
             sql += key + ' = "' + str(params[key]) + '",'
         sql = sql[:-1] + ' where jobid = "' + str(experiment.id) + '";'
 
-        db_file = self.private_db_file if experiment.is_private else self.shared_db_file
+        db_file = self.PRIVATE_DB_FILE if experiment.is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         conn.execute(sql)
         conn.commit()
@@ -206,7 +221,7 @@ class DBManager:
     def delete_experiment(self, experiment: Experiment):
         assert experiment.is_private  # Can only delete private experiment
 
-        conn = sqlite3.connect(self.private_db_file)
+        conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'delete from SIMPLEJobs where jobid = ?'
         conn.execute(sql, (str(experiment.id),))
         conn.commit()
@@ -236,14 +251,20 @@ if __name__ == "__main__":
     # db.update_job_status(1, "Completed", 2)
     import getpass
     user = "raziqraif"
-    exp_ = Experiment(1, "Experiment", status="Completed", description="Corn test data.", author=user)
+    exp_ = Experiment(1, "Experiment", status="Completed", description="Corn test data.", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user)
+    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user)
+    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user)
+    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user)
+    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user)
+    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user,
+                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
