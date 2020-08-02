@@ -1,7 +1,9 @@
 from copy import copy
+from datetime import datetime
 from typing import Callable, Optional
 
 from ipymaterialui import Button
+from pubsub import pub
 
 from model import Experiment
 from .table import ExperimentTable
@@ -25,7 +27,8 @@ class ManageTab:
         # The chip widget removal will be done there.
 
     def onclick_refresh(self, widget: Button, event: str, data: dict):
-        self.experiment_table.refresh_experiments()
+        from utils.pubsubmessage import REFRESH_BUTTON_CLICKED
+        pub.sendMessage(REFRESH_BUTTON_CLICKED)
 
     def onclick_display(self, widget: Button, event: str, data: dict):
         experiments = self.experiment_table.selected_experiments()

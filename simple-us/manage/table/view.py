@@ -1,8 +1,9 @@
-from typing import Any
+from copy import copy
+from typing import Any, Callable
 from typing import List
 from typing import Optional
 
-from ipymaterialui import Container
+from ipymaterialui import Container, Button
 from ipymaterialui import Html
 from ipymaterialui import Icon
 from ipymaterialui import IconButton
@@ -22,6 +23,21 @@ from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
 
 
+# Cell width macros
+CHECKBOX_WIDTH = 70
+ID_WIDTH = 150
+NAME_WIDTH = 180
+STATUS_WIDTH = 150
+AUTHOR_WIDTH = 150
+DESCRIPTION_WIDTH = 295
+# Keys to sort the table
+ID_SORTKEY = "ID"
+NAME_SORTKEY = "NAME"
+STATUS_SORTKEY = "STATUS"
+AUTHOR_SORTKEY = "AUTHOR"
+DESCRIPTION_SORTKEY = "DESCRIPTION"
+
+
 class ExperimentTableView(Container):
     def __init__(self, controller: ExperimentTable):
         super(Container, self).__init__()
@@ -38,7 +54,10 @@ class ExperimentTableView(Container):
         self._body_wrapper = None
         self._rows_wrapper = None  # Rows will be stored here
 
-        self._selected_rows = []
+        self._sort_by = ID_SORTKEY
+        self._sort_increasingly = True  # This will get toggled every time _sort_by was changed
+
+        self._selected_rows: List[TableRow] = []
 
         self._initialize_widgets()
         self.children = [self._header_wrapper,
@@ -82,27 +101,13 @@ class ExperimentTableView(Container):
                                         })
 
     def _create_table_head(self):
-        refresh_icon = Icon(children="refresh",
-                            style_={
-                                "color": "white",
-                                "font-size": "21px",
-                                "margin": "0px 0px 0px 0px",
-                                "padding": "0px 0px 0px 0px",
-                            })
-        refresh_button = IconButton(children=refresh_icon,
-                                    style_={
-                                        "width": "35px",
-                                        "height": "35px",
-                                        "margin": "0px 0px 0px 0px",
-                                        "padding": "0px 0px 0px 0px",
-                                    })
-        select_cell = self._create_header_cell("", "50px")
-        id_cell = self._create_header_cell("ID", "150px")
-        name_cell = self._create_header_cell("Name", "180px")
-        status_cell = self._create_header_cell("Status", "150px")
-        author_cell = self._create_header_cell("Author", "150px")
-        description_cell = self._create_header_cell("Description", "270px")
-        details_cell = self._create_header_cell("", "", padding="0px 0px 0px 0px")
+        select_cell = self._create_header_cell("", CHECKBOX_WIDTH)
+        id_cell = self._create_header_cell("ID", ID_WIDTH)
+        name_cell = self._create_header_cell("Name", NAME_WIDTH)
+        status_cell = self._create_header_cell("Status", STATUS_WIDTH)
+        author_cell = self._create_header_cell("Author", AUTHOR_WIDTH)
+        description_cell = self._create_header_cell("Description", DESCRIPTION_WIDTH)
+        details_cell = self._create_header_cell("", None)
 
         header_cells = [select_cell,
                         id_cell,
@@ -122,23 +127,49 @@ class ExperimentTableView(Container):
                                style_={
                                    "background": PRIMARY_COLOR,
                                })
+        self._register_header_buttons(id_cell.children, name_cell.children, status_cell.children, author_cell.children,
+                                      description_cell.children)
         return table_head
 
-    def _create_header_cell(self, text, width, padding="0px 4px 0px 4px") -> Html:
-        cell = Html(children=CustomText(text),
-                    tag="th",
-                    style_={
+    def _register_header_buttons(self, id_button: Button, name_button: Button, status_button: Button,
+                                 author_button: Button, description_button: Button):
+        id_button.on_event("onClick", lambda widget, event, data: self.sort_table(ID_SORTKEY))
+        name_button.on_event("onClick", lambda widget, event, data: self.sort_table(NAME_SORTKEY))
+        status_button.on_event("onClick", lambda widget, event, data: self.sort_table(STATUS_SORTKEY))
+        author_button.on_event("onClick", lambda widget, event, data: self.sort_table(AUTHOR_SORTKEY))
+        description_button.on_event("onClick", lambda widget, event, data: self.sort_table(DESCRIPTION_SORTKEY))
 
-                        "text-align": "center",
-                        "position": "sticky",
-                        "color": "#ffffff",
-                        "padding": padding,
-                        "margin": "0px 0px 0px 0px",
-                        "top": "0px",
-                        "height": "45px",
-                        "width": width,
-                        "opacity": 1.0,
-                    })
+    def _create_header_cell(self, text: str, width: Optional[int]) -> TableCell:
+        html_text = CustomText(text,
+                               style_={
+                                   "width": "{}px".format(width),
+                                   "maxWidth": "{}px".format(width),
+                                   "color": "white",
+                                   "font-size": "12px",
+                               })
+        button = Button(children=html_text,
+                        center_ripple=True,
+                        style_={
+                            "width": "{}px".format(width),
+                            "height": "100%",
+                            "padding": "0px 0px 0px 0px",
+                            "margin": "0px 0px 0px 0px",
+                            "background": PRIMARY_COLOR,
+                        })
+        children = html_text if len(text) == 0 else button
+        cell = TableCell(children=children,
+                         align="center",
+                         style_={
+                             "text-align": "center",
+                             "position": "sticky",
+                             "color": "#ffffff",
+                             "padding": "0px 0px 0px 0px",
+                             "margin": "0px 0px 0px 0px",
+                             "top": "0px",
+                             "height": "45px",
+                             "width": "{}px".format(width),
+                             "opacity": 1.0,
+                         })
         return cell
 
     def _build_rows_wrapper(self):
@@ -167,12 +198,12 @@ class ExperimentTableView(Container):
                                         "padding": "0px 0px 0px 0px",
                                     })
 
-        checkbox_cell = self._create_body_row_cell(checkbox, 50, "center")
-        id_cell = self._create_body_row_cell(experiment.id_str, 150, "center")
-        name_cell = self._create_body_row_cell(experiment.name_str, 180, "center")
-        status_cell = self._create_body_row_cell(experiment.status_str, 150, "center")
-        author_cell = self._create_body_row_cell(experiment.author_str, 150, "center")
-        description_cell = self._create_body_row_cell(experiment.description_str, 270, "left")
+        checkbox_cell = self._create_body_row_cell(checkbox, CHECKBOX_WIDTH, "center")
+        id_cell = self._create_body_row_cell(experiment.id_str, ID_WIDTH, "center")
+        name_cell = self._create_body_row_cell(experiment.name_str, NAME_WIDTH, "center")
+        status_cell = self._create_body_row_cell(experiment.status_str, STATUS_WIDTH, "center")
+        author_cell = self._create_body_row_cell(experiment.author_str, AUTHOR_WIDTH, "center")
+        description_cell = self._create_body_row_cell(experiment.description_str, DESCRIPTION_WIDTH, "left")
         details_cell = self._create_body_row_cell(details_button, None, "center")
 
         cells = [
@@ -234,16 +265,16 @@ class ExperimentTableView(Container):
                               width: Optional[int],
                               align: str) -> TableCell:
 
-        text_width = width
         if isinstance(children, str):
+            text_width = width - 16 if width is not None else None
             children = CustomText(children,
                                   style_={
                                       "text-overflow": "ellipsis",
                                       "width": "{}px".format(text_width),
                                       "maxWidth": "{}px".format(text_width),
                                       "overflow": "hidden",
-                                      "margin": "0px 0px 0px 0px",
-                                      "padding": "0px 8px 0px 8px",
+                                      "margin": "0px 8px 0px 8px",
+                                      "padding": "0px 0px 0px 0px",
                                       "white-space": "nowrap"
                                   }, tag="div")
 
@@ -254,6 +285,10 @@ class ExperimentTableView(Container):
                              "margin": "0px 0px 0px 0px",
                              "width": "{}px".format(width),
                              "height": "45px",
+                             # "display": "flex",
+                             # "flex-direction": "column",
+                             # "align-items": align,
+                             # "justify-content": "center",
                          })
 
         return cell
@@ -273,30 +308,48 @@ class ExperimentTableView(Container):
         checkbox = checkbox_cell.children
         return checkbox
 
+    def _id_str_from_row(self, row: TableRow) -> str:
+        id_cell = row.children[1]
+        id_div = id_cell.children
+        id = id_div.children
+        return id.strip()
+
     def _name_from_row(self, row: TableRow) -> str:
         name_cell = row.children[2]
         name_div = name_cell.children
         name = name_div.children
         return name.strip()
 
-    def _id_from_row(self, row: TableRow) -> str:
-        id_cell = row.children[1]
-        id_div = id_cell.children
-        id = id_div.children
-        return id.strip()
+    def _status_from_row(self, row: TableRow) -> str:
+        status_cell = row.children[3]
+        status_div = status_cell.children
+        status = status_div.children
+        return status.strip()
+
+    def _author_from_row(self, row: TableRow) -> str:
+        status_cell = row.children[4]
+        status_div = status_cell.children
+        status = status_div.children
+        return status.strip()
+
+    def _description_from_row(self, row: TableRow) -> str:
+        status_cell = row.children[4]
+        status_div = status_cell.children
+        status = status_div.children
+        return status.strip()
 
     def selected_row_from_id_str(self, experiment_id_str: str) -> Optional[TableRow]:
         experiment_id_str = experiment_id_str.strip()
         for row in self._selected_rows:
-            id_in_row = self._id_from_row(row)
+            id_in_row = self._id_str_from_row(row)
             if id_in_row == experiment_id_str:
                 return row
         return None
 
-    def selected_experiments_id_str(self) -> List[str]:
+    def selected_experiments_id_strs(self) -> List[str]:
         ids = []
         for row in self._selected_rows:
-            id_ = self._id_from_row(row)
+            id_ = self._id_str_from_row(row)
             ids.append(id_)
         return ids
 
@@ -310,21 +363,71 @@ class ExperimentTableView(Container):
                 self._select_row(row)
                 self._selected_rows.append(row)
                 name = self._name_from_row(row)
-                id_ = self._id_from_row(row)
+                id_ = self._id_str_from_row(row)
                 self.controller.create_experiment_chip(id_, name)
         elif checkbox.checked:
             self._deselect_row(row)
             self._selected_rows.remove(row)
-            id_ = self._id_from_row(row)
+            id_ = self._id_str_from_row(row)
             self.controller.delete_experiment_chip(id_)
 
     def refresh_table(self):
+        experiments = self.controller.load_experiments()
+        experiment_rows = self._make_rows_from_experiments(experiments)
+
+        self.deselect_selected_rows()
+        self._rows_wrapper.children = experiment_rows
+        self.sort_table(ID_SORTKEY, toggle_order=False)
+
+    def _make_rows_from_experiments(self, experiments: List[Experiment]) -> List[TableRow]:
         experiment_rows = []
-        for experiment in self.controller.load_experiments():
+        for experiment in experiments:
             row = self._create_body_row(experiment)
             experiment_rows.append(row)
+        # TODO: Remove this test data
+        exp = Experiment(id=999999999999999999999, name="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                         status="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", author="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                         description="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        row = self._create_body_row(exp)
+        experiment_rows.append(row)
         while len(experiment_rows) < 13:
             row = self._create_empty_body_row()
             experiment_rows.append(row)
+        return experiment_rows
 
-        self._rows_wrapper.children = experiment_rows
+    def deselect_selected_rows(self):
+        while len(self._selected_rows) > 0:
+            self.toggle_row(self._selected_rows[0])
+
+    def sort_table(self, sort_by: str = None, toggle_order=True, default=False):
+        if default:
+            self._sort_by = ID_SORTKEY
+            self._sort_increasingly = True
+        elif sort_by is not None:
+            if (sort_by == self._sort_by) and toggle_order:
+                self._sort_increasingly = not self._sort_increasingly
+            else:
+                self._sort_increasingly = True
+            self._sort_by = sort_by
+
+        rows = copy(self._rows_wrapper.children)
+        non_empty_rows = [row for row in rows if isinstance(row.children[0].children, CustomCheckbox)]
+        empty_rows = [row for row in rows if not isinstance(row.children[0].children, CustomCheckbox)]
+        reverse = not self._sort_increasingly
+
+        if self._sort_by == ID_SORTKEY:
+            private_rows = [row for row in non_empty_rows if Experiment.is_private_id_str(self._id_str_from_row(row))]
+            shared_rows = [row for row in non_empty_rows if Experiment.is_shared_id_str(self._id_str_from_row(row))]
+            private_rows.sort(key=lambda row: Experiment.to_id(self._id_str_from_row(row)), reverse=reverse)
+            shared_rows.sort(key=lambda row: Experiment.to_id(self._id_str_from_row(row)), reverse=reverse)
+            non_empty_rows = [*private_rows, *shared_rows]
+        elif self._sort_by == NAME_SORTKEY:
+            non_empty_rows.sort(key=lambda row: self._name_from_row(row), reverse=reverse)
+        elif self._sort_by == STATUS_SORTKEY:
+            non_empty_rows.sort(key=lambda row: self._status_from_row(row), reverse=reverse)
+        elif self._sort_by == AUTHOR_SORTKEY:
+            non_empty_rows.sort(key=lambda row: self._author_from_row(row), reverse=reverse)
+        elif self._sort_by == DESCRIPTION_SORTKEY:
+            non_empty_rows.sort(key=lambda row: self._description_from_row(row), reverse=reverse)
+        self._rows_wrapper.children = non_empty_rows + empty_rows

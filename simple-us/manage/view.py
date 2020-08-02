@@ -8,7 +8,7 @@ from ipymaterialui import Html
 from ipymaterialui import Icon
 from ipymaterialui import IconButton
 
-from utils.misc import SECONDARY_COLOR
+from utils.misc import SECONDARY_COLOR, BUTTON_COLOR
 from .table import ExperimentTableView
 from .controller import ManageTab
 import manage
@@ -50,18 +50,15 @@ class ManageTabView(Container):
                                            "padding": "0px 8px 0px 0px",
                                    })
         instruction = CustomText(instruction_text, style_={"display": "flex", "flex-grow": "1"})
-        refresh = self._create_button("Refresh", background=SECONDARY_COLOR)
-        refresh.on_event("onClick", self.controller.onclick_refresh)
-        refresh_wrapper = Container(children=[refresh],
-                                    style_={
-                                        "padding": "0px 0px 0px 0px",
-                                        "margin": "0px 0px 0px 0px",
-                                        "display": "flex",
-                                        "flex-grow": "1",
-                                        "flex-direction": "row",
-                                        "justify-content": "flex-end",
-                                    })
-        self.top_bar = Container(children=[instruction_label, instruction, refresh],
+        refresh_icon = Icon(children="refresh", style_={
+            "color": "white",
+            "font-size": "20px",
+            "padding": "0px 0px 0px 0px",
+            "margin": "0px 0px 0px 8px",
+        })
+        refresh_button = self._create_button("Refresh", icon=refresh_icon, background=PRIMARY_COLOR)
+        refresh_button.on_event("onClick", self.controller.onclick_refresh)
+        self.top_bar = Container(children=[instruction_label, instruction, refresh_button],
                                  style_={
                                      "padding": "0px 0px 0px 0px",
                                      "margin": "0px 0px 16px 0px",
@@ -114,7 +111,7 @@ class ManageTabView(Container):
                                         "justify-content": "flex-start",
                                     })
 
-    def _create_button(self, text, icon: Icon = None, background: str = PRIMARY_COLOR) -> Button:
+    def _create_button(self, text, icon: Icon = None, background: str = SECONDARY_COLOR, width: int = 135) -> Button:
         html_text = CustomText(text,
                                style_={
                                    "font-size": "13px",
@@ -126,7 +123,7 @@ class ManageTabView(Container):
                         color="#454851",
                         focus_ripple=True,
                         style_={
-                            "width": "135px",
+                            "width": "{}px".format(width),
                             "height": "34px",
                             "padding": "0px 0px 0px 0px",
                             "margin": "0px 0px 0px 8px",

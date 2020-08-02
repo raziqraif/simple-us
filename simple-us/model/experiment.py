@@ -5,11 +5,6 @@ from typing import Optional, List
 
 from utils import SIMPLEUtil
 
-DIR_NAME_TO_DISPLAY_NAME = {"LVC": "Absolute Changes", "LVB": "Base Value", "LVA": "Updated Value",
-                            "PCT": "Percent Changes"}
-DISPLAY_NAME_TO_DIR_NAME = {"Absolute Changes": "LVC", "Base Value": "LVB", "Updated Value": "LVA",
-                            "Percent Changes": "PCT"}
-
 
 class Experiment:
     """ Class to represent the SIMPLEJobs db table
@@ -75,7 +70,7 @@ class Experiment:
 
     @property
     def published_str(self) -> str:
-        return "Private" if self.is_private else "Shared"
+        return "No" if self.is_private else "Yes"
 
     @property
     def is_private(self):
@@ -103,7 +98,7 @@ class Experiment:
         return id_str[0] == "S"
 
     @staticmethod
-    def from_id_str(id_str: str):
+    def from_id_str(id_str: str):  # Python 3.7 doesn't support future annotation. So, cannot annotate return type
         id_ = Experiment.to_id(id_str)
         is_private = Experiment.is_private_id_str(id_str)
         exp = Experiment.from_id(id_, is_private)
