@@ -111,8 +111,7 @@ class DBManager:
             return private if private > shared else private
         return private
 
-    def new_experiment(self, name: Optional[str] = None, description: Optional[str] = None,
-                       model: Optional[str] = None) -> Experiment:
+    def new_experiment(self, name: str, description: str, model: str) -> Experiment:
         now = datetime.now()
         submit_time = now.strftime('%m/%d/%Y %H:%M:%S')
 
@@ -155,6 +154,8 @@ class DBManager:
         return jobid
 
     def get_experiments(self) -> List[Experiment]:
+        #  Get all experiments from both private and shared db
+
         conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'select * from SIMPLEJobs order by jobid;'
         cur = conn.execute(sql)
@@ -172,11 +173,14 @@ class DBManager:
             experiments.append(exp)
         return experiments
 
-    def get_experiment(self, jobid: int, is_private: bool) -> Optional[Experiment]:
+    def get_experiment(self, id_str: str) -> Optional[Experiment]:
+        is_private = Experiment.is_private_id_str(id_str)
+        id_ = str(Experiment.to_id(id_str))
+
         db_file = self.PRIVATE_DB_FILE if is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         sql = 'select * from SIMPLEJobs where jobid = ?;'
-        cur = conn.execute(sql, (str(jobid),))
+        cur = conn.execute(sql, (id_,))
         job_as_list = cur.fetchone()
 
         if job_as_list is not None:
@@ -220,12 +224,13 @@ class DBManager:
 
         return True
 
-    def delete_experiment(self, experiment: Experiment):
-        assert experiment.is_private  # Can only delete private experiment
+    def delete_experiment(self, id_str: str) -> bool:
+        assert Experiment.is_private_id_str(id_str)  # Can only delete private experiment
 
+        id_ = str(Experiment.to_id(id_str))
         conn = sqlite3.connect(self.PRIVATE_DB_FILE)
         sql = 'delete from SIMPLEJobs where jobid = ?'
-        conn.execute(sql, (str(experiment.id),))
+        conn.execute(sql, (id_,))
         conn.commit()
         conn.close()
         return True
