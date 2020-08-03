@@ -42,7 +42,7 @@ class App:
         subscribe(self._handle_notification_created, NOTIFICATION_CREATED)
 
     def display(self):
-        SIMPLEUtil.init_working_directory()
+        SIMPLEUtil.initialize_working_directory()
         return Container(children=[self.view],
                          style_={"width": "100%",
                                  "maxWidth": "100%",
