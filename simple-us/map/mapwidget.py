@@ -23,6 +23,9 @@ from model.variableutil import VariableModel
 from utils import CustomText
 from utils.misc import NODATA
 
+# PYTHON GOTCHAS: https://gdal.org/api/python_gotchas.html
+gdal.UseExceptions()
+
 
 class CustomMap(Map):
     def __init__(self, width: str, height: str):
@@ -111,9 +114,12 @@ class RasterService:
         dataset = gdal.Open(str(self._path))
         band = dataset.GetRasterBand(1)
 
-        stats = band.GetStatistics(False, True)
-        self.min_value: float = float(stats[0])
-        self.max_value: float = float(stats[1])
+        try:
+            stats = band.GetStatistics(False, True)
+        except:  # All values are nodata
+            stats = None
+        self.min_value: float = float(stats[0]) if stats is not None else None
+        self.max_value: float = float(stats[1]) if stats is not None else None
 
         transform = dataset.GetGeoTransform()
         cols = dataset.RasterXSize

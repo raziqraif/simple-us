@@ -1,7 +1,7 @@
 from multiprocessing import cpu_count
 import shutil
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 from ipyleaflet import TileLayer
 from osgeo import gdal
@@ -15,6 +15,10 @@ from gdalscripts import gdal_edit
 from model.variableutil import VariableModel
 from utils import SIMPLEUtil
 from utils.misc import NODATA
+
+
+# PYTHON GOTCHAS: https://gdal.org/api/python_gotchas.html
+gdal.UseExceptions()
 
 
 class RasterLayerUtil:
@@ -43,7 +47,6 @@ class RasterLayerUtil:
             suffix = parent_file_path.split(file_path_root)[1].replace("\\", "/")
             suffix = suffix[1:] if (suffix[0] == "/") else suffix
             temp_working_directory = SIMPLEUtil.TEMP_DIR / self.variable_model.id_str / suffix
-            print("temp working directory: ", temp_working_directory)
             temp_working_directory.mkdir(parents=True, exist_ok=True)
         else:
             temp_working_directory = self.variable_model.file_path().parent
@@ -60,6 +63,8 @@ class RasterLayerUtil:
             path = self._temp_working_directory / self._tif_basename
         else:
             min_value, max_value = self._min_max_of_raster(self.processed_raster_path)
+            min_value = min_value if min_value is not None else "nodata"
+            max_value = min_value if max_value is not None else "nodata"
             path = self._temp_working_directory / (self._tif_basename + "_{}_{}".format(min_value, max_value))
         return path
 
@@ -70,21 +75,22 @@ class RasterLayerUtil:
 
         home = str(Path.home())
         tile_folder = str(self._tile_folder_path)
-        print("tile folder:", tile_folder)
-        print("tile folder split:", tile_folder.split(home))
         suffix = tile_folder.split(home)[1].replace("\\", "/")
         return SIMPLEUtil.BASE_URL + suffix + '/{z}/{x}/{-y}.png'
 
     def create_layer(self) -> TileLayer:
         self._process_raster()
-        print("min max:", self._min_max_of_raster(self.processed_raster_path))
         self._colorize_raster()
         self._tile_raster()
+        return TileLayer(name=self._tif_basename)
 
-        # self._remove_temp_files()
-        return TileLayer(url=self._tile_folder_url, opacity=0.7, name=self._tif_basename)
+        if self._process_raster() and self._colorize_raster() and self._tile_raster():
+            self._remove_temp_files()
+            return TileLayer(url=self._tile_folder_url, opacity=0.7, name=self._tif_basename)
+        else:
+            return TileLayer(name=self._tif_basename)
 
-    def _process_raster(self):
+    def _process_raster(self) -> bool:
         # Filter and warp the raster
         # self.processed_raster_path will be created
 
@@ -92,14 +98,19 @@ class RasterLayerUtil:
                                    resampleAlg="bilinear")
         # Python-GDAL binding does not support
         gdal.Warp(str(self._warped_tif_path), str(self.variable_model.file_path()), options=options)
-        self._filter_raster()
-        # Make sure the projection is correct, and reset the NODATA value
-        options = gdal.WarpOptions(dstSRS="EPSG:4326", dstNodata=NODATA, format="GTiff",
-                                   resampleAlg="bilinear")
-        gdal.Warp(str(self.processed_raster_path), str(self._filtered_tif_path), options=options)
+        if self._filter_raster():
+            # Make sure the projection is correct, reset the NODATA value, and create processed_raster_path
+            gdal.Warp(str(self.processed_raster_path), str(self._filtered_tif_path), options=options)
+            return True
+        else:
+            # Make sure the projection is correct, reset the NODATA value, and create processed_raster_path
+            gdal.Warp(str(self.processed_raster_path), str(self._filtered_tif_path), options=options)
+            return False
 
-    def _filter_raster(self):
+    def _filter_raster(self) -> bool:
         min_, max_ = self._min_max_of_raster(self._warped_tif_path)
+        if (min_ is None) or (max_ is None):  # All nodata
+            return False
         range_ = max_ - min_
         new_min = min_ + self.variable_model.filter_min / float(100) * range_
         new_max = min_ + self.variable_model.filter_max / float(100) * range_
@@ -107,10 +118,11 @@ class RasterLayerUtil:
         # How to use - https://gdal.org/programs/gdal_calc.html
         filter_expression = "A*logical_and(A>={},A<={})".format(new_min, new_max)
         args = ["--outfile={}".format(str(self._filtered_tif_path)),
-                "-A", str(self.variable_model.file_path()),
+                "-A", str(self._warped_tif_path),
                 "--calc={}".format(filter_expression),
                 "--NoDataValue=0",   # Do not change this. Explanation is in the comment below.
                 "--overwrite",
+                "--quiet",
                 ]
         # Filter the raster data. After running this, data outside of the range will be converted to 0 and all data with
         # the value 0 will be set to NODATA. Note: It seems like the statistics metadata will not be updated properly
@@ -119,41 +131,39 @@ class RasterLayerUtil:
 
         # Remove any set statistics metadata
         gdal_edit.gdal_edit(["argv_placeholder", "-unsetstats", str(self._filtered_tif_path)])
+        return True
 
-        min_, max_ = self._min_max_of_raster(self._filtered_tif_path)
-        print("finised filtering:")
-        print("min:", min_)
-        print("max:", max_)
-        print("range:", range_)
-
-    def _min_max_of_raster(self, tif_path: Path) -> Tuple[float, float]:
-        gdal_edit.gdal_edit(["argv_placeholder", "-unsetstats", str(self._filtered_tif_path)])
+    def _min_max_of_raster(self, tif_path: Path) -> Tuple[Optional[float], Optional[float]]:
+        gdal_edit.gdal_edit(["argv_placeholder", "-unsetstats", str(tif_path)])
         # open the image
         raster = gdal.Open(str(tif_path))
         assert raster is not None
 
         # read in the crop data and get info about it
         band = raster.GetRasterBand(1)
-        stats = band.GetStatistics(False, True)
-        min_: float = float(stats[0])
-        max_: float = float(stats[1])
+        try:
+            stats = band.GetStatistics(False, True)
+            min_: float = float(stats[0])
+            max_: float = float(stats[1])
+        except:
+            # All values are nodata
+            return None, None
 
         raster = None  # Close the dataset -https://gdal.org/tutorials/raster_api_tut.html
         return min_, max_
 
-    def _colorize_raster(self):
-        self._create_color_file()
-        options = DEMProcessingOptions(colorFilename=str(self._color_file_path), format="GTiff", addAlpha=True)
-        DEMProcessing(str(self._colorized_tif_path), str(self.processed_raster_path), "color-relief", options=options)
+    def _colorize_raster(self) -> bool:
+        if self._create_color_file():
+            options = DEMProcessingOptions(colorFilename=str(self._color_file_path), format="GTiff", addAlpha=True)
+            DEMProcessing(str(self._colorized_tif_path), str(self.processed_raster_path), "color-relief", options=options)
+            return True
+        return False
 
-    def _create_color_file(self):
-        gtif = gdal.Open(str(self.processed_raster_path))
-        srcband = gtif.GetRasterBand(1)
-
+    def _create_color_file(self) -> bool:
         # Get raster statistics
-        stats = srcband.GetStatistics(False, True)
-        min_ = stats[0]
-        max_ = stats[1]
+        min_, max_ = self._min_max_of_raster(self.processed_raster_path)
+        if (min_ is None) or (max_ is None):
+            return False
         file_content = "nv 0 0 0 0\n" \
                        "0% 255 0 0 255\n" \
                        "10% 255 51 0 255\n" \
@@ -177,8 +187,9 @@ class RasterLayerUtil:
         with open(str(self._color_file_path), "w+"):
             self._color_file_path.write_text(file_content)
         gtif = None  # Close the dataset -https://gdal.org/tutorials/raster_api_tut.html
+        return True
 
-    def _tile_raster(self):
+    def _tile_raster(self) -> bool:
         from utils.misc import REBUILD_RASTER_TILE
         if self._tile_folder_path.exists() and self._tile_folder_path.is_dir() and REBUILD_RASTER_TILE:
             shutil.rmtree(str(self._tile_folder_path))
@@ -187,17 +198,20 @@ class RasterLayerUtil:
         #     shutil.rmtree(str(self._tile_folder_path))
 
         # 0 - 8 is the number of zoom level
-        gdal2tiles.run(["-e", "-z", "0-8", "-a", "0, 0, 0", "--processes={}".format(cpu_count()),
+        gdal2tiles.run(["-e", "-q", "-z", "0-8", "-a", "0, 0, 0", "--processes={}".format(cpu_count()),
                         str(self._colorized_tif_path), str(self._tile_folder_path)])
+        return True
 
-    def _remove_temp_files(self):
-        # Tile folder will not be removed.
+    def _remove_temp_files(self) -> bool:
+        # The processed_raster_path is not removed. The map will read from it directly to display cell value.
+        # The tile folder is also not be removed. The map will use it to display the layer
         if self._filtered_tif_path.exists():
             self._filtered_tif_path.unlink()
         if self._colorized_tif_path.exists():
             self._colorized_tif_path.unlink()
         if self._color_file_path.exists():
             self._color_file_path.unlink()
+        return True
 
 
 class VectorLayerUtil:
