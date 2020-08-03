@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Any
 from typing import List
 from typing import Optional
@@ -12,6 +13,8 @@ from ipymaterialui import DialogContent
 from ipymaterialui import DialogTitle
 from ipymaterialui import Modal
 from ipymaterialui import Paper
+from ipywidgets import Accordion
+from ipywidgets import Output
 
 from model import Experiment
 from .controller import Details
@@ -24,7 +27,7 @@ from utils import PRIMARY_COLOR
 
 
 class DetailsView(Dialog):
-    def __init__(self, controller: Details, experiment: Experiment):
+    def __init__(self, controller: Details, experiment: Optional[Experiment]):
         super().__init__()
         self.style_ = {
             "display": "flex",
@@ -35,13 +38,13 @@ class DetailsView(Dialog):
 
         }
         self.controller = controller
-        self.open_ = True
+        self.open_ = False
         self.max_width = "lg"
         self.disable_backdrop_click = False
         self.on_event("onClick", self.controller.onclick_backdrop)
         self._main = None
         self._experiment = experiment
-
+        self._log_output_area = Output()
         self._build_main()
         self.children = self._main  # Cannot be a list
 
@@ -52,16 +55,51 @@ class DetailsView(Dialog):
                 "flex-direction": "column",
                 "justify-content": "center",
                 "align-items": "center",
-                # "width": "750px",
+                # "width": "750px",  # max it can go
                 "width": "650px",
                 "height": "750px",
                 "background": "white",
-                # "overflow-y": "scroll",
             })
         self._main.on_event("onClick", self.controller.onclick_backdrop)
         title_bar = self._create_title_bar()
-        body = self._create_body()
+        body = self._create_details_area()
         self._main.children = [title_bar, body]
+
+    def _create_buttons_wrapper(self):
+        download = self._create_button("Download", "download")
+        delete = self._create_button("Delete", "delete")
+        wrapper = Container(children=[download, delete],
+                            style_={
+                                "width": "100%",
+                                "display": "flex",
+                                "flex-direction": "row",
+                                "justify-content": "center",
+                                "align-items": "center",
+                                "margin": "16px 0px 16px 0px",
+                            })
+
+    def _create_button(self, text: str, icon: str) -> Button:
+        icon = Icon(children=icon, style_={"margin": "0px 0px 0px 8px"})
+        button = Button(children=[CustomText(text,
+                                             style_={
+                                                 "display": "flex",
+                                                 "align-items": "center",
+                                                 "font-size": "12px",
+                                                 "color": "#ffffff",
+                                                 "align-self": "center",
+                                             }), icon],
+                        color="#454851",
+                        focus_ripple=True,
+                        style_={
+                            "display": "flex",
+                            "width": "120px",
+                            "height": "32px",
+                            "padding": "0px 0px 0px 0px",
+                            "margin": "0px 8px 0px 8px",
+                            "background": PRIMARY_COLOR,
+                            "align-items": "center !important",
+                        }, )
+        return button
 
     def _create_title_bar(self):
         bar = Container(style_={
@@ -96,7 +134,7 @@ class DetailsView(Dialog):
         bar.children = [title, close_button]
         return bar
 
-    def _create_body(self):
+    def _create_details_area(self):
         bar = Container(style_={
             "display": "flex",
             "flex-direction": "column",
@@ -106,18 +144,21 @@ class DetailsView(Dialog):
             "background": "white",
             "width": "100%",
             "flex-grow": "1",
-            "overflow-y": "scroll"
+            "overflow-y": "scroll",
+            "overflow-wrap": "break-word",
         })
 
-        id_ = self._create_data_row("ID", self._experiment.id_str)
-        name = self._create_data_row("Name", self._experiment.name_str)
-        model = self._create_data_row("Model", self._experiment.model_str)
-        status = self._create_data_row("Status", self._experiment.status_str)
-        description = self._create_data_row("Description", self._experiment.description_str)
-        author = self._create_data_row("Author", self._experiment.author_str)
-        submission_id = self._create_data_row("Submission ID", self._experiment.submission_id_str)
-        submission_time = self._create_data_row("Submission Time", self._experiment.submission_time_str)
-        published = self._create_data_row("Published", self._experiment.published_str)
+        id_ = self._create_data_row("ID", self._experiment.id_str if self._experiment else "")
+        name = self._create_data_row("Name", self._experiment.name_str if self._experiment else "")
+        model = self._create_data_row("Model", self._experiment.model_str if self._experiment else "")
+        status = self._create_data_row("Status", self._experiment.status_str if self._experiment else "")
+        description = self._create_data_row("Description", self._experiment.description_str if self._experiment else "")
+        author = self._create_data_row("Author", self._experiment.author_str if self._experiment else "")
+        submission_id = self._create_data_row("Submission ID",
+                                              self._experiment.submission_id_str if self._experiment else "")
+        submission_time = self._create_data_row("Submission Time",
+                                                self._experiment.submission_time_str if self._experiment else "")
+        published = self._create_data_row("Published", self._experiment.published_str if self._experiment else "")
         bar.children = [id_,
                         name,
                         model,
@@ -130,9 +171,7 @@ class DetailsView(Dialog):
         return bar
 
     def close(self):
-        print("closing")
         self.open_ = False
-        del self  # It seems like the application becomes slow if the object does not get explicitly deleted
 
     def _create_data_row(self, label: str, value: str):
         wrapper = Container(children=[],
@@ -144,6 +183,8 @@ class DetailsView(Dialog):
                                 "align-items": "flex-start",
                                 "justify-content": "flex-start",
                                 "height": "auto",
+                                "wrap-word": "break-word",
+                                "overflow-wrap": "break-word",
                             })
         label_wrapper = self._create_data_label_wrapper(label)
         value_wrapper = self._create_data_value_wrapper(value)
@@ -165,7 +206,8 @@ class DetailsView(Dialog):
                                 "justify-content": "flex-start",
                                 "align-items": "flex-start",
                                 "height": "auto",
-                                "width": "150px",
+                                "width": "123px",
+                                "minWidth": "123px",
                             })
         return wrapper
 
@@ -173,6 +215,10 @@ class DetailsView(Dialog):
         value_html = CustomText(value,
                                 style_={
                                     "color": "black",
+                                    "wrap": "hard",
+                                    "max-width": "404px",
+                                    "word-wrap": "break-word",
+                                    "overflow-wrap": "break-word",
                                 })
         wrapper = Container(children=[value_html],
                             style_={
@@ -183,6 +229,15 @@ class DetailsView(Dialog):
                                 "justify-content": "flex-start",
                                 "align-items": "center",
                                 "height": "auto",
-                                "flex-grow": "1",
+                                "wrap": "hard",
+                                "word-wrap": "break-word",
+                                "overflow-wrap": "break-word",
                             })
         return wrapper
+
+    def show(self, experiment: Experiment):
+        self._experiment = experiment
+        title_bar = self._main.children[0]
+        details_area = self._create_details_area()
+        self._main.children = [title_bar, details_area]
+        self.open_ = True

@@ -98,15 +98,15 @@ class Experiment:
 
     @staticmethod
     def from_id_str(id_str: str):  # Python 3.7 doesn't support future annotation. So, cannot annotate return type
-        exp = Experiment.from_id(id_str)
+        from database import DBManager
+        db = DBManager()
+        exp = db.get_experiment(id_str)
         return exp
 
     @staticmethod
     def from_id(id_: int, is_private: bool):
-        from database import DBManager
         id_str = Experiment.to_id_str(id_, is_private)
-        db = DBManager()
-        exp = db.get_experiment(id_str)
+        exp = Experiment.from_id_str(id_str)
         return exp
 
 

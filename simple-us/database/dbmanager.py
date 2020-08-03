@@ -108,7 +108,7 @@ class DBManager:
         if Path(cls.SHARED_DB_FILE).exists():
             shared = os.path.getmtime(cls.SHARED_DB_FILE)
             shared = datetime.fromtimestamp(shared)
-            return private if private > shared else private
+            return private if private > shared else shared
         return private
 
     def new_experiment(self, name: str, description: str, model: str) -> Experiment:
@@ -162,7 +162,7 @@ class DBManager:
         jobs_as_lists = cur.fetchall()
 
         if Path(self.SHARED_DB_FILE).exists():
-            conn = sqlite3.connect(self.PRIVATE_DB_FILE)
+            conn = sqlite3.connect(self.SHARED_DB_FILE)
             sql = 'select * from SIMPLEJobs order by jobid;'
             cur = conn.execute(sql)
             jobs_as_lists += cur.fetchall()
@@ -226,9 +226,14 @@ class DBManager:
 
     def delete_experiment(self, id_str: str) -> bool:
         assert Experiment.is_private_id_str(id_str)  # Can only delete private experiment
+        return self._delete_experiment(id_str)
 
+    def _delete_experiment(self, id_str) -> bool:
+        # NOTE: Don't prevent shared experiment from being deleted.
+        # This should never be used outside of this module.
         id_ = str(Experiment.to_id(id_str))
-        conn = sqlite3.connect(self.PRIVATE_DB_FILE)
+        db_file = self.PRIVATE_DB_FILE if Experiment.is_private_id_str(id_str) else self.SHARED_DB_FILE
+        conn = sqlite3.connect(db_file)
         sql = 'delete from SIMPLEJobs where jobid = ?'
         conn.execute(sql, (id_,))
         conn.commit()
@@ -254,41 +259,6 @@ if __name__ == "__main__":
     # from pathlib import Path
     # path = Path(".").absolute()
     db = DBManager()
-    # id_ = db.create_new_job()
-    # db.update_job_status(1, "Completed", 2)
-    import getpass
-    user = "raziqraif"
-    exp_ = Experiment(1, "Experiment", model="CustomAllcrop",
-                      status="Completed", description="Allcrop test data.", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user, submission_id="-",
-                      submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-    db.update_experiment(exp_)
-    exp_ = Experiment(7, name="UM-E6", status="Pending", author="muhdr", submission_id="-",
-                      description="SIMPLE-G US Experiment")
-    db.update_experiment(exp_)
-    exp_ = Experiment(10,
-                      model="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      name="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      status="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      author="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      description="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                                  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                                  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      submission_time="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      submission_id="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                      )
-    db.update_experiment(exp_)
+    for i in range(5, 16):
+        db._delete_experiment("P"+str(i))
+        db._delete_experiment("S"+str(i))

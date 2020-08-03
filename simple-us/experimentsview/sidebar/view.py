@@ -118,7 +118,7 @@ class SidebarView(Container):
         # layout = Layout(width="180px", margin="8px 8px 0px 8px", align_items="center")
         layout = Layout(width=WIDGET_LEN, margin="4px 0px 0px 0px", align_items="center")
         self._filter_slider = widgets.FloatRangeSlider(
-            value=[0, 100], min=0, max=100, step=1, continuous_update=True, readout=False,
+            value=[0, 100], min=0, max=100, step=1, continuous_update=False, readout=False,
             layout=layout,
         )
         self._filter_slider.observe(self.controller.onchange_filter_range)

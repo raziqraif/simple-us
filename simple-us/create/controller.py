@@ -24,7 +24,7 @@ class CreateTab:
         if success:
             sendMessage(DATABASE_MODIFIED)
             self.view.clear_form()
-            self._uploaded_file_path = None
+            self._uploaded_file_path = Path("test")  # TODO: Update this
             text = "Experiment has been submitted"
             sendMessage(NOTIFICATION_CREATED, text=text, mode=Notification.SUCCESS, page=Notification.CREATE_PAGE)
         else:

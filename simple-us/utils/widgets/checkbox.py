@@ -10,18 +10,18 @@ class CustomCheckbox(IconButton):
     the checked attribute.
     """
 
-    def __init__(self, style_: Dict = None, **kwargs):
+    def __init__(self, style_: Dict = None, font_size: str = "20px", **kwargs):
         super(IconButton, self).__init__()
 
         self._checked_icon = Icon(children="check_box",
                                   style_={
                                       "color": "#f50057",
-                                      "font-size": "20px",
+                                      "font-size": font_size,
                                       "padding": "0px 0px 0px 0px"
                                   })
         self._unchecked_icon = Icon(children="check_box_outline_blank",
                                     style_={
-                                        "font-size": "20px",
+                                        "font-size": font_size,
                                         "padding": "0px 0px 0px 0px"
                                     })
 

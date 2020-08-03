@@ -24,6 +24,8 @@ from utils import PRIMARY_COLOR
 
 
 # Cell width macros
+from ..detailsdialog import DetailsView
+
 CHECKBOX_WIDTH = 70
 ID_WIDTH = 150
 NAME_WIDTH = 180
@@ -45,7 +47,7 @@ class TableRowWithExperiment(TableRow):
 
 
 class ExperimentTableView(Container):
-    def __init__(self, controller: ExperimentTable):
+    def __init__(self, controller: ExperimentTable, details_window: DetailsView):
         super(Container, self).__init__()
 
         self.style_ = {
@@ -63,11 +65,14 @@ class ExperimentTableView(Container):
         self._sort_by = ID_SORTKEY
         self._sort_increasingly = True  # This will get toggled every time _sort_by was changed
 
+        self.details_window: DetailsView = details_window
+
         self.selected_rows: List[TableRowWithExperiment] = []
 
         self._initialize_widgets()
         self.children = [self._header_wrapper,
-                         self._body_wrapper]
+                         self._body_wrapper,
+                         self.details_window]  # By default is not shown
 
     def _initialize_widgets(self):
         head = self._create_table_head()
@@ -236,10 +241,9 @@ class ExperimentTableView(Container):
                           lambda widget, event, data:
                           self.controller.onclick_row(widget, event, data, row))
 
-        job_id_str = experiment.id_str
         details_button.on_event("onClick",
                                 lambda widget, event, data:
-                                self.controller.onclick_details(widget, event, data, job_id_str))
+                                self.controller.onclick_details(widget, event, data, experiment))
         return row
 
     def _create_empty_body_row(self):
@@ -341,7 +345,7 @@ class ExperimentTableView(Container):
         return status.strip()
 
     def _description_from_row(self, row: TableRowWithExperiment) -> str:
-        status_cell = row.children[4]
+        status_cell = row.children[5]
         status_div = status_cell.children
         status = status_div.children
         return status.strip()
@@ -385,7 +389,7 @@ class ExperimentTableView(Container):
 
         self.deselect_selected_rows()
         self._rows_wrapper.children = experiment_rows
-        self.sort_table(ID_SORTKEY, toggle_order=False)
+        self.sort_table(default=True)
 
     def _make_rows_from_experiments(self, experiments: List[Experiment]) -> List[TableRowWithExperiment]:
         experiment_rows = []
@@ -402,12 +406,12 @@ class ExperimentTableView(Container):
         while len(self.selected_rows) > 0:
             self.toggle_row(self.selected_rows[0])
 
-    def sort_table(self, sort_by: str = None, toggle_order=True, default=False):
+    def sort_table(self, sort_by: str = None, default=False):
         if default:
             self._sort_by = ID_SORTKEY
             self._sort_increasingly = True
         elif sort_by is not None:
-            if (sort_by == self._sort_by) and toggle_order:
+            if sort_by == self._sort_by:
                 self._sort_increasingly = not self._sort_increasingly
             else:
                 self._sort_increasingly = True

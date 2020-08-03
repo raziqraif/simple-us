@@ -1,2 +1,2 @@
 from . import dbutils
-from .manager import DBManager
+from .dbmanager import DBManager

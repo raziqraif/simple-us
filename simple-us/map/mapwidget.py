@@ -15,12 +15,12 @@ from ipyleaflet import ScaleControl
 from ipyleaflet import SearchControl
 from ipyleaflet import WidgetControl
 from ipyleaflet import ZoomControl
-from ipywidgets import Output, VBox, jslink
+from ipywidgets import Output, VBox, jslink, Checkbox
 from ipywidgets import Layout
 from osgeo import gdal
 
 from model.variableutil import VariableModel
-from utils import CustomText
+from utils import CustomText, CustomCheckbox
 from utils.misc import NODATA
 
 # PYTHON GOTCHAS: https://gdal.org/api/python_gotchas.html
@@ -42,8 +42,27 @@ class CustomMap(Map):
 
         self._coordinates_text = CustomText("Coordinates: -", style_={"font-size": '11px'})
         self._value_text = CustomText("Value: -", style_={"font-size": '11px'})
-        self._value_area = VBox(children=[self._coordinates_text, self._value_text],
-                                layout=Layout(min_width="174px", height="42px", padding="4px 4px 4px 4px"))
+        continuos_update_text = CustomText("Continuos update:", style_={"font-size": '11px',
+                                                                        "margin": "0px 4px 0px 0px"})
+        self._continuos_update_checkbox = CustomCheckbox(font_size="15px",
+                                                         style_={"width": "15px",
+                                                                 "height": "15px",
+                                                                 "padding": "0px 0px 0px 0px"
+                                                                 })
+        self._continuos_update_checkbox.checked = True
+        self._continuos_update_checkbox.on_event("onClick", self._onclick_checkbox)
+        wrapper = Container(children=[continuos_update_text, self._continuos_update_checkbox],
+                            style_={
+                                "display": "flex",
+                                "flex-direction": "row",
+                                "justify-content": "flex-start",
+                                "align-items": "center",
+                                "padding": "0px 0px 0px 0px",
+                                "margin": "0px 0px 0px 0px",
+                            }
+                            )
+        self._value_area = VBox(children=[self._coordinates_text, self._value_text, wrapper],
+                                layout=Layout(min_width="174px", height="55px", padding="4px 4px 4px 4px"))
 
         self.add_control(WidgetControl(widget=self._legend_bar, position="bottomleft"))
         self.add_control(ZoomControl(position="topleft"))
@@ -84,7 +103,15 @@ class CustomMap(Map):
         self.center = (39.5, -98.35)
         self.zoom = 4
 
+    def _onclick_checkbox(self, widget, event, data):
+        assert isinstance(widget, CustomCheckbox)
+        widget.checked = not widget.checked
+        if self._linked_map:
+            self._linked_map._continuos_update_checkbox.checked = widget.checked
+
     def _mouse_event(self, **kwargs):
+        if (not self._continuos_update_checkbox.checked) and (kwargs.get("type") != "click"):
+            return
         coordinates = kwargs.get('coordinates')
         latitude = float(coordinates[0])
         longitude = float(coordinates[1])

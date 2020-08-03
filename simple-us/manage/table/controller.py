@@ -7,10 +7,11 @@ import ipymaterialui as mui
 from ipymaterialui import TableRow
 
 from model import Experiment
+from utils.widgets.notification import Notification
 from ..detailsdialog import Details
 from database import DBManager
 from utils import CustomCheckbox
-from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED, DATABASE_MODIFIED
+from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED, DATABASE_MODIFIED, NOTIFICATION_CREATED
 from utils.pubsubmessage import subscribe
 from utils.pubsubmessage import REFRESH_BUTTON_CLICKED
 
@@ -19,7 +20,8 @@ class ExperimentTable:
     def __init__(self):
         self._last_db_load = None
         from .view import ExperimentTableView
-        self.view: ExperimentTableView = ExperimentTableView(self)
+        self.details_window = Details(None)
+        self.view: ExperimentTableView = ExperimentTableView(self, details_window=self.details_window.view)
 
         # Both the following attributes will be set externally by ManageTab
         self.create_experiment_chip = None  # A callback function to create a chip widget from id and name
@@ -27,7 +29,6 @@ class ExperimentTable:
 
         subscribe(self._handle_refresh_experiments, REFRESH_BUTTON_CLICKED)
         subscribe(self._handle_database_modified, DATABASE_MODIFIED)
-        subscribe(self._handle_details_window_closed, DETAILS_WINDOW_CLOSED)
 
     def load_experiments(self) -> List[Experiment]:
         db = DBManager()
@@ -55,24 +56,14 @@ class ExperimentTable:
         if (self._last_db_load is None) or (DBManager.last_modified() > self._last_db_load):
             self.view.refresh_table()
 
-    def _handle_details_window_closed(self):
-        self.view.children = copy(self.view.children)[:-1]
-
     def onclick_row(self, widget, event, data, row):
         from .view import TableRowWithExperiment
         assert isinstance(row, TableRowWithExperiment)
         self.view.toggle_row(row)
 
-    def onclick_details(self, widget, event, data, job_id_str: str):
-        experiment = Experiment.from_id_str(job_id_str)
+    def onclick_details(self, widget, event, data, experiment: Experiment):
         if experiment is None:
-
+            sendMessage(NOTIFICATION_CREATED, text="Unexpected error occured", mode=Notification.ERROR,
+                        page=Notification.MANAGE_PAGE)
             return
-        details_window = Details(experiment).view
-        without_details = copy(self.view.children)
-        for widget in without_details:
-            print(str(widget)[:6])
-        with_details = copy(self.view.children)
-        with_details.append(details_window)
-        print("len with details", len(with_details))
-        self.view.children = with_details
+        self.details_window.show(experiment)
