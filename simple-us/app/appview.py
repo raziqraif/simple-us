@@ -7,6 +7,7 @@ from ipywidgets import Box
 from ipywidgets import jslink
 from IPython.display import display
 
+from utils.widgets.notification import Notification
 from .controller import App
 from create import CreateTab
 from manage import ManageTab
@@ -41,6 +42,8 @@ class AppView(Container):
         self.manage = manage_page
         self.view = view_page
         self.about = about_page
+        self.notification_1 = Notification()
+        self.notification_2 = Notification()
 
         self.tabs = Tabs(
             children=[
@@ -88,6 +91,4 @@ class AppView(Container):
                             })
         jslink((self.tabs, 'value'), (self.tab_div, 'children'))
 
-        self.children = [self.tabs, self.tab_div]
-
-
+        self.children = [self.tabs, self.tab_div, self.notification_1, self.notification_2]

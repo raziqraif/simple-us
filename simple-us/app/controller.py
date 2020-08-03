@@ -1,3 +1,4 @@
+from copy import copy
 from typing import List, Optional
 from typing import Callable
 
@@ -12,7 +13,8 @@ from utils import CustomText, SIMPLEUtil
 from utils import MAIN_BACKGROUND_COLOR
 from utils import PRIMARY_COLOR
 from experimentsview import ViewTab
-from utils.pubsubmessage import unsubAll, sendMessage, subscribe, REFRESH_BUTTON_CLICKED
+from utils.pubsubmessage import unsubAll, sendMessage, subscribe, REFRESH_BUTTON_CLICKED, NOTIFICATION_CREATED
+from utils.widgets.notification import Notification
 
 
 class App:
@@ -27,17 +29,21 @@ class App:
         self.experiments_view_tab: ViewTab = ViewTab()
         self.about_tab = Box()
 
+        self._notification_key = 1
+
         from app import AppView
-        self.appview = AppView(self,
-                               self.create_tab.view,
-                               self.manage_tab.view,
-                               self.experiments_view_tab.view,
-                               self.about_tab)
-        self.appview.tabs.value = self.manage_tab.view
+        self.view = AppView(self,
+                            self.create_tab.view,
+                            self.manage_tab.view,
+                            self.experiments_view_tab.view,
+                            self.about_tab)
+        self.view.tabs.value = self.manage_tab.view
+
+        subscribe(self._handle_notification_created, NOTIFICATION_CREATED)
 
     def display(self):
         SIMPLEUtil.init_working_directory()
-        return Container(children=[self.appview],
+        return Container(children=[self.view],
                          style_={"width": "100%",
                                  "maxWidth": "100%",
                                  "display": "flex",
@@ -54,9 +60,19 @@ class App:
         experiments = [experiment_1] if experiment_2 is None else [experiment_1, experiment_2]
         created = self.experiments_view_tab.new_view(experiments)
         if created:
-            self.appview.tabs.value = self.experiments_view_tab.view
+            self.view.tabs.value = self.experiments_view_tab.view
             return True
         return False
+
+    def _handle_notification_created(self, text: str, mode: str, page: str):
+        if self._notification_key == 1:
+            self._notification_key = 2
+            self.view.notification_2.open_ = False
+            self.view.notification_1.show(text, mode, page)
+        elif self._notification_key == 2:
+            self._notification_key = 1
+            self.view.notification_1.open_ = False
+            self.view.notification_2.show(text, mode, page)
 
 
 if __name__ == "__main__":
