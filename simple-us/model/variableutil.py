@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional, List, Set, Union
 
 from utils import SIMPLEUtil
+from utils.experimentutil import ExperimentManager
 
 TYPE_OF_RESULT_TO_DISPLAY = {"LVC": "Absolute Changes", "LVB": "Base Value", "LVA": "Updated Value",
                              "PCT": "Percent Changes"}
@@ -135,13 +136,13 @@ class VariableService:
     def _get_variable_paths(self) -> List[str]:
         # Note: SIMPLEUtil.result_path(id_str) will be truncated from the paths
         # Note: If id_str_2 is specified, the paths will be intersected.
-        first_root = SIMPLEUtil.experiment_result_path(self.id_str_1)
+        first_root = ExperimentManager.results_directory(self.id_str_1)
         first_prefix_len = len(str(first_root)) + 1  # +1 to account for the forward/back slash
         first_paths = [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.tif")]
         first_paths += [str(path_)[first_prefix_len:] for path_ in first_root.glob("**/*.shp")]
 
         if self.id_str_2:
-            second_root = SIMPLEUtil.experiment_result_path(self.id_str_2)
+            second_root = ExperimentManager.results_directory(self.id_str_2)
             second_prefix_len = len(str(second_root)) + 1
             second_paths = [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.tif")]
             second_paths += [str(path_)[second_prefix_len:] for path_ in second_root.glob("**/*.shp")]
@@ -266,8 +267,8 @@ class VariableService:
 
     @classmethod
     def system_component_path(cls, id_str, system_component: str):
-        path_ = SIMPLEUtil.experiment_result_path(id_str) / cls.convert_system_component(system_component,
-                                                                                         to_directory_name=True)
+        path_ = ExperimentManager.results_directory(id_str) / cls.convert_system_component(system_component,
+                                                                                           to_directory_name=True)
         return path_
 
     @classmethod

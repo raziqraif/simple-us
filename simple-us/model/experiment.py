@@ -33,12 +33,13 @@ class Experiment:
         self.submission_id = submission_id
         self.submission_time = submission_time
         self.published = published
+        self._is_private = self.published != 1
 
     """ General property methods """
 
     @property
     def id_str(self) -> str:
-        return Experiment.to_id_str(self.id)
+        return Experiment.to_id_str(self.id, self._is_private)
 
     @property
     def name_str(self) -> str:
@@ -86,7 +87,7 @@ class Experiment:
         return id_
 
     @staticmethod
-    def to_id_str(id_: int, is_private=True) -> str:
+    def to_id_str(id_: int, is_private: bool) -> str:
         return "P" + str(id_) if is_private else "S" + str(id_)
 
     @staticmethod
@@ -99,16 +100,15 @@ class Experiment:
 
     @staticmethod
     def from_id_str(id_str: str):  # Python 3.7 doesn't support future annotation. So, cannot annotate return type
-        id_ = Experiment.to_id(id_str)
-        is_private = Experiment.is_private_id_str(id_str)
-        exp = Experiment.from_id(id_, is_private)
+        exp = Experiment.from_id(id_str)
         return exp
 
     @staticmethod
     def from_id(id_: int, is_private: bool):
         from database import DBManager
+        id_str = Experiment.to_id_str(id_, is_private)
         db = DBManager()
-        exp = db.get_experiment(id_, is_private)
+        exp = db.get_experiment(id_str)
         return exp
 
 

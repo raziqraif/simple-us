@@ -9,6 +9,8 @@ from typing import List
 
 from notebook import notebookapp
 
+from model import Experiment
+
 
 def base_url() -> str:
     if ("HOSTNAME" in os.environ.keys()) and ("mygeohub" in os.environ["HOSTNAME"]):
@@ -28,39 +30,46 @@ def base_url() -> str:
     return url
 
 
+def shared_jobs_dir() -> Path:
+    if ("HOSTNAME" in os.environ.keys()) and ("mygeohub" in os.environ["HOSTNAME"]):
+        return Path('/data/groups/simpleggroup/job')
+    else:
+        return Path.home().parent / "shared_jobs"
+
+
 class SIMPLEUtil:
 
     WORKING_DIR: Path = Path.home() / "SimpleUSRun"
     PRIVATE_JOBS_DIR: Path = WORKING_DIR / "job"
-    SHARED_JOBS_DIR: Path = Path('/data/groups/simpleggroup/job')
+    SHARED_JOBS_DIR: Path = shared_jobs_dir()
     SHARED_JOBS_SYM_LINK: Path = WORKING_DIR / "shared"  # For mygeohub's Jupyter. It needs a path relative to home
+
     TEMP_DIR: Path = WORKING_DIR / "temp"  # To store temp directories for display/comparison "sessions"
     BASE_URL = base_url()  # For Jupyter server. It is assumed the server is started from the home directory
     PRIVATE_JOBS_URL = BASE_URL + "/SimpleUSRun/job"
     SHARED_JOBS_URL = BASE_URL + "/SimpleUSRun/shared"
 
-    if not WORKING_DIR.exists():
-        WORKING_DIR.mkdir(parents=True)
-    if not PRIVATE_JOBS_DIR.exists():
-        PRIVATE_JOBS_DIR.mkdir(parents=True)
-    if not TEMP_DIR.exists():
-        TEMP_DIR.mkdir(parents=True)
-    if SHARED_JOBS_DIR.exists() and not SHARED_JOBS_SYM_LINK.exists():
-        symlink(str(SHARED_JOBS_DIR), str(SHARED_JOBS_SYM_LINK))
-
-    # directory
-    # APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
-    # DATA_DIR = SRC_DIR + "/data"
-    # CORNSOY_SUPP_DIR = SRC_DIR + "/inputs/CornSoy/supp_files"
+    # TODO: Update this because the project structure has changed
+    APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
+    DATA_DIR = SRC_DIR + "/data"
+    CORNSOY_SUPP_DIR = SRC_DIR + "/inputs/CornSoy/supp_files"
 
     @classmethod
     def init_working_directory(cls):
+        if not cls.WORKING_DIR.exists():
+            cls.WORKING_DIR.mkdir(parents=True)
+        if not cls.PRIVATE_JOBS_DIR.exists():
+            cls.PRIVATE_JOBS_DIR.mkdir(parents=True)
+        if not cls.TEMP_DIR.exists():
+            cls.TEMP_DIR.mkdir(parents=True)
+        if cls.SHARED_JOBS_DIR.exists() and not cls.SHARED_JOBS_SYM_LINK.exists():
+            symlink(str(cls.SHARED_JOBS_DIR), str(cls.SHARED_JOBS_SYM_LINK))
         shutil.rmtree(str(cls.TEMP_DIR))
         cls.TEMP_DIR.mkdir(parents=True)
 
-    @staticmethod
-    def experiment_result_path(exp_id_str: str, make_path=True) -> Path:
+    @classmethod
+    def experiment_result_directory(cls, exp_id_str: str, make_path=True) -> Path:
         from model import Experiment
 
         id = Experiment.to_id(exp_id_str)
@@ -135,10 +144,11 @@ class SIMPLEUtil:
                 f.write(str(v)+"\n")
 
     @staticmethod
-    def get_custom_shocks_options(jobid: int):
+    def get_custom_shocks_options(id_str: str):
+        assert Experiment.is_private_id_str(id_str)
+        from .experimentutil import ExperimentManager
 
-        file_path = SIMPLEUtil.PRIVATE_JOBS_DIR / Path(str(jobid)) / Path("outputs") / Path("SIMPLE_G.cmf")
-
+        file_path = ExperimentManager.outputs_directory(id_str) / Path("SIMPLE_G.cmf")
         customs = {'<QLAND_CUSTOM>': '-cl',
                    '<QNITRO_CUSTOM>': '-cn',
                    '<QWATER_CUSTOM>': '-cw',
