@@ -409,21 +409,16 @@ from typing import Union
 
 
 def run(sys_args: List[Union[str, int]]):
-    print("started gdal_calc.py", flush=True)
     usage = """usage: %prog --calc=expression --outfile=out_filename [-A filename]
                     [--A_band=n] [-B...-Z filename] [other_options]"""
     parser = OptionParser(usage)
-    print("bp 1", flush=True)
     # define options
     parser.add_option("--calc", dest="calc", help="calculation in gdalnumeric syntax using +-/* or any numpy array functions (i.e. log10())", metavar="expression")
     # limit the input file options to the ones in the argument list
-    print("bp 2", flush=True)
     given_args = set([a[1] for a in sys_args if a[1:2] in AlphaList] + ['A'])
-    print("given args = ", given_args, flush=True)
     for myAlpha in given_args:
         parser.add_option("-%s" % myAlpha, action="callback", callback=store_input_file, type=str, help="input gdal raster file, you can use any letter (A-Z)", metavar='filename')
         parser.add_option("--%s_band" % myAlpha, action="callback", callback=store_input_file, type=int, help="number of raster band for file %s (default 1)" % myAlpha, metavar='n')
-    print("bp 3", flush=True)
 
     parser.add_option("--outfile", dest="outF", help="output file to generate or fill", metavar="filename")
     parser.add_option("--NoDataValue", dest="NoDataValue", type=float, help="output nodata value (default datatype specific value)", metavar="value")
@@ -439,23 +434,18 @@ def run(sys_args: List[Union[str, int]]):
     parser.add_option("--debug", dest="debug", action="store_true", help="print debugging information")
     parser.add_option("--quiet", dest="quiet", action="store_true", help="suppress progress messages")
 
-    print("bp 4", flush=True)
     (opts, args) = parser.parse_args(sys_args)
-    print("bp 5", flush=True)
     if not hasattr(opts, "input_files"):
         opts.input_files = {}
 
     # Changes
     if len(sys_args) == 0:
-        print("gdal_calc.py: No args", flush=True)
         parser.print_help()
         # sys.exit(1)
     elif not opts.calc:
-        print("gdal_calc.py: No calculation provided. Nothing to do!", flush=True)
         parser.print_help()
         # sys.exit(1)
     elif not opts.outF:
-        print("gdal_calc.py: No output file provided. Cannot proceed.", flush=True)
         parser.print_help()
         # sys.exit(1)
     else:

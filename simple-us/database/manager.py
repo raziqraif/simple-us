@@ -201,6 +201,8 @@ class DBManager:
             params[MODEL_DBKEY] = experiment.model
         if experiment.published is not None:
             params[PUBLISHED_DBKEY] = experiment.published
+        if experiment.description is not None:
+            params[DESCRIPTION_DBKEY] = experiment.description
 
         if len(params.keys()) == 0:
             return False
@@ -210,6 +212,7 @@ class DBManager:
             sql += key + ' = "' + str(params[key]) + '",'
         sql = sql[:-1] + ' where jobid = "' + str(experiment.id) + '";'
 
+        print("sql", sql)
         db_file = self.PRIVATE_DB_FILE if experiment.is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         conn.execute(sql)
@@ -251,20 +254,37 @@ if __name__ == "__main__":
     # db.update_job_status(1, "Completed", 2)
     import getpass
     user = "raziqraif"
-    exp_ = Experiment(1, "Experiment", status="Completed", description="Corn test data.", author=user,
+    exp_ = Experiment(1, "Experiment", model="CustomAllcrop",
+                      status="Completed", description="Allcrop test data.", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user,
+    exp_ = Experiment(2, "UM-E4", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user,
+    exp_ = Experiment(3, "AC-E1", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user,
+    exp_ = Experiment(4, "AC-E2", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user,
+    exp_ = Experiment(5, "C5-E2", status="Completed", description="SIMPLE-G Workshop", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
     db.update_experiment(exp_)
-    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user,
+    exp_ = Experiment(6, status="Pending", description="SIMPLE-G US", author=user, submission_id="-",
                       submission_time=datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
+    db.update_experiment(exp_)
+    exp_ = Experiment(7, name="UM-E6", status="Pending", author="muhdr", submission_id="-",
+                      description="SIMPLE-G US Experiment")
+    db.update_experiment(exp_)
+    exp_ = Experiment(10,
+                      model="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      name="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      status="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      author="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      description="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                                  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                                  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      submission_time="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      submission_id="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                      )
+    db.update_experiment(exp_)
