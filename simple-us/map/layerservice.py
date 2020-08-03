@@ -14,6 +14,7 @@ from gdalscripts import gdal2tiles
 from gdalscripts import gdal_edit
 from model.variableutil import VariableModel
 from utils import SIMPLEUtil
+from utils.experimentutil import ExperimentManager
 from utils.misc import NODATA
 
 
@@ -22,12 +23,11 @@ gdal.UseExceptions()
 
 
 class RasterLayerUtil:
-    def __init__(self, variable_model: VariableModel, session_id: int):
+    def __init__(self, variable_model: VariableModel):
         assert variable_model.file_path().exists()
         assert variable_model.is_raster()
 
         self.variable_model: VariableModel = variable_model
-        self.session_id: int = session_id
 
         # Temporary files
         self._tif_basename = self.variable_model.file_path().stem
@@ -43,7 +43,7 @@ class RasterLayerUtil:
         if self.variable_model.is_filtered():
             parent_file_path = str(self.variable_model.file_path().parent)
             id_str = self.variable_model.id_str
-            file_path_root = str(SIMPLEUtil.experiment_result_path(id_str))
+            file_path_root = str(ExperimentManager.results_directory(id_str))
             suffix = parent_file_path.split(file_path_root)[1].replace("\\", "/")
             suffix = suffix[1:] if (suffix[0] == "/") else suffix
             temp_working_directory = SIMPLEUtil.TEMP_DIR / self.variable_model.id_str / suffix
@@ -79,11 +79,6 @@ class RasterLayerUtil:
         return SIMPLEUtil.BASE_URL + suffix + '/{z}/{x}/{-y}.png'
 
     def create_layer(self) -> TileLayer:
-        self._process_raster()
-        self._colorize_raster()
-        self._tile_raster()
-        return TileLayer(name=self._tif_basename)
-
         if self._process_raster() and self._colorize_raster() and self._tile_raster():
             self._remove_temp_files()
             return TileLayer(url=self._tile_folder_url, opacity=0.7, name=self._tif_basename)
@@ -215,12 +210,11 @@ class RasterLayerUtil:
 
 
 class VectorLayerUtil:
-    def __init__(self, variable_model: VariableModel, session_id: int):
+    def __init__(self, variable_model: VariableModel):
         assert variable_model.file_path().exists()
         assert variable_model.is_vector()
 
         self.variable_model: VariableModel = variable_model
-        self.session_id: int = session_id
 
         # TODO: Finish the create layer logic
 

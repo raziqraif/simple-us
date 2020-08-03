@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 from typing import Optional, List
 
-from utils import SIMPLEUtil
-
 
 class Experiment:
     """ Class to represent the SIMPLEJobs db table

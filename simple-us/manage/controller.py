@@ -6,7 +6,6 @@ from ipymaterialui import Button
 from pubsub import pub
 
 from model import Experiment
-from utils.misc import show_notification
 from utils.pubsubmessage import sendMessage, NOTIFICATION_CREATED
 from utils.widgets.notification import Notification
 from .table import ExperimentTable

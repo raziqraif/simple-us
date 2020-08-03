@@ -49,11 +49,11 @@ class ViewTab:
             variable_model = VariableModel(experiments[i].id_str, system_component, spatial_resolution, type_of_result,
                                            result_to_view, filter_min, filter_max)
             if variable_model.is_raster():
-                layer_util = RasterLayerUtil(variable_model, self.active_context.session_id)
+                layer_util = RasterLayerUtil(variable_model)
                 layer = layer_util.create_layer()
                 maps[i].visualize_raster(layer, layer_util.processed_raster_path)
             elif variable_model.is_vector():
-                layer_util = VectorLayerUtil(variable_model, self.active_context.session_id)
+                layer_util = VectorLayerUtil(variable_model)
                 layer = layer_util.create_layer()
                 maps[i].visualize_vector(layer)
 

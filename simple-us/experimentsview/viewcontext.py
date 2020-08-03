@@ -16,7 +16,6 @@ class ViewContext:
             assert experiments[0].id_str != experiments[1].id_str
         self.experiments: List[Experiment] = experiments
         self.maps: any = []
-        self.session_id: int = SIMPLEUtil.new_session_id()
 
         if self.is_display:
             self.variable_service: VariableService = VariableService(experiments[0].id_str)

@@ -10,7 +10,7 @@ from model import Experiment
 from ..detailsdialog import Details
 from database import DBManager
 from utils import CustomCheckbox
-from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED
+from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED, DATABASE_MODIFIED
 from utils.pubsubmessage import subscribe
 from utils.pubsubmessage import REFRESH_BUTTON_CLICKED
 
@@ -26,6 +26,7 @@ class ExperimentTable:
         self.delete_experiment_chip = None  # A callback function to delete a chip widget from id
 
         subscribe(self._handle_refresh_experiments, REFRESH_BUTTON_CLICKED)
+        subscribe(self._handle_database_modified, DATABASE_MODIFIED)
         subscribe(self._handle_details_window_closed, DETAILS_WINDOW_CLOSED)
 
     def load_experiments(self) -> List[Experiment]:
@@ -49,6 +50,10 @@ class ExperimentTable:
         else:
             self.view.deselect_selected_rows()
             self.view.sort_table(default=True)
+
+    def _handle_database_modified(self):
+        if (self._last_db_load is None) or (DBManager.last_modified() > self._last_db_load):
+            self.view.refresh_table()
 
     def _handle_details_window_closed(self):
         self.view.children = copy(self.view.children)[:-1]
