@@ -43,7 +43,7 @@ class Notification(Snackbar):
         self.style_ = self._get_root_style()
         self.transition_duration = 100
 
-        self.on_event("onClose", self.on_close)
+        self.on_event("onClose", self._on_close)
         self._build_content()
 
         self.action = self._create_close_button()
@@ -78,6 +78,9 @@ class Notification(Snackbar):
         # TODO: Change this depending on the page
         if self._page == Notification.MANAGE_PAGE:
             return "140px 0px 0px 0px"
+        elif self._page == Notification.CREATE_PAGE:
+            return "160px 0px 0px 0px"
+
         else:
             return "140px 0px 0px 0px"
 
@@ -105,7 +108,7 @@ class Notification(Snackbar):
     def _create_close_button(self) -> IconButton:
         icon = Icon(children="close", style_={"color": "white", "font-size": "18px"})
         button = IconButton(children=icon)
-        button.on_event("onClick", self.on_close)
+        button.on_event("onClick", self._on_close)
         return button
 
     def _get_icon_name(self):
@@ -132,7 +135,7 @@ class Notification(Snackbar):
         else:
             raise Exception("Invalid notfication mode")
 
-    def on_close(self, widget, event, data):
+    def _on_close(self, widget, event, data):
         self.open_ = False
 
     def show(self, text: str, mode: str, page: str):

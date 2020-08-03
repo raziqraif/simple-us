@@ -7,7 +7,6 @@ import sys
 from typing import Tuple, Optional, List
 
 from model import Experiment
-from .simpleutil import SIMPLEUtil
 from database import DBManager
 
 
@@ -25,6 +24,7 @@ class ExperimentManager:
 
     @classmethod
     def working_directory(cls, id_str: str) -> Path:
+        from .simpleutil import SIMPLEUtil
         id_ = str(Experiment.to_id(id_str))
         if Experiment.is_private_id_str(id_str):
             return SIMPLEUtil.PRIVATE_JOBS_DIR / id_
@@ -73,6 +73,9 @@ class ExperimentManager:
         working_dir = cls.working_directory(id_str)
         outputs_dir = cls.outputs_directory(id_str)
 
+        # TODO: Remove these after this method has been properly implemented
+        experiment.status = "Pending"
+        cls.db.update_experiment(experiment)
         return True, experiment
 
         # TODO: Implement "control" and finish this method

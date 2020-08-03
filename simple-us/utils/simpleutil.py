@@ -1,19 +1,22 @@
 import errno
 import os
 from os import symlink
-from os import listdir
 from pathlib import Path
 import re
 import shutil
+from subprocess import call
+import sys
 from typing import List
 
 from notebook import notebookapp
 
-from model import Experiment
+
+def in_mygeohub():
+    return ("HOSTNAME" in os.environ.keys()) and ("mygeohub" in os.environ["HOSTNAME"])
 
 
 def base_url() -> str:
-    if ("HOSTNAME" in os.environ.keys()) and ("mygeohub" in os.environ["HOSTNAME"]):
+    if in_mygeohub():
         # From geotiff tutorial code
         url = "https://proxy.mygeohub.org"
         nb = None
@@ -34,17 +37,17 @@ def shared_jobs_dir() -> Path:
     if ("HOSTNAME" in os.environ.keys()) and ("mygeohub" in os.environ["HOSTNAME"]):
         return Path('/data/groups/simpleggroup/job')
     else:
-        return Path.home().parent / "shared_jobs"
+        return Path.home() / "shared_jobs"
 
 
 class SIMPLEUtil:
-
     WORKING_DIR: Path = Path.home() / "SimpleUSRun"
     PRIVATE_JOBS_DIR: Path = WORKING_DIR / "job"
     SHARED_JOBS_DIR: Path = shared_jobs_dir()
     SHARED_JOBS_SYM_LINK: Path = WORKING_DIR / "shared"  # For mygeohub's Jupyter. It needs a path relative to home
 
     TEMP_DIR: Path = WORKING_DIR / "temp"  # To store temp directories for display/comparison "sessions"
+    LOG_FILE: Path = TEMP_DIR / "simple-us.log"
     BASE_URL = base_url()  # For Jupyter server. It is assumed the server is started from the home directory
     PRIVATE_JOBS_URL = BASE_URL + "/SimpleUSRun/job"
     SHARED_JOBS_URL = BASE_URL + "/SimpleUSRun/shared"
@@ -56,42 +59,30 @@ class SIMPLEUtil:
     CORNSOY_SUPP_DIR = SRC_DIR + "/inputs/CornSoy/supp_files"
 
     @classmethod
-    def init_working_directory(cls):
+    def initialize_working_directory(cls):
         if not cls.WORKING_DIR.exists():
             cls.WORKING_DIR.mkdir(parents=True)
         if not cls.PRIVATE_JOBS_DIR.exists():
             cls.PRIVATE_JOBS_DIR.mkdir(parents=True)
         if not cls.TEMP_DIR.exists():
             cls.TEMP_DIR.mkdir(parents=True)
+        if not cls.LOG_FILE.exists():
+            cls.LOG_FILE.touch()
         if cls.SHARED_JOBS_DIR.exists() and not cls.SHARED_JOBS_SYM_LINK.exists():
             symlink(str(cls.SHARED_JOBS_DIR), str(cls.SHARED_JOBS_SYM_LINK))
         shutil.rmtree(str(cls.TEMP_DIR))
         cls.TEMP_DIR.mkdir(parents=True)
 
+
     @classmethod
-    def experiment_result_directory(cls, exp_id_str: str, make_path=True) -> Path:
-        from model import Experiment
+    def upload_file(cls, save_path: Path):
+        if in_mygeohub():
+            call(["/usr/bin/importfile", str(save_path)])
 
-        id = Experiment.to_id(exp_id_str)
-        is_private = Experiment.is_private_id_str(exp_id_str)
-        job_dir = SIMPLEUtil.PRIVATE_JOBS_DIR if is_private else SIMPLEUtil.SHARED_JOBS_SYM_LINK
-        result_path = job_dir / Path(str(id)) / Path("outputs") / Path("results")
-
-        if make_path:
-            result_path.mkdir(parents=True, exist_ok=True)
-        return result_path
-
-    @staticmethod
-    def new_session_id() -> int:
-        sessions = listdir(str(SIMPLEUtil.TEMP_DIR))
-        max_ = 0
-        for session in sessions:
-            try:
-                max_ = max(max_, int(session))
-            except:
-                continue
-        max_ += 1
-        return max_
+    @classmethod
+    def download_file(cls, file_path: Path):
+        if in_mygeohub():
+            call(["/usr/bin/exportfile", str(file_path)])
 
     @staticmethod
     def copy(src: Path, dest: Path):
@@ -145,6 +136,7 @@ class SIMPLEUtil:
 
     @staticmethod
     def get_custom_shocks_options(id_str: str):
+        from model import Experiment
         assert Experiment.is_private_id_str(id_str)
         from .experimentutil import ExperimentManager
 
