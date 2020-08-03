@@ -38,6 +38,12 @@ AUTHOR_SORTKEY = "AUTHOR"
 DESCRIPTION_SORTKEY = "DESCRIPTION"
 
 
+class TableRowWithExperiment(TableRow):
+    def __init__(self, experiment: Optional[Experiment],  **kwargs):
+        super().__init__(**kwargs)
+        self.experiment = experiment
+
+
 class ExperimentTableView(Container):
     def __init__(self, controller: ExperimentTable):
         super(Container, self).__init__()
@@ -57,7 +63,7 @@ class ExperimentTableView(Container):
         self._sort_by = ID_SORTKEY
         self._sort_increasingly = True  # This will get toggled every time _sort_by was changed
 
-        self._selected_rows: List[TableRow] = []
+        self.selected_rows: List[TableRowWithExperiment] = []
 
         self._initialize_widgets()
         self.children = [self._header_wrapper,
@@ -216,12 +222,13 @@ class ExperimentTableView(Container):
             details_cell
         ]
 
-        row = TableRow(children=cells,
-                       style_={
-                           "margin": "0px 0px 0px 0px",
-                           "padding": "0px 0px 0px 0px",
-                       },
-                       hover=True, selected=False, ripple=True)
+        row = TableRowWithExperiment(experiment=experiment,
+                                     children=cells,
+                                     style_={
+                                         "margin": "0px 0px 0px 0px",
+                                         "padding": "0px 0px 0px 0px",
+                                     },
+                                     hover=True, selected=False, ripple=True)
 
         # Register event to all cells but details_cell, as it will affect details_button as well
         for cell in cells[:-1]:
@@ -252,12 +259,13 @@ class ExperimentTableView(Container):
             description_cell,
             details_cell
         ]
-        row = TableRow(children=cells,
-                       style_={
-                           "margin": "0px 0px 0px 0px",
-                           "padding": "0px 0px 0px 0px",
-                       },
-                       hover=False, selected=False, ripple=True)
+        row = TableRowWithExperiment(experiment=None,
+                                     children=cells,
+                                     style_={
+                                         "margin": "0px 0px 0px 0px",
+                                         "padding": "0px 0px 0px 0px",
+                                     },
+                                     hover=False, selected=False, ripple=True)
         return row
 
     def _create_body_row_cell(self,
@@ -293,54 +301,54 @@ class ExperimentTableView(Container):
 
         return cell
 
-    def _select_row(self, row: TableRow) -> None:
+    def _select_row(self, row: TableRowWithExperiment) -> None:
         checkbox = self._checkbox_from_row(row)
         checkbox.checked = True
         row.selected = True
 
-    def _deselect_row(self, row: TableRow) -> None:
+    def _deselect_row(self, row: TableRowWithExperiment) -> None:
         checkbox = self._checkbox_from_row(row)
         checkbox.checked = False
         row.selected = False
 
-    def _checkbox_from_row(self, row: TableRow) -> CustomCheckbox:
+    def _checkbox_from_row(self, row: TableRowWithExperiment) -> CustomCheckbox:
         checkbox_cell = row.children[0]
         checkbox = checkbox_cell.children
         return checkbox
 
-    def _id_str_from_row(self, row: TableRow) -> str:
+    def _id_str_from_row(self, row: TableRowWithExperiment) -> str:
         id_cell = row.children[1]
         id_div = id_cell.children
         id = id_div.children
         return id.strip()
 
-    def _name_from_row(self, row: TableRow) -> str:
+    def _name_from_row(self, row: TableRowWithExperiment) -> str:
         name_cell = row.children[2]
         name_div = name_cell.children
         name = name_div.children
         return name.strip()
 
-    def _status_from_row(self, row: TableRow) -> str:
+    def _status_from_row(self, row: TableRowWithExperiment) -> str:
         status_cell = row.children[3]
         status_div = status_cell.children
         status = status_div.children
         return status.strip()
 
-    def _author_from_row(self, row: TableRow) -> str:
+    def _author_from_row(self, row: TableRowWithExperiment) -> str:
         status_cell = row.children[4]
         status_div = status_cell.children
         status = status_div.children
         return status.strip()
 
-    def _description_from_row(self, row: TableRow) -> str:
+    def _description_from_row(self, row: TableRowWithExperiment) -> str:
         status_cell = row.children[4]
         status_div = status_cell.children
         status = status_div.children
         return status.strip()
 
-    def selected_row_from_id_str(self, experiment_id_str: str) -> Optional[TableRow]:
+    def selected_row_from_id_str(self, experiment_id_str: str) -> Optional[TableRowWithExperiment]:
         experiment_id_str = experiment_id_str.strip()
-        for row in self._selected_rows:
+        for row in self.selected_rows:
             id_in_row = self._id_str_from_row(row)
             if id_in_row == experiment_id_str:
                 return row
@@ -348,26 +356,26 @@ class ExperimentTableView(Container):
 
     def selected_experiments_id_strs(self) -> List[str]:
         ids = []
-        for row in self._selected_rows:
+        for row in self.selected_rows:
             id_ = self._id_str_from_row(row)
             ids.append(id_)
         return ids
 
-    def toggle_row(self, row: TableRow):
+    def toggle_row(self, row: TableRowWithExperiment):
         checkbox = self._checkbox_from_row(row)
         if not checkbox.checked:
-            if len(self._selected_rows) >= 2:
+            if len(self.selected_rows) >= 2:
                 # TODO: Replace this with a snickbar.
                 return
             else:
                 self._select_row(row)
-                self._selected_rows.append(row)
+                self.selected_rows.append(row)
                 name = self._name_from_row(row)
                 id_ = self._id_str_from_row(row)
                 self.controller.create_experiment_chip(id_, name)
         elif checkbox.checked:
             self._deselect_row(row)
-            self._selected_rows.remove(row)
+            self.selected_rows.remove(row)
             id_ = self._id_str_from_row(row)
             self.controller.delete_experiment_chip(id_)
 
@@ -379,26 +387,20 @@ class ExperimentTableView(Container):
         self._rows_wrapper.children = experiment_rows
         self.sort_table(ID_SORTKEY, toggle_order=False)
 
-    def _make_rows_from_experiments(self, experiments: List[Experiment]) -> List[TableRow]:
+    def _make_rows_from_experiments(self, experiments: List[Experiment]) -> List[TableRowWithExperiment]:
         experiment_rows = []
         for experiment in experiments:
             row = self._create_body_row(experiment)
             experiment_rows.append(row)
         # TODO: Remove this test data
-        exp = Experiment(id=999999999999999999999, name="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                         status="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", author="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                         description="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                                     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-        row = self._create_body_row(exp)
-        experiment_rows.append(row)
         while len(experiment_rows) < 13:
             row = self._create_empty_body_row()
             experiment_rows.append(row)
         return experiment_rows
 
     def deselect_selected_rows(self):
-        while len(self._selected_rows) > 0:
-            self.toggle_row(self._selected_rows[0])
+        while len(self.selected_rows) > 0:
+            self.toggle_row(self.selected_rows[0])
 
     def sort_table(self, sort_by: str = None, toggle_order=True, default=False):
         if default:

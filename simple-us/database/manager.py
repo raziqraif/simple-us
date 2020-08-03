@@ -212,7 +212,6 @@ class DBManager:
             sql += key + ' = "' + str(params[key]) + '",'
         sql = sql[:-1] + ' where jobid = "' + str(experiment.id) + '";'
 
-        print("sql", sql)
         db_file = self.PRIVATE_DB_FILE if experiment.is_private else self.SHARED_DB_FILE
         conn = sqlite3.connect(db_file)
         conn.execute(sql)

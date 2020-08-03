@@ -6,6 +6,9 @@ from ipymaterialui import Button
 from pubsub import pub
 
 from model import Experiment
+from utils.misc import show_notification
+from utils.pubsubmessage import sendMessage, NOTIFICATION_CREATED
+from utils.widgets.notification import Notification
 from .table import ExperimentTable
 from utils import ExperimentChip
 
@@ -29,20 +32,31 @@ class ManageTab:
     def onclick_refresh(self, widget: Button, event: str, data: dict):
         from utils.pubsubmessage import REFRESH_BUTTON_CLICKED
         pub.sendMessage(REFRESH_BUTTON_CLICKED)
+        pub.sendMessage(NOTIFICATION_CREATED, text="The table was refreshed", mode=Notification.SUCCESS,
+                        page=Notification.MANAGE_PAGE)
 
     def onclick_display(self, widget: Button, event: str, data: dict):
         experiments = self.experiment_table.selected_experiments()
+
         assert len(experiments) <= 2
         if len(experiments) == 0:
-            return  # TODO: Display error message
+            message = "Please select an experiment first."
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+            return
         elif len(experiments) == 2:
-            return  # TODO: Display error message
+            message = "To view multiple experiments, click Compare"
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+            return
 
         experiment = experiments[0]
         if experiment is None:
-            return  # TODO: display error message
+            message = "Unexpected error occur."
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.ERROR, page=Notification.MANAGE_PAGE)
+            return
         if not experiment.is_completed:
-            return  # TODO: display error message
+            message = "{} experiment cannot be displayed.".format(experiment.status_str)  # Failed/Pending experiment
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+            return
 
         if self.view_experiments(experiment, None):
             self.experiment_table.toggle_experiment_row(experiment.id_str)
@@ -51,17 +65,25 @@ class ManageTab:
         experiments = self.experiment_table.selected_experiments()
         assert len(experiments) <= 2
         if len(experiments) == 0:
-            return  # TODO: Display error message
+            message = "Please select an experiment first."
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+            return
         elif len(experiments) == 1:
-            return  # TODO: Display error message
+            message = "To view a single experiment, click Display"
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+            return
 
         if None in experiments:
-            return  # TODO: display error message
-        for exp in experiments:
-            if not exp.is_completed:
-                return  # TODO: error message
+            message = "Unexpected error occur."
+            sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.ERROR, page=Notification.MANAGE_PAGE)
+            return
+        for experiment in experiments:
+            if not experiment.is_completed:
+                # Failed/Pending experiment
+                message = "{} experiment cannot be compared.".format(experiment.status_str)
+                sendMessage(NOTIFICATION_CREATED, text=message, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
+                return
 
-        # TODO: Make sure result lists intersect
         if self.view_experiments(experiments[0], experiments[1]):
             self.experiment_table.toggle_experiment_row(experiments[0].id_str)
             self.experiment_table.toggle_experiment_row(experiments[1].id_str)

@@ -13,6 +13,7 @@ from ipymaterialui import DialogTitle
 from ipymaterialui import Modal
 from ipymaterialui import Paper
 
+from model import Experiment
 from .controller import Details
 from utils import BACKGROUND_COLOR
 from utils import CustomText
@@ -23,39 +24,44 @@ from utils import PRIMARY_COLOR
 
 
 class DetailsView(Dialog):
-    def __init__(self, controller: Details):
+    def __init__(self, controller: Details, experiment: Experiment):
         super().__init__()
         self.style_ = {
             "display": "flex",
             "flex-direction": "column",
-            "justify-content": "center",
+            "justify-content": "flex-start",
             "align-items": "center",
+            "align-self": "flex-start",
+
         }
         self.controller = controller
         self.open_ = True
-        self.main = None
-        self._build_main()
         self.max_width = "lg"
         self.disable_backdrop_click = False
         self.on_event("onClick", self.controller.onclick_backdrop)
-        self.children = self.main  # Cannot be a list
+        self._main = None
+        self._experiment = experiment
+
+        self._build_main()
+        self.children = self._main  # Cannot be a list
 
     def _build_main(self):
-        self.main = Paper(
+        self._main = Paper(
             style_={
                 "display": "flex",
                 "flex-direction": "column",
                 "justify-content": "center",
                 "align-items": "center",
-                "width": "750px",
+                # "width": "750px",
+                "width": "650px",
                 "height": "750px",
                 "background": "white",
                 # "overflow-y": "scroll",
             })
-        self.main.on_event("onClick", self.controller.onclick_backdrop)
+        self._main.on_event("onClick", self.controller.onclick_backdrop)
         title_bar = self._create_title_bar()
         body = self._create_body()
-        self.main.children = [title_bar, body]
+        self._main.children = [title_bar, body]
 
     def _create_title_bar(self):
         bar = Container(style_={
@@ -65,7 +71,6 @@ class DetailsView(Dialog):
             "justify-content": "flex-start",
             "background": PRIMARY_COLOR,
             "padding": "16px 16px 16px 32px",
-            # "height": "10%",
             "width": "100%",
             "flex-grow": "0",
         })
@@ -95,7 +100,7 @@ class DetailsView(Dialog):
         bar = Container(style_={
             "display": "flex",
             "flex-direction": "column",
-            "padding": "32px 32px 32px 32px",
+            "padding": "16px 48px 16px 48px",
             "align-items": "center",
             "justify-content": "flex-start",
             "background": "white",
@@ -104,17 +109,15 @@ class DetailsView(Dialog):
             "overflow-y": "scroll"
         })
 
-        id_ = self._create_data_row("ID", "P1")
-        name = self._create_data_row("Name", "Indiana Crops")
-        model = self._create_data_row("Model", "Custom AllCrop")
-        status = self._create_data_row("Status", "Completed")
-        description = self._create_data_row("Description", "A really really long description for this experiment. "
-                                                           "This description briefly describes about the experiment. "
-                                                           "This description should be wrapped.")
-        author = self._create_data_row("Author", "raziqraif")
-        submission_id = self._create_data_row("Submission ID", "XPC-2342")
-        submission_time = self._create_data_row("Submission Time", "2/3/2020 1743")
-        published = self._create_data_row("Published", "Yes")
+        id_ = self._create_data_row("ID", self._experiment.id_str)
+        name = self._create_data_row("Name", self._experiment.name_str)
+        model = self._create_data_row("Model", self._experiment.model_str)
+        status = self._create_data_row("Status", self._experiment.status_str)
+        description = self._create_data_row("Description", self._experiment.description_str)
+        author = self._create_data_row("Author", self._experiment.author_str)
+        submission_id = self._create_data_row("Submission ID", self._experiment.submission_id_str)
+        submission_time = self._create_data_row("Submission Time", self._experiment.submission_time_str)
+        published = self._create_data_row("Published", self._experiment.published_str)
         bar.children = [id_,
                         name,
                         model,
