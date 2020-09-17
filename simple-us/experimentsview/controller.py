@@ -1,6 +1,8 @@
 from typing import List
 from typing import Optional
 
+from utils.pubsubmessage import NOTIFICATION_CREATED, sendMessage
+from utils.widgets.notification import Notification
 from .viewcontext import ViewContext
 from map.layerservice import RasterLayerUtil
 from map.layerservice import VectorLayerUtil
@@ -30,6 +32,10 @@ class ViewTab:
 
         context = ViewContext(experiments)
         if not context.variable_service.has_valid_variables():
+            text = "Selected experiment has no variables to be displayed"
+            if len(experiments) == 2:
+                text = "Selected experiments have no common variables"
+            sendMessage(NOTIFICATION_CREATED, text=text, mode=Notification.WARNING, page=Notification.MANAGE_PAGE)
             return False
         self.contexts.append(context)
         self.view.new_tab(context.title, context, context.is_comparison)

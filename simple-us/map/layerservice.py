@@ -64,8 +64,9 @@ class RasterLayerUtil:
         else:
             min_value, max_value = self._min_max_of_raster(self.processed_raster_path)
             min_value = min_value if min_value is not None else "nodata"
-            max_value = min_value if max_value is not None else "nodata"
-            path = self._temp_working_directory / (self._tif_basename + "_{}_{}".format(min_value, max_value))
+            max_value = max_value if max_value is not None else "nodata"
+            path = self._temp_working_directory / (self._tif_basename + "_{}_{}".format(min_value,
+                                                                                        max_value))
         return path
 
     @property
@@ -83,6 +84,7 @@ class RasterLayerUtil:
             self._remove_temp_files()
             return TileLayer(url=self._tile_folder_url, opacity=0.7, name=self._tif_basename)
         else:
+            print("Failed to create layer")
             return TileLayer(name=self._tif_basename)
 
     def _process_raster(self) -> bool:
@@ -105,6 +107,7 @@ class RasterLayerUtil:
     def _filter_raster(self) -> bool:
         min_, max_ = self._min_max_of_raster(self._warped_tif_path)
         if (min_ is None) or (max_ is None):  # All nodata
+            print("filtering failed")
             return False
         range_ = max_ - min_
         new_min = min_ + self.variable_model.filter_min / float(100) * range_
@@ -126,6 +129,7 @@ class RasterLayerUtil:
 
         # Remove any set statistics metadata
         gdal_edit.gdal_edit(["argv_placeholder", "-unsetstats", str(self._filtered_tif_path)])
+        print("filtering succeeded")
         return True
 
     def _min_max_of_raster(self, tif_path: Path) -> Tuple[Optional[float], Optional[float]]:
@@ -188,7 +192,8 @@ class RasterLayerUtil:
         from utils.misc import REBUILD_RASTER_TILE
         if self._tile_folder_path.exists() and self._tile_folder_path.is_dir() and REBUILD_RASTER_TILE:
             shutil.rmtree(str(self._tile_folder_path))
-
+        print("min, max", self._min_max_of_raster(self.processed_raster_path))
+        print("tile folder", self._tile_folder_path)
         # if self.variable_model.is_filtered() and self._tile_folder_path.exists():
         #     shutil.rmtree(str(self._tile_folder_path))
 

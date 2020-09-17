@@ -13,10 +13,11 @@ from ipymaterialui import DialogContent
 from ipymaterialui import DialogTitle
 from ipymaterialui import Modal
 from ipymaterialui import Paper
-from ipywidgets import Accordion
+from ipywidgets import Accordion, Layout
 from ipywidgets import Output
 
 from model import Experiment
+from utils.misc import DANGER_COLOR
 from .controller import Details
 from utils import BACKGROUND_COLOR
 from utils import CustomText
@@ -42,9 +43,20 @@ class DetailsView(Dialog):
         self.max_width = "lg"
         self.disable_backdrop_click = False
         self.on_event("onClick", self.controller.onclick_backdrop)
+
+        self.experiment = experiment
         self._main = None
-        self._experiment = experiment
-        self._log_output_area = Output()
+        self._title_bar: Optional[Container] = None
+        accordion_layout = Layout(width="535px", margin="0px 0px 0px 4px", align_self="center")
+        output_layout = Layout(width="535px", margin="0px 0px 0px 0px", align_self="center")
+        self._log_output_area = Output(layout=accordion_layout)
+        self._log_accordion = Accordion(children=[self._log_output_area], selected_index=None, layout=output_layout)
+        self._log_accordion.set_title(0, "Log")
+
+        self._buttons_wrapper: Optional[Container] = None
+        self._download: Optional[Button] = None
+        self._delete: Optional[Button] = None
+
         self._build_main()
         self.children = self._main  # Cannot be a list
 
@@ -57,18 +69,22 @@ class DetailsView(Dialog):
                 "align-items": "center",
                 # "width": "750px",  # max it can go
                 "width": "650px",
-                "height": "750px",
+                # "height": "750px",  # max it can go
+                "height": "600px",
                 "background": "white",
             })
         self._main.on_event("onClick", self.controller.onclick_backdrop)
-        title_bar = self._create_title_bar()
+        self._title_bar = self._create_title_bar()
         body = self._create_details_area()
-        self._main.children = [title_bar, body]
+        self._build_buttons_wrapper()
+        self._main.children = [self._title_bar, body, self._buttons_wrapper]
 
-    def _create_buttons_wrapper(self):
-        download = self._create_button("Download", "download")
-        delete = self._create_button("Delete", "delete")
-        wrapper = Container(children=[download, delete],
+    def _build_buttons_wrapper(self):
+        self._download = self._create_button("Download", "cloud_download_outlined")
+        self._delete = self._create_button("Delete", "delete", DANGER_COLOR)
+        self._download.on_event("onClick", self.controller.onclick_download)
+        self._delete.on_event("onClick", self.controller.onclick_delete)
+        self._buttons_wrapper = Container(children=[self._download, self._delete],
                             style_={
                                 "width": "100%",
                                 "display": "flex",
@@ -78,13 +94,13 @@ class DetailsView(Dialog):
                                 "margin": "16px 0px 16px 0px",
                             })
 
-    def _create_button(self, text: str, icon: str) -> Button:
-        icon = Icon(children=icon, style_={"margin": "0px 0px 0px 8px"})
+    def _create_button(self, text: str, icon: str, background=PRIMARY_COLOR) -> Button:
+        icon = Icon(children=icon, style_={"color": "white", "margin": "0px 0px 0px 8px"})
         button = Button(children=[CustomText(text,
                                              style_={
                                                  "display": "flex",
                                                  "align-items": "center",
-                                                 "font-size": "12px",
+                                                 "font-size": "11px",
                                                  "color": "#ffffff",
                                                  "align-self": "center",
                                              }), icon],
@@ -92,11 +108,11 @@ class DetailsView(Dialog):
                         focus_ripple=True,
                         style_={
                             "display": "flex",
-                            "width": "120px",
+                            "width": "140px",
                             "height": "32px",
                             "padding": "0px 0px 0px 0px",
-                            "margin": "0px 8px 0px 8px",
-                            "background": PRIMARY_COLOR,
+                            "margin": "0px 4px 0px 8px",
+                            "background": background,
                             "align-items": "center !important",
                         }, )
         return button
@@ -148,17 +164,20 @@ class DetailsView(Dialog):
             "overflow-wrap": "break-word",
         })
 
-        id_ = self._create_data_row("ID", self._experiment.id_str if self._experiment else "")
-        name = self._create_data_row("Name", self._experiment.name_str if self._experiment else "")
-        model = self._create_data_row("Model", self._experiment.model_str if self._experiment else "")
-        status = self._create_data_row("Status", self._experiment.status_str if self._experiment else "")
-        description = self._create_data_row("Description", self._experiment.description_str if self._experiment else "")
-        author = self._create_data_row("Author", self._experiment.author_str if self._experiment else "")
+        id_ = self._create_data_row("ID", self.experiment.id_str if self.experiment else "")
+        name = self._create_data_row("Name", self.experiment.name_str if self.experiment else "")
+        model = self._create_data_row("Model", self.experiment.model_str if self.experiment else "")
+        status = self._create_data_row("Status", self.experiment.status_str if self.experiment else "")
+        description = self._create_data_row("Description", self.experiment.description_str if self.experiment else "")
+        author = self._create_data_row("Author", self.experiment.author_str if self.experiment else "")
         submission_id = self._create_data_row("Submission ID",
-                                              self._experiment.submission_id_str if self._experiment else "")
+                                              self.experiment.submission_id_str if self.experiment else "")
         submission_time = self._create_data_row("Submission Time",
-                                                self._experiment.submission_time_str if self._experiment else "")
-        published = self._create_data_row("Published", self._experiment.published_str if self._experiment else "")
+                                                self.experiment.submission_time_str if self.experiment else "")
+        published = self._create_data_row("Published", self.experiment.published_str if self.experiment else "")
+        published_style = copy(published.style_)
+        published_style["margin"] = "8px 0px 16px 0px"
+        published.style_ = published_style
         bar.children = [id_,
                         name,
                         model,
@@ -167,7 +186,8 @@ class DetailsView(Dialog):
                         submission_id,
                         submission_time,
                         status,
-                        published]
+                        published,
+                        self._log_accordion]
         return bar
 
     def close(self):
@@ -236,8 +256,14 @@ class DetailsView(Dialog):
         return wrapper
 
     def show(self, experiment: Experiment):
-        self._experiment = experiment
-        title_bar = self._main.children[0]
+        self.experiment = experiment
         details_area = self._create_details_area()
-        self._main.children = [title_bar, details_area]
+
+        print(experiment.id_str, experiment.is_private)
+        # if experiment.is_private:
+        #     self._buttons_wrapper.chilren = [self._download, self._delete]
+        # else:
+        #     self._buttons_wrapper.children = [self._download]
+        self._log_output_area.clear_output()
+        self._main.children = [self._title_bar, details_area, self._buttons_wrapper]
         self.open_ = True

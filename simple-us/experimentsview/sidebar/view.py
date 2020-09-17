@@ -17,7 +17,7 @@ import ipywidgets as widgets
 from ipywidgets import Dropdown
 from ipywidgets import Layout
 
-from utils.misc import SECONDARY_COLOR
+from utils.misc import SECONDARY_COLOR, DANGER_COLOR
 from .controller import Sidebar
 from utils import CustomText
 from utils import INNER_BACKGROUND_COLOR
@@ -149,7 +149,7 @@ class SidebarView(Container):
                              })
         csv = self._create_button("CSV", icon=download_icon)
         csv.on_event("onClick", self.controller.onclick_csv)
-        close = self._create_button("Close", SECONDARY_COLOR)
+        close = self._create_button("Close", DANGER_COLOR)
         close.on_event("onClick", self.controller.onclick_close)
         wrapper = self._create_input_wrapper([visualize, csv, close])
         style_ = copy(wrapper.style_)

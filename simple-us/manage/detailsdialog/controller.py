@@ -2,13 +2,13 @@ from IPython.display import display
 from ipymaterialui import Paper
 
 from model import Experiment
-from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED
+from utils.experimentutil import ExperimentManager
+from utils.pubsubmessage import sendMessage, DETAILS_WINDOW_CLOSED, DATABASE_MODIFIED
 
 
 class Details:
     def __init__(self, experiment: Experiment):
         from .view import DetailsView  # Avoid circular dependency
-        self.experiment = experiment
         self.view = DetailsView(self, experiment)
         self._backdrop_was_clicked = True
 
@@ -17,6 +17,17 @@ class Details:
 
     def onclose(self, widget, event, data):
         self.view.close()
+
+    def onclick_download(self, widget, event, data):
+        # SIMPLEUtil.download_file(ExperimentManager.)
+        pass
+
+    def onclick_delete(self, widget, event, data):
+        ExperimentManager.delete_experiment(self.view.experiment)
+        self.view.experiment = None
+        sendMessage(DATABASE_MODIFIED)
+        self.view.close()
+
 
     def onclick_backdrop(self, widget, event, data):
         # The following conditions are needed because clicking on the dialog's "body" would call this method twice.

@@ -214,9 +214,10 @@ class ExperimentManager:
 
         # submit_id = job_info[1]
         # if self.getJobStatus(submit_id) in ['Pending', 'Queued', 'Running']:
-        if experiment.status in ['Pending', 'Queued', 'Running', 'Completing']:
-            cmd = 'submit --kill ' + experiment.submission_id
-            ret = subprocess.check_output(cmd.split())
+        # TODO: Uncomment this
+        # if experiment.status_str in ['Pending', 'Queued', 'Running', 'Completing']:
+        #     cmd = 'submit --kill ' + experiment.submission_id_str
+        #     ret = subprocess.check_output(cmd.split())
 
         # delete experiment working directory
         shutil.rmtree(str(cls.working_directory(experiment.id_str)))

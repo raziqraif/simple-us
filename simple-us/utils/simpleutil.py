@@ -60,6 +60,8 @@ class SIMPLEUtil:
 
     @classmethod
     def initialize_working_directory(cls):
+        if cls.TEMP_DIR.exists():
+            shutil.rmtree(str(cls.TEMP_DIR))
         if not cls.WORKING_DIR.exists():
             cls.WORKING_DIR.mkdir(parents=True)
         if not cls.PRIVATE_JOBS_DIR.exists():
@@ -68,11 +70,15 @@ class SIMPLEUtil:
             cls.TEMP_DIR.mkdir(parents=True)
         if not cls.LOG_FILE.exists():
             cls.LOG_FILE.touch()
+            print('create log')
         if cls.SHARED_JOBS_DIR.exists() and not cls.SHARED_JOBS_SYM_LINK.exists():
             symlink(str(cls.SHARED_JOBS_DIR), str(cls.SHARED_JOBS_SYM_LINK))
-        shutil.rmtree(str(cls.TEMP_DIR))
-        cls.TEMP_DIR.mkdir(parents=True)
+        if sys.stdout != sys.__stdout__:
+            sys.stdout.close()
 
+        sys.stdout = open(str(cls.LOG_FILE), "a+")
+        sys.stderr = sys.stdout
+        print("hello")
 
     @classmethod
     def upload_file(cls, save_path: Path):

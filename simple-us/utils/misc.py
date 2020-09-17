@@ -15,6 +15,7 @@ BUTTON_COLOR = "#1DA1F2"
 INNER_BACKGROUND_COLOR = "#f5f5f6"
 MAIN_BACKGROUND_COLOR = "#ffffff"
 GREEN = "#35B535"
+DANGER_COLOR = "#f44336"
 
 NODATA = -999999999  # Nodata value for processed raster file.
 REBUILD_RASTER_TILE = False  # Existing tile folder will be deleted upon visualization if this value is set to yes.
